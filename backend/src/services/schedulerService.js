@@ -5,6 +5,7 @@ import { logger } from '../utils/logger.js';
 import { sendMedicationReminder, sendWeeklyReport } from './emailService.js';
 import { processMissedAdherenceRecords } from './adherenceService.js';
 import { generateWeeklyReport } from './reportService.js';
+import medicationModel from '../models/medicationModel.js';
 
 // Set up cron jobs for the application
 export const setupCronJobs = () => {
@@ -38,7 +39,29 @@ export const setupCronJobs = () => {
     }
   });
 
+  // Cron job diario para generar adherencia futura
+  cron.schedule('0 2 * * *', async () => {
+    try {
+      logger.info('Running daily adherence generation job');
+      const users = await findUsersByFilter({});
+      for (const user of users) {
+        const medications = await medicationModel.findActiveMedications(user.id);
+        for (const med of medications) {
+          try {
+            await generateAdherenceRecords(med.id, user.id);
+          } catch (err) {
+            logger.error(`Error generating adherence for med ${med.id} user ${user.id}: ${err.message}`);
+          }
+        }
+      }
+      logger.info('Daily adherence generation job completed');
+    } catch (error) {
+      logger.error(`Error in daily adherence generation job: ${error.message}`);
+    }
+  });
+
   logger.info('All scheduled jobs have been set up');
+
 };
 
 // Process due reminders
