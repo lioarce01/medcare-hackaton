@@ -1,26 +1,28 @@
 import { supabase } from '../config/db.js';
 import { logger } from '../utils/logger.js';
-import { Resend } from 'resend';
+import sgMail from '@sendgrid/mail';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
+const SENDGRID_FROM = process.env.SENDGRID_FROM || 'your_verified_sender@yourdomain.com'; // Must be verified in SendGrid
 
 export const sendMedicationReminder = async (reminder) => {
   try {
     const { user, medication } = reminder;
     const email = user.email;
-    
-    await resend.emails.send({
-      from: 'lioarce1@gmail.com',
+
+    await sgMail.send({
       to: email,
+      from: SENDGRID_FROM,
       subject: `Medication Reminder: ${medication.name}`,
       html: `<p>Hi, this is your reminder to take <b>${medication.name}</b> at the scheduled time.</p>`
     });
 
     logger.info(`Sent reminder email to ${email} for medication ${medication.name}`);
-    
+
     // Record the email sending attempt in Supabase
     const { error } = await supabase
       .from('reminders')
@@ -40,7 +42,7 @@ export const sendMedicationReminder = async (reminder) => {
       .eq('id', reminder.id);
 
     if (error) throw error;
-    
+
     return {
       success: true,
       messageId: `reminder_${reminder.id}`
@@ -63,9 +65,9 @@ export const sendWeeklyReport = async (user, reportData) => {
       <p>Keep up the good work and stay healthy!</p>
     `;
 
-    await resend.emails.send({
-      from: 'lioarce1@gmail.com', // Replace with your verified domain
+    await sgMail.send({
       to: email,
+      from: SENDGRID_FROM,
       subject: 'Your Weekly Medication Adherence Report',
       html: htmlReport
     });

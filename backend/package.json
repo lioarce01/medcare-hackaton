@@ -10,6 +10,7 @@
     "seed:user": "tsx src/scripts/seedSpecificUser.ts"
   },
   "dependencies": {
+    "@sendgrid/mail": "^8.1.5",
     "@supabase/supabase-js": "^2.39.0",
     "axios": "^1.5.0",
     "bcryptjs": "^2.4.3",
@@ -25,7 +26,6 @@
     "ml-knn": "^3.0.0",
     "morgan": "^1.10.0",
     "node-cron": "^3.0.2",
-    "resend": "^4.5.1",
     "winston": "^3.10.0",
     "winston-daily-rotate-file": "^4.7.1"
   },

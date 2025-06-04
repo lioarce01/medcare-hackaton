@@ -10,6 +10,7 @@ import medicationRoutes from './routes/medicationRoutes.js';
 import reminderRoutes from './routes/reminderRoutes.js';
 import adherenceRoutes from './routes/adherenceRoutes.js';
 import analyticsRoutes from './routes/analyticsRoutes.js';
+import testRoutes from './routes/testRoutes.js';
 import { errorHandler, notFound } from './middleware/errorMiddleware.js';
 import { setupCronJobs } from './services/schedulerService.js';
 import { logger } from './utils/logger.js';
@@ -46,6 +47,7 @@ app.use('/api/medications', medicationRoutes);
 app.use('/api/reminders', reminderRoutes);
 app.use('/api/adherence', adherenceRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/test', testRoutes);
 
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, '../dist')));
