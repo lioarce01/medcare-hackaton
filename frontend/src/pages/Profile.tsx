@@ -17,6 +17,7 @@ import {
 } from "lucide-react"
 import { useUpdateUserProfile, useUser } from "../hooks/useUser"
 import ExportUserDataCall from "../components/ExportUserDataCall"
+import { LoadingSpinner } from "../components/LoadingSpinner"
 
 export const Profile = () => {
   const { data: user, isLoading } = useUser()
@@ -119,10 +120,9 @@ export const Profile = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center">
-        <div className="text-center space-y-4">
+        <div className="text-center">
           <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-full opacity-20 animate-pulse"></div>
-            <Loader2 className="w-12 h-12 text-blue-600 animate-spin" />
+            <LoadingSpinner/>
           </div>
           <p className="text-indigo-600 font-medium">Loading your profile...</p>
         </div>
@@ -131,7 +131,7 @@ export const Profile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-8">
+    <div className="min-h-screen py-8">
       <div className="max-w-4xl mx-auto px-4">
         <div className="relative">
           <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-3xl opacity-10"></div>

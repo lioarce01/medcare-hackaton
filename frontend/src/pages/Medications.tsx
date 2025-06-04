@@ -101,10 +101,9 @@ export const Medications = () => {
   // Show loading while auth is loading or data is loading
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center">
-        <div className="text-center space-y-4">
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
           <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-full opacity-20 animate-pulse"></div>
             <LoadingSpinner />
           </div>
           <p className="text-indigo-600 font-medium">Loading your medications...</p>
@@ -138,7 +137,7 @@ export const Medications = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+    <div className="min-h-scree">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="space-y-8">
           {/* Enhanced Header */}

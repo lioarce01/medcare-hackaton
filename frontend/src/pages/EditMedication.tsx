@@ -5,6 +5,7 @@ import { useState, useEffect } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { ArrowLeft, Pill, FileText, CheckCircle, AlertTriangle, Loader2, Beaker, ListChecks } from "lucide-react"
 import { useMedicationById, useUpdateMedication } from "../hooks/useMedications"
+import { LoadingSpinner } from "../components/LoadingSpinner"
 
 export const EditMedication = () => {
   const { id } = useParams()
@@ -120,11 +121,8 @@ export const EditMedication = () => {
   if (isPending) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-full opacity-20 animate-pulse"></div>
-            <Loader2 className="w-12 h-12 text-blue-600 animate-spin" />
-          </div>
+        <div className="text-center">
+          <LoadingSpinner />
           <p className="text-indigo-600 font-medium">Loading medication details...</p>
         </div>
       </div>

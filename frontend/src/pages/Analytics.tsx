@@ -191,7 +191,7 @@ export const Analytics: React.FC = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center">
-        <div className="text-center space-y-4">
+        <div className="text-center">
           <LoadingSpinner />
           <p className="text-indigo-600 font-medium">Analyzing your medication data...</p>
         </div>
@@ -201,7 +201,7 @@ export const Analytics: React.FC = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="relative">
           <div className="absolute inset-0 bg-gradient-to-r from-red-500 to-rose-500 rounded-2xl opacity-10"></div>
           <div className="relative bg-white/90 backdrop-blur-sm border border-red-200 rounded-2xl p-8 shadow-lg max-w-md">
@@ -318,7 +318,7 @@ export const Analytics: React.FC = () => {
   const adherenceGrade = getAdherenceGrade(stats.overall.adherenceRate)
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+    <div className="min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="space-y-8">
           {/* Enhanced Header */}
