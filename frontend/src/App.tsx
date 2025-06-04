@@ -14,10 +14,12 @@ import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { PrivateRoute } from './components/PrivateRoute';
 import { ToastContainer } from './components/Toast';
+import { FloatingLogo } from './components/FloatingLogo';
 
 function App() {
   return (
         <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-100">
+          <FloatingLogo />
           <Header />
           <main className="flex-grow container mx-auto px-4 py-8">
             <Routes>

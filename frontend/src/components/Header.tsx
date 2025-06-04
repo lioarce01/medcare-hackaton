@@ -133,7 +133,7 @@ export const Header: React.FC = () => {
                 EN
               </button>
               <button
-                onClick={() => { i18n.changeLanguage('es') }}
+                onClick={() => { i18n.changeLanguage('es');  }}
                 className="px-2 py-1 rounded text-xs font-semibold border border-blue-200 text-blue-700 bg-blue-50 hover:bg-blue-100 transition-colors"
               >
                 ES
