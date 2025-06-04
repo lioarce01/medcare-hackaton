@@ -54,11 +54,24 @@ export const sendMedicationReminder = async (reminder) => {
 // Send weekly adherence report
 export const sendWeeklyReport = async (user, reportData) => {
   try {
-    // In a real production environment, you would integrate with a proper email service
-    // For now, we'll just log the report
-    logger.info(`Would send weekly report to ${user.email}`);
-    logger.info('Report data:', reportData);
-    
+    const email = user.email;
+    // Create a simple HTML report summary
+    const htmlReport = `
+      <h2>Your Weekly Medication Adherence Report</h2>
+      <p>Hi ${user.name || ''}, here is your medication adherence summary for the past week:</p>
+      <pre style="background:#f4f4f4;padding:1em;border-radius:8px;">${JSON.stringify(reportData, null, 2)}</pre>
+      <p>Keep up the good work and stay healthy!</p>
+    `;
+
+    await resend.emails.send({
+      from: 'lioarce1@gmail.com', // Replace with your verified domain
+      to: email,
+      subject: 'Your Weekly Medication Adherence Report',
+      html: htmlReport
+    });
+
+    logger.info(`Sent weekly report email to ${email}`);
+
     return {
       success: true,
       messageId: `report_${user.id}_${Date.now()}`
