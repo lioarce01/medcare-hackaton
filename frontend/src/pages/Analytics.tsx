@@ -120,7 +120,7 @@ export const Analytics: React.FC = () => {
               acc[medId].total > 0 ? (acc[medId].taken / (acc[medId].total - acc[medId].skipped)) * 100 : 0
 
             // Calculate simple risk score based on missed doses
-            acc[medId].riskScore = Math.min(100, Math.round((acc[medId].missed / Math.max(1, acc[medId].total)) * 100))
+            acc[medId].riskScore = Math.min(100, Math.round((acc[medId].skipped / Math.max(1, acc[medId].total)) * 100))
 
             return acc
           }, {}) || {},
@@ -491,7 +491,7 @@ export const Analytics: React.FC = () => {
                               <span className="font-medium text-emerald-600">{med.taken}</span> taken
                             </span>
                             <span className="text-sm text-gray-600">
-                              <span className="font-medium text-red-600">{med.missed}</span> missed
+                              <span className="font-medium text-red-600">{med.skipped}</span> skipped
                             </span>
                             <span className="text-sm text-gray-600">
                               <span className="font-medium text-gray-700">{med.total}</span> total
