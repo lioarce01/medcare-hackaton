@@ -1,5 +1,23 @@
 {
-  "welcome": "Bienvenido",
-  "profile": "Perfil",
-  "download_pdf": "Descargar mis datos en PDF"
+  "home": {
+    "hero_title": "Toma el control de tu tratamiento",
+    "hero_subtitle": "Controla, gestiona y mantente al día con tus medicamentos con nuestro sistema integral de adherencia.",
+    "get_started": "Comenzar",
+    "sign_in": "Iniciar sesión",
+    "features_title": "Características que marcan la diferencia",
+    "feature_medication": "Gestión de Medicamentos",
+    "feature_medication_desc": "Controla y gestiona todos tus medicamentos en un solo lugar con información detallada y programación.",
+    "feature_reminders": "Recordatorios Inteligentes",
+    "feature_reminders_desc": "Nunca olvides una dosis con recordatorios personalizables adaptados a tu horario.",
+    "feature_analytics": "Analíticas de Adherencia",
+    "feature_analytics_desc": "Sigue tu progreso e identifica patrones con informes detallados y análisis.",
+    "feature_secure": "Seguro y Privado",
+    "feature_secure_desc": "Tu información de salud está protegida con seguridad y cifrado de nivel industrial.",
+    "cta_title": "¿Listo para tomar el control?",
+    "cta_subtitle": "Únete a miles de usuarios que gestionan sus medicamentos eficazmente.",
+    "cta_button": "Comienza tu viaje"
+  },
+  "dashboard": {
+    
+  }
 }

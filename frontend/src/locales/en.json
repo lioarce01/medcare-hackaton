@@ -1,5 +1,20 @@
 {
-  "welcome": "Welcome",
-  "profile": "Profile",
-  "download_pdf": "Download My Data as PDF"
+  "home": {
+    "hero_title": "Take Control of Your Medication Journey",
+    "hero_subtitle": "Track, manage, and stay on top of your medications with our comprehensive medication adherence system.",
+    "get_started": "Get Started",
+    "sign_in": "Sign In",
+    "features_title": "Features that Make a Difference",
+    "feature_medication": "Medication Management",
+    "feature_medication_desc": "Easily track and manage all your medications in one place with detailed information and scheduling.",
+    "feature_reminders": "Smart Reminders",
+    "feature_reminders_desc": "Never miss a dose with customizable reminders and notifications tailored to your schedule.",
+    "feature_analytics": "Adherence Analytics",
+    "feature_analytics_desc": "Track your progress and identify patterns with detailed adherence reports and insights.",
+    "feature_secure": "Secure & Private",
+    "feature_secure_desc": "Your health information is protected with industry-standard security and encryption.",
+    "cta_title": "Ready to Take Control?",
+    "cta_subtitle": "Join thousands of users who are managing their medications effectively.",
+    "cta_button": "Start Your Journey"
+  }
 }
