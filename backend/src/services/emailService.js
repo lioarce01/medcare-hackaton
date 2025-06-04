@@ -1,14 +1,25 @@
 import { supabase } from '../config/db.js';
 import { logger } from '../utils/logger.js';
+import { Resend } from 'resend';
+import dotenv from 'dotenv';
 
-// Send medication reminder email
+dotenv.config();
+
+const resend = new Resend(process.env.RESEND_API_KEY);
+
 export const sendMedicationReminder = async (reminder) => {
   try {
     const { user, medication } = reminder;
+    const email = user.email;
     
-    // In a real production environment, you would integrate with a proper email service
-    // For now, we'll just log the reminder and mark it as sent
-    logger.info(`Would send reminder email to ${user.email} for medication ${medication.name}`);
+    await resend.emails.send({
+      from: 'lioarce1@gmail.com',
+      to: email,
+      subject: `Medication Reminder: ${medication.name}`,
+      html: `<p>Hi, this is your reminder to take <b>${medication.name}</b> at the scheduled time.</p>`
+    });
+
+    logger.info(`Sent reminder email to ${email} for medication ${medication.name}`);
     
     // Record the email sending attempt in Supabase
     const { error } = await supabase
