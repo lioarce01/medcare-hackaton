@@ -17,7 +17,7 @@ import { ToastContainer } from './components/Toast';
 
 function App() {
   return (
-        <div className="min-h-screen flex flex-col bg-gray-50">
+        <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-100">
           <Header />
           <main className="flex-grow container mx-auto px-4 py-8">
             <Routes>

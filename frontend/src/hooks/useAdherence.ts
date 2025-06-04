@@ -2,11 +2,11 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { adherenceApi } from "../api/adherence";
 
 // Hook para obtener el historial de adherence según la fecha
-export const useGetAdherenceHistory = (date: string) => {
+export const useGetAdherenceHistory = (date?: string) => {
   return useQuery({
-    queryKey: ["adherence", date],
+    queryKey: ["adherence", date || "all"],
     queryFn: () => adherenceApi.getHistory(date),
-    enabled: !!date, // para que no corra si date es vacío
+    enabled: true, // para que no corra si date es vacío
   });
 };
 

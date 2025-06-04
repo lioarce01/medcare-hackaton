@@ -13,8 +13,10 @@ import {
   CheckCircle,
   AlertCircle,
   Loader2,
+  Shield,
 } from "lucide-react"
 import { useUpdateUserProfile, useUser } from "../hooks/useUser"
+import ExportUserDataCall from "../components/ExportUserDataCall"
 
 export const Profile = () => {
   const { data: user, isLoading } = useUser()
@@ -43,7 +45,6 @@ export const Profile = () => {
   useEffect(() => {
     // Solo actualizar formData cuando tenemos datos del usuario y no estamos en modo edición
     if (user && !isLoading && !isEditing) {
-      console.log('User data received:', user); // Para debugging
       
       setFormData({
         name: user.name || "",
@@ -63,16 +64,6 @@ export const Profile = () => {
       });
     }
   }, [user, isLoading, isEditing]);
-
-// También agrega este useEffect adicional para debugging:
-useEffect(() => {
-  console.log('Component state:', {
-    user,
-    isLoading,
-    isEditing,
-    formData: formData.name // Solo logear el nombre para ver si se está actualizando
-  });
-}, [user, isLoading, isEditing, formData.name]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -493,8 +484,8 @@ useEffect(() => {
                         </label>
                         <input
                           type="checkbox"
-                          id="emailNotifications"
-                          name="emailNotificationsEnabled"
+                          id="email_notifications_enabled"
+                          name="email_notifications_enabled"
                           checked={formData.email_notifications_enabled}
                           onChange={(e) =>
                             setFormData((prev) => ({ ...prev, email_notifications_enabled: e.target.checked }))
@@ -561,6 +552,24 @@ useEffect(() => {
                 </div>
               )}
             </form>
+
+            <div className="p-8 space-y-8">
+              <div className="flex items-center space-x-3 mb-6">
+                <div className="p-2 bg-gradient-to-r from-gray-500 to-gray-700 rounded-xl shadow-md">
+                  <Shield className="w-5 h-5 text-white" />
+                </div>
+                <h2 className="text-xl font-bold text-gray-800">Privacy Settings</h2>
+              </div>
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-gray-500 to-gray-700 rounded-2xl opacity-5"></div>
+                <div className="relative bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-200">
+                  <p className="text-gray-600 mb-6">
+                    You can download all your personal data, medications, adherence records, and analytics as a PDF for your own records.
+                  </p>
+                  <ExportUserDataCall />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

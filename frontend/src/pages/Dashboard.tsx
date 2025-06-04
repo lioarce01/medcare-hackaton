@@ -148,7 +148,7 @@ export const Dashboard: React.FC = () => {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div className="space-y-1">
               <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                {getGreeting()}, {user?.user_metadata?.name || 'there'}!
+                {getGreeting()}, {user?.name || 'there'}!
               </h1>
               <p className="text-gray-600">
                 {upcomingDoses.length > 0 

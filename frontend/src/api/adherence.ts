@@ -1,13 +1,13 @@
 import { supabase } from "../config/supabase";
 
 export const adherenceApi = {
-  getHistory: async (date: string) => {
+  getHistory: async (date?: string) => {
     const {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) throw new Error("No authenticated user");
 
-    const { data, error } = await supabase
+    let query = supabase
       .from("adherence")
       .select(
         `
@@ -21,9 +21,13 @@ export const adherenceApi = {
       `
       )
       .eq("user_id", user.id)
-      .eq("scheduled_date", date)
       .order("scheduled_time", { ascending: true });
 
+    if (date) {
+      query = query.eq("scheduled_date", date);
+    }
+
+    const { data, error } = await query;
     if (error) throw error;
     return data;
   },
