@@ -24,6 +24,7 @@ export const useSignUp = () => {
 
 export const useSignIn = () => {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   return useMutation({
     mutationFn: async ({
@@ -43,12 +44,14 @@ export const useSignIn = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["session"] });
       queryClient.invalidateQueries({ queryKey: ["user"] });
+      navigate("/dashboard");
     },
   });
 };
 
 export const useSignOut = () => {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   return useMutation({
     mutationFn: async () => {
@@ -58,6 +61,7 @@ export const useSignOut = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["session"] });
       queryClient.invalidateQueries({ queryKey: ["user"] });
+      navigate("/login");
     },
   });
 };

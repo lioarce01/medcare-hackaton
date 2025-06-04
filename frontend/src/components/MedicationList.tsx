@@ -1,7 +1,6 @@
 import type React from "react"
 import { Link } from "react-router-dom"
 import { Clock, Calendar, Edit, Trash, Pill, Info } from "lucide-react"
-import { formatTime } from "../utils/formatters"
 
 export interface Medication {
   id: string
@@ -172,7 +171,7 @@ export const MedicationList: React.FC<MedicationListProps> = ({ medications, onD
                             key={i}
                             className="text-xs bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg font-medium border border-blue-100 shadow-sm"
                           >
-                            {formatTime(time)}
+                            {time}
                           </span>
                         ))}
                       </div>

@@ -1,4 +1,3 @@
-import React from 'react'
 import { ExportUserDataPDF } from './ExportUserDataPDF'
 import { useMedications } from '../hooks/useMedications';
 import { useGetAdherenceHistory } from '../hooks/useAdherence';

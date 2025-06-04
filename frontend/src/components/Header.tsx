@@ -4,6 +4,7 @@ import { Menu, X, User, Pill, LineChart, LogOut, Home, Bell } from 'lucide-react
 import { useUser } from '../hooks/useUser';
 import { useSignOut } from '../hooks/useAuth';
 import { useTranslation } from 'react-i18next';
+import { useSession } from '../hooks/useSession';
 
 export const Header: React.FC = () => {
   const { data: user } = useUser();
@@ -11,6 +12,7 @@ export const Header: React.FC = () => {
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { i18n } = useTranslation();
+  const { data: session } = useSession();
   
   const handleLogout = () => {
     logout();
@@ -42,7 +44,7 @@ export const Header: React.FC = () => {
           
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-1">
-            {user ? (
+            {session ? (
               <>
                 <Link 
                   to="/dashboard" 
@@ -133,7 +135,7 @@ export const Header: React.FC = () => {
                 EN
               </button>
               <button
-                onClick={() => { i18n.changeLanguage('es');  }}
+                onClick={() => { i18n.changeLanguage('es'); console.log('Language set to ES'); }}
                 className="px-2 py-1 rounded text-xs font-semibold border border-blue-200 text-blue-700 bg-blue-50 hover:bg-blue-100 transition-colors"
               >
                 ES
@@ -160,7 +162,7 @@ export const Header: React.FC = () => {
       {/* Mobile menu */}
       <div className={`${isMenuOpen ? 'block' : 'hidden'} md:hidden`}>
         <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-          {user ? (
+          {session ? (
             <>
               <Link
                 to="/dashboard"

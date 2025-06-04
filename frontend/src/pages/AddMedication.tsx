@@ -14,7 +14,6 @@ import {
   AlertCircle,
   CheckCircle,
 } from "lucide-react"
-import { localToUTC } from "../utils/formatters"
 import { useCreateMedication } from "../hooks/useMedications"
 
 export const AddMedication = () => {
@@ -54,18 +53,18 @@ export const AddMedication = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-
-    // Prepara los datos
-    const utcScheduledTimes = formData.scheduled_times.map(localToUTC)
+  
+    // Prepara los datos - Para app internacional
     const startDate = new Date(formData.start_date)
-    startDate.setUTCHours(0, 0, 0, 0)
-
+    startDate.setHours(0, 0, 0, 0)
+  
     const medicationData = {
       ...formData,
-      scheduled_times: utcScheduledTimes,
+      scheduled_times: formData.scheduled_times, // Enviar en hora local (se convertirá a UTC en el API)
       start_date: startDate.toISOString(),
+      user_timezone: Intl.DateTimeFormat().resolvedOptions().timeZone, // Detectar zona horaria automáticamente
     }
-
+  
     AddMedication(medicationData, {
       onSuccess: () => {
         setFormSubmitted(true)
@@ -75,8 +74,7 @@ export const AddMedication = () => {
         console.error("Error adding medication:", err)
       },
     })
-  }
-
+  }  
 
   const addScheduledTime = () => {
     setFormData((prev) => ({

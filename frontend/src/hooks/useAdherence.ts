@@ -18,7 +18,9 @@ export const useConfirmDose = () => {
     mutationFn: (adherenceId: string) => adherenceApi.confirmDose(adherenceId),
     onSuccess: () => {
       // Invalidar queries relacionadas para refrescar datos
-      queryClient.invalidateQueries({ queryKey: ["adherence", "history"] });
+      queryClient.invalidateQueries({
+        queryKey: ["adherence"],
+      });
     },
   });
 };
