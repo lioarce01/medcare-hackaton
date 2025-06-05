@@ -26,6 +26,7 @@ A comprehensive system for tracking medication adherence, sending reminders, and
 
 - Node.js (v18 or higher)
 - Supabase Account
+- Sengrid Account 
 
 ### Installation
 
