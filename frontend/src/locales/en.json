@@ -226,22 +226,49 @@
       }
     },
     "summary": {
-        "title": "Adherence Summary",
-        "adherence": "Adherence",
-        "status": {
-          "excellent": "Excellent",
-          "good": "Good",
-          "fair": "Fair",
-          "needs_improvement": "Needs Improvement"
-        },
-        "stats": {
-          "taken": "Taken",
-          "skipped": "Skipped",
-          "total": "Total",
-          "doses": "doses",
-          "scheduled": "scheduled"
-        }
+      "title": "Adherence Summary",
+      "subtitle": "Your medication adherence overview",
+      "complete": "Complete",
+      "health_hero": "Health Hero",
+      "adherence": "Adherence",
+      "status": {
+        "excellent": "Excellent",
+        "good": "Good",
+        "fair": "Fair",
+        "needs_improvement": "Needs Improvement"
+      },
+      "stats": {
+        "taken": "Taken",
+        "skipped": "Skipped",
+        "total": "Total",
+        "doses": "doses",
+        "scheduled": "scheduled",
+        "doses_taken": "Doses Taken",
+        "keep_up_work": "Keep up the great work!",
+        "streak_days": "Streak Days",
+        "on_fire": "You're on fire! 🔥",
+        "building_momentum": "Building momentum! ⚡",
+        "total_goal": "Total Goal",
+        "health_target": "Your health target"
+      },
+      "messages": {
+        "excellent": "🌟 Amazing! You're a health superstar!",
+        "good": "💪 Great job! You're doing wonderful!",
+        "fair": "👍 Good progress! Keep it up!",
+        "needs_improvement": "🌱 Every step counts! You've got this!"
+      },
+      "emoji": {
+        "excellent": "🏆",
+        "good": "⭐",
+        "fair": "🌟"
+      },
+      "encouragement": {
+        "fantastic": "You're doing fantastic!",
+        "every_dose": "Every dose matters!",
+        "commitment": "Your commitment to your health is inspiring. Keep up this amazing momentum!",
+        "investment": "Remember, taking care of yourself is the best investment you can make. You've got this!"
       }
+    }
   },
   "analytics": {
     "page": {

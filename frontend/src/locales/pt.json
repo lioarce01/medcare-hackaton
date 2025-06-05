@@ -246,6 +246,9 @@
     },
     "summary": {
       "title": "Resumo de Adesão",
+      "subtitle": "Visão geral da sua adesão à medicação",
+      "complete": "Completo",
+      "health_hero": "Herói da Saúde",
       "adherence": "Adesão",
       "status": {
         "excellent": "Excelente",
@@ -258,7 +261,32 @@
         "skipped": "Puladas",
         "total": "Total",
         "doses": "doses",
-        "scheduled": "programadas"
+        "scheduled": "agendadas",
+        "remaining": "restantes",
+        "doses_taken": "Doses Tomadas",
+        "keep_up_work": "Continue o bom trabalho!",
+        "streak_days": "Dias Consecutivos",
+        "on_fire": "Você está arrasando! 🔥",
+        "building_momentum": "Construindo impulso! ⚡",
+        "total_goal": "Meta Total",
+        "health_target": "Seu objetivo de saúde"
+      },
+      "messages": {
+        "excellent": "🌟 Incrível! Você é uma estrela da saúde!",
+        "good": "💪 Ótimo trabalho! Você está indo muito bem!",
+        "fair": "👍 Bom progresso! Continue assim!",
+        "needs_improvement": "🌱 Cada passo conta! Você consegue!"
+      },
+      "emoji": {
+        "excellent": "🏆",
+        "good": "⭐",
+        "fair": "🌟"
+      },
+      "encouragement": {
+        "fantastic": "Você está fantástico!",
+        "every_dose": "Cada dose importa!",
+        "commitment": "Seu compromisso com sua saúde é inspirador. Mantenha esse incrível impulso!",
+        "investment": "Lembre-se, cuidar de si mesmo é o melhor investimento que você pode fazer. Você consegue!"
       }
     }
   },

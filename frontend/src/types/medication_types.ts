@@ -52,6 +52,7 @@ export interface MedicationTypeConfig {
   text: string;
   border: string;
   icon: typeof Pill;
+  emoji: string;
 }
 
 export type MedicationType =

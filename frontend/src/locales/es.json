@@ -239,22 +239,50 @@
       }
     },
     "summary": {
-        "title": "Resumen de Adherencia",
-        "adherence": "Adherencia",
-        "status": {
-          "excellent": "Excelente",
-          "good": "Bueno",
-          "fair": "Regular",
-          "needs_improvement": "Necesita Mejora"
-        },
-        "stats": {
-          "taken": "Tomadas",
-          "skipped": "Omitidas",
-          "total": "Total",
-          "doses": "dosis",
-          "scheduled": "programadas"
-        }
+      "title": "Resumen de Adherencia",
+      "subtitle": "Vista general de tu adherencia a la medicación",
+      "complete": "Completo",
+      "health_hero": "Héroe de la Salud",
+      "adherence": "Adherencia",
+      "status": {
+        "excellent": "Excelente",
+        "good": "Bueno",
+        "fair": "Regular",
+        "needs_improvement": "Necesita Mejorar"
+      },
+      "stats": {
+        "taken": "Tomadas",
+        "skipped": "Omitidas",
+        "total": "Total",
+        "doses": "dosis",
+        "scheduled": "programadas",
+        "remaining": "restantes",
+        "doses_taken": "Dosis Tomadas",
+        "keep_up_work": "¡Sigue con el buen trabajo!",
+        "streak_days": "Días Consecutivos",
+        "on_fire": "¡Estás en racha! 🔥",
+        "building_momentum": "¡Construyendo impulso! ⚡",
+        "total_goal": "Meta Total",
+        "health_target": "Tu objetivo de salud"
+      },
+      "messages": {
+        "excellent": "🌟 ¡Increíble! ¡Eres una estrella de la salud!",
+        "good": "💪 ¡Excelente trabajo! ¡Lo estás haciendo muy bien!",
+        "fair": "👍 ¡Buen progreso! ¡Sigue así!",
+        "needs_improvement": "🌱 ¡Cada paso cuenta! ¡Tú puedes!"
+      },
+      "emoji": {
+        "excellent": "🏆",
+        "good": "⭐",
+        "fair": "🌟"
+      },
+      "encouragement": {
+        "fantastic": "¡Lo estás haciendo fantástico!",
+        "every_dose": "¡Cada dosis importa!",
+        "commitment": "Tu compromiso con tu salud es inspirador. ¡Mantén este increíble impulso!",
+        "investment": "Recuerda, cuidar de ti mismo es la mejor inversión que puedes hacer. ¡Tú puedes!"
       }
+    }
   },
   "analytics": {
     "page": {
