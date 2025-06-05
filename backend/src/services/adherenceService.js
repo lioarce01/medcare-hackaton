@@ -1,4 +1,4 @@
-import { supabase } from '../config/supabase.js';
+import { supabase } from '../config/db.js';
 import { logger } from '../utils/logger.js';
 
 // Generate adherence records and reminders for a medication
