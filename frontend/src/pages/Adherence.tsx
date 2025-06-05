@@ -15,8 +15,10 @@ import { LoadingSpinner } from "../components/LoadingSpinner"
 import { formatTime, formatDate } from "../utils/formatters"
 import { useUser } from "../hooks/useUser"
 import { useConfirmDose, useGetAdherenceHistory, useSkipDose } from "../hooks/useAdherence"
+import { useTranslation } from "react-i18next"
 
 export const Adherence: React.FC = () => {
+  const { t } = useTranslation()
   const { data: user } = useUser()
   const [selectedDate, setSelectedDate] = useState(new Date())
   const [processingId, setProcessingId] = useState<string | null>(null)
@@ -88,7 +90,7 @@ export const Adherence: React.FC = () => {
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center">
         <div className="text-center">
           <LoadingSpinner />
-          <p className="text-indigo-600 font-medium">Loading your medication history...</p>
+          <p className="text-indigo-600 font-medium">{t('adherence.page.loading')}</p>
         </div>
       </div>
     )
@@ -110,9 +112,9 @@ export const Adherence: React.FC = () => {
                     </div>
                     <div>
                       <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
-                        Adherence History
+                        {t('adherence.page.title')}
                       </h1>
-                      <p className="text-gray-600">Track your medication journey</p>
+                      <p className="text-gray-600">{t('adherence.page.subtitle')}</p>
                     </div>
                   </div>
 
@@ -122,11 +124,10 @@ export const Adherence: React.FC = () => {
                         <div
                           className={`w-3 h-3 rounded-full bg-gradient-to-r ${completionRate >= 80 ? "from-emerald-400 to-green-500" : completionRate >= 60 ? "from-yellow-400 to-orange-500" : "from-red-400 to-rose-500"}`}
                         ></div>
-                        <span className="text-sm font-medium text-gray-700">{completionRate}% completion rate</span>
+                        <span className="text-sm font-medium text-gray-700">{completionRate}% {t('adherence.page.overview.overall_adherence')}</span>
                       </div>
                       <div className="text-sm text-gray-500">
-                        {adherenceRecords.filter((r) => r.status === "taken").length} of {adherenceRecords.length} doses
-                        taken
+                        {adherenceRecords.filter((r) => r.status === "taken").length} {t('adherence.page.medications.table.taken_doses')} / {adherenceRecords.length} {t('adherence.page.medications.table.total_doses')}
                       </div>
                     </div>
                   )}
@@ -149,7 +150,7 @@ export const Adherence: React.FC = () => {
                     onClick={() => setSelectedDate(new Date())}
                     className="px-6 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-medium hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                   >
-                    Today
+                    {t('adherence.page.chart.daily')}
                   </button>
 
                   <button
@@ -167,24 +168,6 @@ export const Adherence: React.FC = () => {
             </div>
           </div>
 
-          {/* Enhanced Error Message */}
-          {/* {error && (
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-red-500 to-rose-500 rounded-2xl opacity-10"></div>
-              <div className="relative bg-white/90 backdrop-blur-sm border border-red-200 rounded-2xl p-6 shadow-lg">
-                <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-gradient-to-r from-red-500 to-rose-500 rounded-xl">
-                    <AlertCircle className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-red-800">Something went wrong</h3>
-                    <p className="text-red-600">{error}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )} */}
-
           {/* Enhanced Records Container */}
           <div className="relative">
             <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-3xl opacity-5"></div>
@@ -197,7 +180,7 @@ export const Adherence: React.FC = () => {
                   </div>
                   <div>
                     <h2 className="text-xl font-bold text-gray-800">{formatDate(selectedDate)}</h2>
-                    <p className="text-gray-600">Medication schedule</p>
+                    <p className="text-gray-600">{t('adherence.page.medications.subtitle')}</p>
                   </div>
                 </div>
               </div>
@@ -207,8 +190,8 @@ export const Adherence: React.FC = () => {
                   <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-r from-gray-100 to-gray-200 rounded-full flex items-center justify-center">
                     <Pill className="w-10 h-10 text-gray-400" />
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-700 mb-2">No medications scheduled</h3>
-                  <p className="text-gray-500">No medication records found for this date.</p>
+                  <h3 className="text-lg font-semibold text-gray-700 mb-2">{t('adherence.page.medications.no_data')}</h3>
+                  <p className="text-gray-500">{t('adherence.page.chart.no_data')}</p>
                 </div>
               ) : (
                 <div className="divide-y divide-gray-100">
@@ -247,7 +230,7 @@ export const Adherence: React.FC = () => {
                                 </span>
                                 {record.taken_time && (
                                   <span className="text-sm text-emerald-600 font-medium">
-                                    Taken at {formatTime(record.taken_time.split("T")[1].slice(0, 5))}
+                                    {t('adherence.page.medications.table.taken_doses')} {formatTime(record.taken_time.split("T")[1].slice(0, 5))}
                                   </span>
                                 )}
                               </div>
@@ -260,50 +243,25 @@ export const Adherence: React.FC = () => {
                             </div>
                           </div>
 
-                          {/* Status and Actions */}
-                          <div className="flex items-center justify-between pl-16">
-                            <div>
-                              {record.status === "taken" ? (
-                                <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-gradient-to-r from-emerald-100 to-green-100 text-emerald-800 shadow-sm">
-                                  <CheckCircle className="mr-2 w-4 h-4" />
-                                  Completed
-                                </span>
-                              ) : record.status === "missed" ? (
-                                <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-gradient-to-r from-red-100 to-rose-100 text-red-800 shadow-sm">
-                                  <XCircle className="mr-2 w-4 h-4" />
-                                  Missed
-                                </span>
-                              ) : record.status === "skipped" ? (
-                                <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-gradient-to-r from-gray-100 to-slate-100 text-gray-800 shadow-sm">
-                                  <AlertCircle className="mr-2 w-4 h-4" />
-                                  Skipped
-                                </span>
-                              ) : (
-                                <div className="flex space-x-3">
-                                  <button
-                                    onClick={() => handleConfirmDose(record.id)}
-                                    disabled={processingId === record.id}
-                                    className="inline-flex items-center px-6 py-3 rounded-xl text-sm font-medium bg-gradient-to-r from-emerald-500 to-green-600 text-white hover:from-emerald-600 hover:to-green-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 disabled:transform-none"
-                                  >
-                                    {processingId === record.id ? (
-                                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2" />
-                                    ) : (
-                                      <CheckCircle className="mr-2 w-4 h-4" />
-                                    )}
-                                    Take Dose
-                                  </button>
-                                  <button
-                                    onClick={() => handleSkipDose(record.id)}
-                                    disabled={processingId === record.id}
-                                    className="inline-flex items-center px-6 py-3 rounded-xl text-sm font-medium bg-white text-gray-700 hover:bg-gray-50 transition-all duration-200 shadow-md hover:shadow-lg border border-gray-200 disabled:opacity-50"
-                                  >
-                                    <XCircle className="mr-2 w-4 h-4" />
-                                    Skip
-                                  </button>
-                                </div>
-                              )}
+                          {/* Action Buttons */}
+                          {record.status === "pending" && (
+                            <div className="flex items-center space-x-2">
+                              <button
+                                onClick={() => handleConfirmDose(record.id)}
+                                disabled={processingId === record.id}
+                                className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-green-600 text-white rounded-xl font-medium hover:from-emerald-600 hover:to-green-700 transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                {t('adherence.page.medications.table.taken_doses')}
+                              </button>
+                              <button
+                                onClick={() => handleSkipDose(record.id)}
+                                disabled={processingId === record.id}
+                                className="px-4 py-2 bg-gradient-to-r from-gray-500 to-slate-600 text-white rounded-xl font-medium hover:from-gray-600 hover:to-slate-700 transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                {t('adherence.page.medications.table.missed_doses')}
+                              </button>
                             </div>
-                          </div>
+                          )}
                         </div>
                       </div>
                     </div>

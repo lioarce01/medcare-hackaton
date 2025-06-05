@@ -18,6 +18,7 @@ import { MedicationList } from "../components/MedicationList"
 import { LoadingSpinner } from "../components/LoadingSpinner"
 import { useUser } from "../hooks/useUser"
 import { useDeleteMedication, useMedications } from "../hooks/useMedications"
+import { useTranslation } from "react-i18next"
 
 interface Medication {
   id: string
@@ -76,6 +77,7 @@ export const Medications = () => {
   const { data: user, isLoading: authLoading } = useUser()
   const [searchTerm, setSearchTerm] = useState("")
   const [filter, setFilter] = useState<FilterType>("all")
+  const { t } = useTranslation()
 
   const { data: medications = [], isError, error, refetch, isPending: isRefreshing } = useMedications()
   const {mutate: deleteMedication } = useDeleteMedication()
@@ -106,7 +108,7 @@ export const Medications = () => {
           <div className="relative">
             <LoadingSpinner />
           </div>
-          <p className="text-indigo-600 font-medium">Loading your medications...</p>
+          <p className="text-indigo-600 font-medium">{t('medications.page.loading')}</p>
         </div>
       </div>
     )
@@ -122,13 +124,13 @@ export const Medications = () => {
             <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
               <Pill className="w-10 h-10 text-white" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-3 text-center">Authentication Required</h2>
-            <p className="text-gray-600 text-center mb-6">Please sign in to view and manage your medications.</p>
+            <h2 className="text-2xl font-bold text-gray-800 mb-3 text-center">{t('medications.page.auth_required.title')}</h2>
+            <p className="text-gray-600 text-center mb-6">{t('medications.page.auth_required.message')}</p>
             <Link
               to="/login"
               className="block w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-medium py-3 px-6 rounded-xl text-center shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5"
             >
-              Sign In
+              {t('medications.page.auth_required.sign_in')}
             </Link>
           </div>
         </div>
@@ -152,9 +154,9 @@ export const Medications = () => {
                     </div>
                     <div>
                       <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
-                        Your Medications
+                        {t('medications.page.title')}
                       </h1>
-                      <p className="text-gray-600">Manage your medication schedule and dosages</p>
+                      <p className="text-gray-600">{t('medications.page.subtitle')}</p>
                     </div>
                   </div>
                 </div>
@@ -170,14 +172,14 @@ export const Medications = () => {
                         isRefreshing ? "animate-spin" : "group-hover:rotate-180 transition-transform duration-500"
                       }`}
                     />
-                    {isRefreshing ? "Refreshing..." : "Refresh"}
+                    {isRefreshing ? t('medications.page.actions.refreshing') : t('medications.page.actions.refresh')}
                   </button>
                   <Link
                     to="/medications/add"
                     className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-6 py-3 rounded-xl flex items-center justify-center transition-all duration-200 transform hover:-translate-y-0.5 shadow-lg hover:shadow-xl font-medium"
                   >
                     <PlusCircle className="mr-2 h-5 w-5" />
-                    Add Medication
+                    {t('medications.page.actions.add_medication')}
                   </Link>
                 </div>
               </div>
@@ -195,14 +197,14 @@ export const Medications = () => {
                       <AlertCircle className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-red-800">Error occurred</h3>
+                      <h3 className="font-semibold text-red-800">{t('medications.page.error.title')}</h3>
                       <p className="text-red-600">{(error as Error)?.message || "Unexpected error"}</p>
                     </div>
                   </div>
                   <button
                     onClick={() => refetch()}
                     className="text-red-500 hover:text-red-700 ml-4 w-8 h-8 flex items-center justify-center rounded-lg hover:bg-red-100 transition-colors"
-                    title="Retry refetch data"
+                    title={t('medications.page.error.retry')}
                   >
                     ↻
                   </button>
@@ -219,12 +221,12 @@ export const Medications = () => {
                 <div className="flex flex-col lg:flex-row gap-4">
                   {/* Search */}
                   <div className="flex-1">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Search medications</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">{t('medications.page.search.label')}</label>
                     <div className="relative">
                       <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                       <input
                         type="text"
-                        placeholder="Search by name or dosage..."
+                        placeholder={t('medications.page.search.placeholder')}
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
@@ -234,7 +236,7 @@ export const Medications = () => {
 
                   {/* Filter */}
                   <div className="lg:w-64">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Filter by status</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">{t('medications.page.filter.label')}</label>
                     <div className="relative">
                       <Filter className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                       <select
@@ -242,9 +244,9 @@ export const Medications = () => {
                         onChange={(e) => setFilter(e.target.value as FilterType)}
                         className="w-full pl-12 pr-10 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-gray-50 focus:bg-white transition-all duration-200 font-medium"
                       >
-                        <option value="all">All Medications</option>
-                        <option value="active">Active Only</option>
-                        <option value="inactive">Inactive Only</option>
+                        <option value="all">{t('medications.page.filter.all')}</option>
+                        <option value="active">{t('medications.page.filter.active')}</option>
+                        <option value="inactive">{t('medications.page.filter.inactive')}</option>
                       </select>
                       <ChevronDown className="absolute right-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
                     </div>
@@ -257,15 +259,22 @@ export const Medications = () => {
                     <div className="flex items-center">
                       <Sparkles className="w-5 h-5 text-blue-500 mr-2" />
                       <p className="text-sm text-gray-700">
-                        <span className="font-semibold text-gray-800">{filteredMedications.length}</span> of{" "}
-                        <span className="font-semibold text-gray-800">{medications?.length}</span> medications
+                        {t('medications.page.results.summary', { 
+                          filtered: filteredMedications.length,
+                          total: medications?.length 
+                        })}
                         {searchTerm && (
                           <span>
                             {" "}
-                            matching <span className="font-medium">"{searchTerm}"</span>
+                            {t('medications.page.results.matching', { term: searchTerm })}
                           </span>
                         )}
-                        {filter !== "all" && <span> ({filter})</span>}
+                        {filter !== "all" && (
+                          <span>
+                            {" "}
+                            {t('medications.page.results.filtered_by', { status: filter })}
+                          </span>
+                        )}
                       </p>
                     </div>
                   </div>
@@ -286,17 +295,16 @@ export const Medications = () => {
                       <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-2xl shadow-lg flex items-center justify-center transform transition-transform hover:scale-110 duration-300">
                         <Pill className="w-12 h-12 text-white" />
                       </div>
-                      <h3 className="text-2xl font-bold text-gray-800 mb-3">Start your medication journey</h3>
+                      <h3 className="text-2xl font-bold text-gray-800 mb-3">{t('medications.page.empty.title')}</h3>
                       <p className="text-gray-600 mb-8 max-w-md mx-auto text-lg">
-                        Begin tracking your medications and never miss a dose again. Add your first medication to get
-                        started.
+                        {t('medications.page.empty.message')}
                       </p>
                       <Link
                         to="/medications/add"
                         className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-8 py-4 rounded-xl inline-flex items-center transition-all duration-200 transform hover:-translate-y-1 shadow-lg hover:shadow-xl font-medium text-lg"
                       >
                         <PlusCircle className="mr-3 h-6 w-6" />
-                        Add Your First Medication
+                        {t('medications.page.empty.add_first')}
                       </Link>
                     </>
                   ) : (
@@ -305,9 +313,12 @@ export const Medications = () => {
                       <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-r from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center">
                         <Search className="w-12 h-12 text-gray-500" />
                       </div>
-                      <h3 className="text-2xl font-bold text-gray-800 mb-3">No medications found</h3>
+                      <h3 className="text-2xl font-bold text-gray-800 mb-3">{t('medications.page.empty.no_results.title')}</h3>
                       <p className="text-gray-600 mb-6 text-lg">
-                        {searchTerm ? `No medications match "${searchTerm}"` : `No ${filter} medications found`}
+                        {searchTerm 
+                          ? t('medications.page.empty.no_results.search_message', { term: searchTerm })
+                          : t('medications.page.empty.no_results.filter_message', { status: filter })
+                        }
                       </p>
                       {(searchTerm || filter !== "all") && (
                         <button
@@ -317,7 +328,7 @@ export const Medications = () => {
                           }}
                           className="bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 px-6 py-3 rounded-xl font-medium transition-all duration-200 shadow-md hover:shadow-lg"
                         >
-                          Clear all filters
+                          {t('medications.page.empty.no_results.clear_filters')}
                         </button>
                       )}
                     </>
@@ -346,26 +357,26 @@ export const Medications = () => {
                     <div className="p-3 bg-gradient-to-r from-purple-500 to-pink-600 rounded-2xl shadow-lg">
                       <Activity className="w-6 h-6 text-white" />
                     </div>
-                    <h3 className="text-xl font-bold text-gray-800">Medication Overview</h3>
+                    <h3 className="text-xl font-bold text-gray-800">{t('medications.page.stats.title')}</h3>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                     {[
                       {
-                        title: "Total Medications",
+                        title: t('medications.page.stats.total'),
                         value: medications?.length,
                         icon: Pill,
                         color: "from-blue-500 to-indigo-600",
                         bgColor: "from-blue-50 to-indigo-50",
                       },
                       {
-                        title: "Active",
+                        title: t('medications.page.stats.active'),
                         value: medications?.filter((med) => med.active).length,
                         icon: Activity,
                         color: "from-emerald-500 to-green-600",
                         bgColor: "from-emerald-50 to-green-50",
                       },
                       {
-                        title: "Inactive",
+                        title: t('medications.page.stats.inactive'),
                         value: medications?.filter((med) => !med.active).length,
                         icon: Pause,
                         color: "from-gray-500 to-slate-600",
@@ -402,8 +413,8 @@ export const Medications = () => {
                       <Calendar className="w-6 h-6 text-white" />
                     </div>
                     <div>
-                      <h3 className="text-xl font-bold text-gray-800">Today's Schedule</h3>
-                      <p className="text-gray-600">Quick view of your medication schedule</p>
+                      <h3 className="text-xl font-bold text-gray-800">{t('medications.page.schedule.title')}</h3>
+                      <p className="text-gray-600">{t('medications.page.schedule.subtitle')}</p>
                     </div>
                   </div>
                 </div>
@@ -412,11 +423,9 @@ export const Medications = () => {
                     <div className="flex items-center space-x-2">
                       <Clock className="w-5 h-5 text-emerald-600" />
                       <span className="text-gray-700">
-                        You have{" "}
-                        <span className="font-bold text-emerald-700">
-                          {medications?.filter((med) => med.active).length}
-                        </span>{" "}
-                        active medications to track
+                        {t('medications.page.schedule.active_count', { 
+                          count: medications?.filter((med) => med.active).length 
+                        })}
                       </span>
                     </div>
                   </div>

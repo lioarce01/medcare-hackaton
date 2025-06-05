@@ -1,12 +1,17 @@
 import { useQuery } from "@tanstack/react-query";
 import { analyticsApi } from "../api/analytics";
+import { useUser } from "./useUser";
 
 export const useGetAnalyticsStats = (startDate?: string, endDate?: string) => {
+  const { data: user, isPending: isUserLoading } = useUser();
+
   // Generar la query key según los parámetros para cachear por rango de fechas
   return useQuery({
     queryKey: ["analytics", { startDate, endDate }],
     queryFn: () => analyticsApi.getStats(startDate, endDate),
-    enabled: true,
+    enabled: !!user && !isUserLoading,
+    retry: false,
+    staleTime: 5 * 60 * 1000, // 5 minutos
   });
 };
 

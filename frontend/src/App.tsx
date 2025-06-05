@@ -1,6 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Home } from './pages/Home';
-import { Login } from './pages/Login';
 import { Register } from './pages/Register';
 import { Dashboard } from './pages/Dashboard';
 import { Medications } from './pages/Medications';
@@ -16,6 +15,7 @@ import { PrivateRoute } from './components/PrivateRoute';
 import { ToastContainer } from './components/Toast';
 import { FloatingLogo } from './components/FloatingLogo';
 import { useSession } from './hooks/useSession';
+import Login from './pages/Login';
 
 function App() {
   const { data: session } = useSession();

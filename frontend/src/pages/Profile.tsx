@@ -18,8 +18,10 @@ import {
 import { useUpdateUserProfile, useUser } from "../hooks/useUser"
 import ExportUserDataCall from "../components/ExportUserDataCall"
 import { LoadingSpinner } from "../components/LoadingSpinner"
+import { useTranslation } from "react-i18next"
 
 export const Profile = () => {
+  const { t } = useTranslation()
   const { data: user, isLoading } = useUser()
   const [isEditing, setIsEditing] = useState(false)
   const [formData, setFormData] = useState({
@@ -44,9 +46,7 @@ export const Profile = () => {
   const { mutate: updateProfile, isPending } = useUpdateUserProfile()
 
   useEffect(() => {
-    // Solo actualizar formData cuando tenemos datos del usuario y no estamos en modo edición
     if (user && !isLoading && !isEditing) {
-      
       setFormData({
         name: user.name || "",
         email: user.email || "",
@@ -72,12 +72,12 @@ export const Profile = () => {
     setSuccess("")
 
     updateProfile(formData, {
-    onSuccess: () => {
-      setSuccess("Profile updated successfully")
-      setIsEditing(false) 
-    },
-    onError: (err: any) => setError(err.message || "Failed to update profile"),
-  })
+      onSuccess: () => {
+        setSuccess(t('profile.page.success.message'))
+        setIsEditing(false) 
+      },
+      onError: (err: any) => setError(err.message || t('profile.page.error.message')),
+    })
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -124,7 +124,7 @@ export const Profile = () => {
           <div className="relative">
             <LoadingSpinner/>
           </div>
-          <p className="text-indigo-600 font-medium">Loading your profile...</p>
+          <p className="text-indigo-600 font-medium">{t('profile.page.loading')}</p>
         </div>
       </div>
     )
@@ -143,7 +143,7 @@ export const Profile = () => {
                     <UserCircle className="w-6 h-6 text-white" />
                   </div>
                   <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
-                    Profile Settings
+                    {t('profile.page.title')}
                   </h1>
                 </div>
                 <button
@@ -156,12 +156,12 @@ export const Profile = () => {
                 >
                   {isEditing ? (
                     <>
-                      <span className="mr-2">Cancel</span>
+                      <span className="mr-2">{t('profile.page.actions.cancel')}</span>
                     </>
                   ) : (
                     <>
                       <Settings className="mr-2 w-4 h-4" />
-                      Edit Profile
+                      {t('profile.page.actions.edit')}
                     </>
                   )}
                 </button>
@@ -178,7 +178,7 @@ export const Profile = () => {
                         <AlertCircle className="w-5 h-5 text-white" />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-red-800">Error occurred</h3>
+                        <h3 className="font-semibold text-red-800">{t('profile.page.error.title')}</h3>
                         <p className="text-red-600">{error}</p>
                       </div>
                     </div>
@@ -197,7 +197,7 @@ export const Profile = () => {
                         <CheckCircle className="w-5 h-5 text-white" />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-green-800">Success</h3>
+                        <h3 className="font-semibold text-green-800">{t('profile.page.success.title')}</h3>
                         <p className="text-green-600">{success}</p>
                       </div>
                     </div>
@@ -214,12 +214,12 @@ export const Profile = () => {
                     <div className="p-2 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl shadow-md">
                       <User className="w-5 h-5 text-white" />
                     </div>
-                    <h2 className="text-xl font-bold text-gray-800">Personal Information</h2>
+                    <h2 className="text-xl font-bold text-gray-800">{t('profile.sections.personal.title')}</h2>
                   </div>
 
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('profile.sections.personal.fields.name')}</label>
                       <div className="relative">
                         <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
                           <UserCircle className="h-5 w-5 text-gray-400" />
@@ -236,7 +236,7 @@ export const Profile = () => {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('profile.sections.personal.fields.email')}</label>
                       <div className="relative">
                         <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
                           <Mail className="h-5 w-5 text-gray-400" />
@@ -253,7 +253,7 @@ export const Profile = () => {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('profile.sections.personal.fields.date_of_birth')}</label>
                       <div className="relative">
                         <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
                           <Calendar className="h-5 w-5 text-gray-400" />
@@ -270,7 +270,7 @@ export const Profile = () => {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('profile.sections.personal.fields.gender')}</label>
                       <select
                         name="gender"
                         value={formData.gender}
@@ -278,11 +278,11 @@ export const Profile = () => {
                         disabled={!isEditing}
                         className="w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:bg-gray-50 bg-white/60"
                       >
-                        <option value="">Select gender</option>
-                        <option value="male">Male</option>
-                        <option value="female">Female</option>
-                        <option value="other">Other</option>
-                        <option value="prefer not to say">Prefer not to say</option>
+                        <option value="">{t('profile.sections.personal.fields.gender_options.select')}</option>
+                        <option value="male">{t('profile.sections.personal.fields.gender_options.male')}</option>
+                        <option value="female">{t('profile.sections.personal.fields.gender_options.female')}</option>
+                        <option value="other">{t('profile.sections.personal.fields.gender_options.other')}</option>
+                        <option value="prefer not to say">{t('profile.sections.personal.fields.gender_options.prefer_not_to_say')}</option>
                       </select>
                     </div>
                   </div>
@@ -294,12 +294,12 @@ export const Profile = () => {
                     <div className="p-2 bg-gradient-to-r from-rose-500 to-pink-600 rounded-xl shadow-md">
                       <Heart className="w-5 h-5 text-white" />
                     </div>
-                    <h2 className="text-xl font-bold text-gray-800">Medical Information</h2>
+                    <h2 className="text-xl font-bold text-gray-800">{t('profile.sections.medical.title')}</h2>
                   </div>
 
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Allergies</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('profile.sections.medical.fields.allergies.label')}</label>
                       <div className="mt-1 flex flex-wrap gap-2">
                         {formData.allergies.map((allergy, index) => (
                           <span
@@ -326,7 +326,7 @@ export const Profile = () => {
                           </div>
                           <input
                             type="text"
-                            placeholder="Press Enter to add allergy"
+                            placeholder={t('profile.sections.medical.fields.allergies.placeholder')}
                             onKeyDown={(e) => handleArrayInput(e, "allergies")}
                             className="pl-10 w-full rounded-xl border-gray-300 shadow-sm focus:border-rose-500 focus:ring-rose-500 bg-white/60"
                           />
@@ -335,7 +335,7 @@ export const Profile = () => {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Medical Conditions</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('profile.sections.medical.fields.conditions.label')}</label>
                       <div className="mt-1 flex flex-wrap gap-2">
                         {formData.conditions.map((condition, index) => (
                           <span
@@ -362,7 +362,7 @@ export const Profile = () => {
                           </div>
                           <input
                             type="text"
-                            placeholder="Press Enter to add condition"
+                            placeholder={t('profile.sections.medical.fields.conditions.placeholder')}
                             onKeyDown={(e) => handleArrayInput(e, "conditions")}
                             className="pl-10 w-full rounded-xl border-gray-300 shadow-sm focus:border-amber-500 focus:ring-amber-500 bg-white/60"
                           />
@@ -374,12 +374,12 @@ export const Profile = () => {
               </div>
 
               {/* Contact Information */}
-              <div className="pt-6">
+              <div className="space-y-6">
                 <div className="flex items-center space-x-3 mb-6">
                   <div className="p-2 bg-gradient-to-r from-emerald-500 to-green-600 rounded-xl shadow-md">
                     <Phone className="w-5 h-5 text-white" />
                   </div>
-                  <h2 className="text-xl font-bold text-gray-800">Contact Information</h2>
+                  <h2 className="text-xl font-bold text-gray-800">{t('profile.sections.contact.title')}</h2>
                 </div>
 
                 <div className="relative">
@@ -387,7 +387,7 @@ export const Profile = () => {
                   <div className="relative bg-white/60 backdrop-blur-sm rounded-2xl p-6 border border-emerald-100">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">{t('profile.sections.contact.fields.phone')}</label>
                         <div className="relative">
                           <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
                             <Phone className="h-5 w-5 text-gray-400" />
@@ -403,48 +403,46 @@ export const Profile = () => {
                         </div>
                       </div>
 
-                      <div className="space-y-4">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Emergency Contact Name</label>
-                          <input
-                            type="text"
-                            name="emergency_contact.name"
-                            value={formData.emergency_contact.name}
-                            onChange={handleInputChange}
-                            disabled={!isEditing}
-                            className="w-full rounded-xl border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 disabled:bg-gray-50 bg-white/60"
-                          />
-                        </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">{t('profile.sections.contact.fields.emergency.name')}</label>
+                        <input
+                          type="text"
+                          name="emergency_contact.name"
+                          value={formData.emergency_contact.name}
+                          onChange={handleInputChange}
+                          disabled={!isEditing}
+                          className="w-full rounded-xl border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 disabled:bg-gray-50 bg-white/60"
+                        />
+                      </div>
 
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Relationship</label>
-                          <input
-                            type="text"
-                            name="emergency_contact.relationship"
-                            value={formData.emergency_contact.relationship}
-                            onChange={handleInputChange}
-                            disabled={!isEditing}
-                            className="w-full rounded-xl border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 disabled:bg-gray-50 bg-white/60"
-                          />
-                        </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">{t('profile.sections.contact.fields.emergency.relationship')}</label>
+                        <input
+                          type="text"
+                          name="emergency_contact.relationship"
+                          value={formData.emergency_contact.relationship}
+                          onChange={handleInputChange}
+                          disabled={!isEditing}
+                          className="w-full rounded-xl border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 disabled:bg-gray-50 bg-white/60"
+                        />
+                      </div>
 
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Emergency Contact Phone
-                          </label>
-                          <div className="relative">
-                            <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
-                              <Phone className="h-5 w-5 text-gray-400" />
-                            </div>
-                            <input
-                              type="tel"
-                              name="emergency_contact.phone_number"
-                              value={formData.emergency_contact.phone_number}
-                              onChange={handleInputChange}
-                              disabled={!isEditing}
-                              className="pl-10 w-full rounded-xl border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 disabled:bg-gray-50 bg-white/60"
-                            />
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          {t('profile.sections.contact.fields.emergency.phone')}
+                        </label>
+                        <div className="relative">
+                          <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
+                            <Phone className="h-5 w-5 text-gray-400" />
                           </div>
+                          <input
+                            type="tel"
+                            name="emergency_contact.phone_number"
+                            value={formData.emergency_contact.phone_number}
+                            onChange={handleInputChange}
+                            disabled={!isEditing}
+                            className="pl-10 w-full rounded-xl border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 disabled:bg-gray-50 bg-white/60"
+                          />
                         </div>
                       </div>
                     </div>
@@ -453,12 +451,12 @@ export const Profile = () => {
               </div>
 
               {/* Notification Settings */}
-              <div className="pt-6">
+              <div className="space-y-6">
                 <div className="flex items-center space-x-3 mb-6">
                   <div className="p-2 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-xl shadow-md">
                     <Bell className="w-5 h-5 text-white" />
                   </div>
-                  <h2 className="text-xl font-bold text-gray-800">Notification Settings</h2>
+                  <h2 className="text-xl font-bold text-gray-800">{t('profile.sections.notifications.title')}</h2>
                 </div>
 
                 <div className="relative">
@@ -480,7 +478,7 @@ export const Profile = () => {
                           ></div>
                         </div>
                         <label className="ml-3 block text-sm text-gray-700">
-                          Enable email notifications for medication reminders
+                          {t('profile.sections.notifications.email')}
                         </label>
                         <input
                           type="checkbox"
@@ -496,7 +494,7 @@ export const Profile = () => {
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-3">Preferred Reminder Times</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-3">{t('profile.sections.notifications.reminder_times')}</label>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                           {["08:00", "12:00", "18:00"].map((time) => (
                             <div
@@ -547,7 +545,7 @@ export const Profile = () => {
                     aria-busy={isPending}
                     className="px-8 py-4 text-base font-medium text-white bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5"
                   >
-                    {isPending ? "Saving..." : "Save Changes"}
+                    {isPending ? t('profile.page.actions.saving') : t('profile.page.actions.save')}
                   </button>
                 </div>
               )}
@@ -558,13 +556,13 @@ export const Profile = () => {
                 <div className="p-2 bg-gradient-to-r from-gray-500 to-gray-700 rounded-xl shadow-md">
                   <Shield className="w-5 h-5 text-white" />
                 </div>
-                <h2 className="text-xl font-bold text-gray-800">Privacy Settings</h2>
+                <h2 className="text-xl font-bold text-gray-800">{t('profile.sections.privacy.title')}</h2>
               </div>
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-to-r from-gray-500 to-gray-700 rounded-2xl opacity-5"></div>
                 <div className="relative bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-200">
                   <p className="text-gray-600 mb-6">
-                    You can download all your personal data, medications, adherence records, and analytics as a PDF for your own records.
+                    {t('profile.sections.privacy.description')}
                   </p>
                   <ExportUserDataCall />
                 </div>

@@ -29,7 +29,7 @@ interface TodayDose {
 }
 
 export const Dashboard: React.FC = () => {
-  const { data: user } = useUser();
+  const { data: user, isPending: isUserLoading, error: userError } = useUser();
   const [processingDose, setProcessingDose] = useState<string | null>(null);
   const { t } = useTranslation();
 
@@ -39,12 +39,38 @@ export const Dashboard: React.FC = () => {
   // Get today's date in YYYY-MM-DD format
   const today = new Date().toISOString().split('T')[0];
 
+  // Solo ejecutar las consultas cuando el usuario esté autenticado
   const { data: adherenceRecords = [], isLoading: isLoadingAdherence, error: adherenceError } = useGetAdherenceHistory(today);
   const { data: activeMedications = [], isLoading: isLoadingMeds, error: medsError } = useActiveMedications();
   const { data: analyticsData = [], isLoading: isLoadingAnalytics, error: analyticsError } = useGetAnalyticsStats();
 
+  // Estado de carga inicial (solo autenticación)
+  if (isUserLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <LoadingSpinner />
+          <p className="text-indigo-600 font-medium mt-4">{t('dashboard.loading')}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Si no hay usuario autenticado después de la carga, mostrar mensaje
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-indigo-600 font-medium">{t('dashboard.please_login')}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Estado de carga de datos (después de la autenticación)
   const isLoading = isLoadingAdherence || isLoadingMeds || isLoadingAnalytics;
-  const error = adherenceError || medsError || analyticsError;
+  // Solo mostrar errores si el usuario está autenticado
+  const error = user ? (adherenceError || medsError || analyticsError) : null;
 
   const transformedMedications = activeMedications.map((med: any) => ({
     id: med.id,
@@ -115,7 +141,7 @@ export const Dashboard: React.FC = () => {
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center">
         <div className="text-center">
           <LoadingSpinner />
-          <p className="text-indigo-600 font-medium">{t('dashboard.loading')}</p>
+          <p className="text-indigo-600 font-medium mt-4">{t('dashboard.loading')}</p>
         </div>
       </div>
     );
@@ -250,16 +276,17 @@ export const Dashboard: React.FC = () => {
                     </p>
                   </div>
                 </div>
-                <div className="hidden sm:flex space-x-3">
-                  <button
-                    onClick={() => handleConfirmDose(nextDose.id)}
-                    disabled={processingDose === nextDose.id}
-                    className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg flex items-center transition-all duration-200 disabled:opacity-50"
-                  >
-                    <CheckCircle className="mr-2" size={16} />
-                    {t('dashboard.next_dose.take_now')}
-                  </button>
-                </div>
+                <button
+                  onClick={() => handleConfirmDose(nextDose.id)}
+                  disabled={processingDose === nextDose.id}
+                  className="bg-white text-blue-600 px-4 py-2 rounded-lg font-medium hover:bg-blue-50 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {processingDose === nextDose.id ? (
+                    <LoadingSpinner />
+                  ) : (
+                    t('dashboard.next_dose.take_now')
+                  )}
+                </button>
               </div>
             </div>
           )}
@@ -324,24 +351,24 @@ export const Dashboard: React.FC = () => {
                           <button
                             onClick={() => handleConfirmDose(dose.id)}
                             disabled={processingDose === dose.id}
-                            className="flex-1 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-3 rounded-xl flex items-center justify-center transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 disabled:transform-none"
+                            className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             {processingDose === dose.id ? (
-                              <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+                              <LoadingSpinner />
                             ) : (
-                              <>
-                                <CheckCircle className="mr-2" size={18} />
-                                {t('dashboard.schedule.medication.take')}
-                              </>
+                              <CheckCircle size={20} />
                             )}
                           </button>
                           <button
                             onClick={() => handleSkipDose(dose.id)}
                             disabled={processingDose === dose.id}
-                            className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-xl flex items-center justify-center transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50"
+                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
-                            <XCircle className="mr-2" size={18} />
-                            {t('dashboard.schedule.medication.skip')}
+                            {processingDose === dose.id ? (
+                              <LoadingSpinner />
+                            ) : (
+                              <XCircle size={20} />
+                            )}
                           </button>
                         </div>
                       </div>

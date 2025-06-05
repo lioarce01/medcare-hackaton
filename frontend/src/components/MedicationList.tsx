@@ -1,6 +1,7 @@
 import type React from "react"
 import { Link } from "react-router-dom"
 import { Clock, Calendar, Edit, Trash, Pill, Info } from "lucide-react"
+import { useTranslation } from "react-i18next"
 
 export interface Medication {
   id: string
@@ -26,6 +27,8 @@ interface MedicationListProps {
 }
 
 export const MedicationList: React.FC<MedicationListProps> = ({ medications, onDelete }) => {
+  const { t } = useTranslation()
+
   if (medications.length === 0) {
     return (
       <div className="relative">
@@ -34,16 +37,16 @@ export const MedicationList: React.FC<MedicationListProps> = ({ medications, onD
           <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg transform transition-transform hover:scale-110 duration-300">
             <Pill className="w-12 h-12 text-white" />
           </div>
-          <h3 className="text-2xl font-bold text-gray-800 mb-3">No medications found</h3>
+          <h3 className="text-2xl font-bold text-gray-800 mb-3">{t('medications.list.empty.title')}</h3>
           <p className="text-gray-600 mb-8 max-w-md mx-auto">
-            You don't have any medications yet. Start building your medication schedule by adding your first medication.
+            {t('medications.list.empty.message')}
           </p>
           <Link
             to="/medications/add"
             className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-8 py-4 rounded-xl font-medium transition-all duration-200 transform hover:-translate-y-1 shadow-lg hover:shadow-xl"
           >
             <Pill className="w-5 h-5" />
-            Add Your First Medication
+            {t('medications.list.empty.add_first')}
           </Link>
         </div>
       </div>
@@ -124,7 +127,7 @@ export const MedicationList: React.FC<MedicationListProps> = ({ medications, onD
                       className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${typeConfig.bg} ${typeConfig.text} ${typeConfig.border} border shadow-sm`}
                     >
                       <div className={`w-2 h-2 rounded-full bg-gradient-to-r ${typeConfig.gradient}`}></div>
-                      {medication.medication_type.replace("-", " ")}
+                      {t(`medications.list.medication.type.${medication.medication_type}`)}
                     </div>
                   </div>
 
@@ -132,12 +135,12 @@ export const MedicationList: React.FC<MedicationListProps> = ({ medications, onD
                     {medication.active ? (
                       <span className="inline-flex items-center gap-1.5 text-xs bg-gradient-to-r from-emerald-50 to-green-50 text-emerald-700 px-3 py-1.5 rounded-full border border-emerald-200 font-medium shadow-sm">
                         <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-                        Active
+                        {t('medications.list.medication.status.active')}
                       </span>
                     ) : (
                       <span className="inline-flex items-center gap-1.5 text-xs bg-gradient-to-r from-gray-50 to-slate-50 text-gray-600 px-3 py-1.5 rounded-full border border-gray-200 font-medium shadow-sm">
                         <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
-                        Inactive
+                        {t('medications.list.medication.status.inactive')}
                       </span>
                     )}
                   </div>
@@ -152,7 +155,7 @@ export const MedicationList: React.FC<MedicationListProps> = ({ medications, onD
                         {medication.dosage.amount}
                         <span className="text-lg font-medium text-gray-600 ml-1">{medication.dosage.unit}</span>
                       </p>
-                      <p className="text-sm text-gray-500 mt-1">Dosage</p>
+                      <p className="text-sm text-gray-500 mt-1">{t('medications.list.medication.details.dosage')}</p>
                     </div>
                   </div>
                 </div>
@@ -164,7 +167,7 @@ export const MedicationList: React.FC<MedicationListProps> = ({ medications, onD
                       <Clock className="w-5 h-5 text-white" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-700 mb-1">Schedule</p>
+                      <p className="text-sm font-medium text-gray-700 mb-1">{t('medications.list.medication.details.schedule')}</p>
                       <div className="flex flex-wrap gap-1">
                         {medication.scheduled_times.map((time, i) => (
                           <span
@@ -183,7 +186,7 @@ export const MedicationList: React.FC<MedicationListProps> = ({ medications, onD
                       <Calendar className="w-5 h-5 text-white" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-700 mb-1">Frequency</p>
+                      <p className="text-sm font-medium text-gray-700 mb-1">{t('medications.list.medication.details.frequency')}</p>
                       {medication.frequency.specific_days?.length > 0 ? (
                         <div className="flex flex-wrap gap-1">
                           {medication.frequency.specific_days
@@ -199,7 +202,7 @@ export const MedicationList: React.FC<MedicationListProps> = ({ medications, onD
                         </div>
                       ) : (
                         <span className="text-xs bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-lg font-medium border border-emerald-100 shadow-sm inline-block">
-                          Every day
+                          {t('medications.list.medication.details.every_day')}
                         </span>
                       )}
                     </div>
@@ -214,7 +217,7 @@ export const MedicationList: React.FC<MedicationListProps> = ({ medications, onD
                       <div className="relative bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-100 rounded-xl p-4 shadow-sm">
                         <div className="flex items-center space-x-2 mb-2">
                           <Info className="w-4 h-4 text-amber-600" />
-                          <p className="text-sm text-amber-800 font-medium">Instructions</p>
+                          <p className="text-sm text-amber-800 font-medium">{t('medications.list.medication.details.instructions')}</p>
                         </div>
                         <p className="text-sm text-amber-700 italic">"{medication.instructions}"</p>
                       </div>
@@ -229,7 +232,7 @@ export const MedicationList: React.FC<MedicationListProps> = ({ medications, onD
                     className="flex-1 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 text-blue-700 py-3 rounded-xl flex items-center justify-center transition-all duration-200 border border-blue-200 hover:border-blue-300 font-medium group shadow-sm hover:shadow-md"
                   >
                     <Edit className="mr-2 w-4 h-4 group-hover:scale-110 transition-transform" />
-                    Edit
+                    {t('medications.list.medication.actions.edit')}
                   </Link>
 
                   {onDelete && (
@@ -238,7 +241,7 @@ export const MedicationList: React.FC<MedicationListProps> = ({ medications, onD
                       className="flex-1 bg-gradient-to-r from-red-50 to-rose-50 hover:from-red-100 hover:to-rose-100 text-red-700 py-3 rounded-xl flex items-center justify-center transition-all duration-200 border border-red-200 hover:border-red-300 font-medium group shadow-sm hover:shadow-md"
                     >
                       <Trash className="mr-2 w-4 h-4 group-hover:scale-110 transition-transform" />
-                      Delete
+                      {t('medications.list.medication.actions.delete')}
                     </button>
                   )}
                 </div>

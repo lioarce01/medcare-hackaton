@@ -1,108 +1,226 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { LogIn } from 'lucide-react';
-import { useSignIn } from '../hooks/useAuth';
+import { useState } from "react"
+import { useNavigate } from "react-router-dom"
+import { useTranslation } from "react-i18next"
+import { useSignIn } from "../hooks/useAuth"
+import { Button } from "../components/ui/button"
+import { Input } from "../components/ui/input"
+import { Label } from "../components/ui/label"
+import { Checkbox } from "../components/ui/checkbox"
+import { AlertCircle, CheckCircle } from "lucide-react"
 
-export const Login = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+interface FormData {
+  email: string;
+  password: string;
+  rememberMe: boolean;
+}
 
-  const { mutate: login, isPending } = useSignIn()
+export default function Login() {
+  const { t } = useTranslation()
+  const navigate = useNavigate()
+  const { mutate: signIn, isPending } = useSignIn()
+  const [formData, setFormData] = useState<FormData>({
+    email: "",
+    password: "",
+    rememberMe: false,
+  })
+  const [isSuccess, setIsSuccess] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!email.trim() || !password.trim()) {
-      setError('Please fill in all fields');
-      return;
-    }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError(null)
 
-      setError('');
-      login(
-        {email: email.trim(), password},
+    try {
+      await signIn(
+        { email: formData.email, password: formData.password },
         {
-          onError: (err: any) => {
-            console.error("Login error:", err)
-            setError(err.message || "Failed to login")
-          }
+          onSuccess: () => {
+            setIsSuccess(true)
+            setTimeout(() => navigate("/dashboard"), 2000)
+          },
+          onError: (error) => {
+            setError(error.message)
+          },
         }
       )
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred")
+    }
   }
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, type, checked } = e.target
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }))
+  }
+
+  if (isSuccess) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center">
+        <div className="relative">
+          <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-emerald-600 rounded-3xl opacity-10"></div>
+          <div className="relative bg-white/80 backdrop-blur-sm rounded-3xl p-12 shadow-xl border border-white/20 max-w-md">
+            <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg">
+              <CheckCircle className="w-10 h-10 text-white" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-800 mb-3 text-center">{t('login.page.success.title')}</h2>
+            <p className="text-gray-600 text-center mb-6">{t('login.page.success.message')}</p>
+            <div className="text-center">
+              <p className="text-sm text-gray-500">{t('login.page.success.redirecting')}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
-    <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
-      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <div className="flex items-center justify-center mb-8">
-          <LogIn className="text-blue-600 w-12 h-12" />
-        </div>
-        <h2 className="text-2xl font-bold text-center text-gray-800 mb-8">Welcome Back</h2>
-        
-        {error && (
-          <div className="bg-red-50 text-red-600 p-4 rounded-md mb-6 text-sm">
-            {error}
-          </div>
-        )}
-        
-        <form onSubmit={handleSubmit} className="space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="relative">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-3xl opacity-10"></div>
+        <div className="relative bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-8 max-w-md w-full space-y-8">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2 border"
-              required
-              disabled={isPending}
-              autoComplete="email"
-            />
+            <h2 className="text-3xl font-bold text-center bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+              {t('login.page.title')}
+            </h2>
+            <p className="mt-2 text-center text-gray-600">{t('login.page.subtitle')}</p>
           </div>
-          
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2 border"
-              required
-              disabled={isPending}
-              autoComplete="current-password"
-            />
-          </div>
-          
-          <button
-            type="submit"
-            disabled={isPending}
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            {isPending ? (
-              <div className="flex items-center">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                Signing in...
+
+          {error && (
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-red-500 to-rose-500 rounded-2xl opacity-10"></div>
+              <div className="relative bg-white/90 backdrop-blur-sm border border-red-200 rounded-2xl p-4 shadow-lg">
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 bg-gradient-to-r from-red-500 to-rose-500 rounded-xl">
+                    <AlertCircle className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-red-800">{t('login.page.error.title')}</h3>
+                    <p className="text-red-600">{error}</p>
+                  </div>
+                </div>
               </div>
-            ) : (
-              'Sign In'
-            )}
-          </button>
-          
-          <div className="mt-4 text-center">
-            <p className="text-sm text-gray-600">
-              Don't have an account?{' '}
-              <Link to="/register" className="text-blue-600 hover:text-blue-700 font-medium">
-                Sign up
-              </Link>
-            </p>
-          </div>
-        </form>
+            </div>
+          )}
+
+          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+            <div className="rounded-md shadow-sm -space-y-px">
+              <div>
+                <Label htmlFor="email" className="sr-only">
+                  {t('login.form.email.label')}
+                </Label>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  required
+                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                  placeholder={t('login.form.email.placeholder')}
+                  value={formData.email}
+                  onChange={handleChange}
+                />
+              </div>
+              <div>
+                <Label htmlFor="password" className="sr-only">
+                  {t('login.form.password.label')}
+                </Label>
+                <Input
+                  id="password"
+                  name="password"
+                  type="password"
+                  autoComplete="current-password"
+                  required
+                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                  placeholder={t('login.form.password.placeholder')}
+                  value={formData.password}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <Checkbox
+                  id="remember-me"
+                  name="rememberMe"
+                  checked={formData.rememberMe}
+                  onChange={handleChange}
+                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                />
+                <Label
+                  htmlFor="remember-me"
+                  className="ml-2 block text-sm text-gray-900"
+                >
+                  {t('login.form.remember')}
+                </Label>
+              </div>
+
+              <div className="text-sm">
+                <a
+                  href="#"
+                  className="font-medium text-indigo-600 hover:text-indigo-500"
+                >
+                  {t('login.form.forgot')}
+                </a>
+              </div>
+            </div>
+
+            <div>
+              <Button
+                type="submit"
+                disabled={isPending}
+                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                {isPending ? t('login.actions.signing_in') : t('login.actions.sign_in')}
+              </Button>
+            </div>
+
+            <div className="mt-6">
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-300" />
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-gray-50 text-gray-500">
+                    {t('login.actions.or')}
+                  </span>
+                </div>
+              </div>
+
+              <div className="mt-6 grid grid-cols-2 gap-3">
+                <Button
+                  type="button"
+                  className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
+                >
+                  {t('login.oauth.google')}
+                </Button>
+
+                <Button
+                  type="button"
+                  className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
+                >
+                  {t('login.oauth.github')}
+                </Button>
+              </div>
+            </div>
+
+            <div className="text-center">
+              <p className="text-sm text-gray-600">
+                {t('login.actions.create_account')}{" "}
+                <a
+                  href="/register"
+                  className="font-medium text-indigo-600 hover:text-indigo-500"
+                >
+                  {t('login.actions.create_account')}
+                </a>
+              </p>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
-  );
-};
+  )
+}

@@ -27,6 +27,7 @@ import {
 import { LoadingSpinner } from "../components/LoadingSpinner"
 import { formatPercentage } from "../utils/formatters"
 import { useGetAdherenceHistory } from "../hooks/useAdherence"
+import { useTranslation } from "react-i18next"
 
 // Register ChartJS components
 ChartJS.register(
@@ -109,12 +110,13 @@ const DAYS_OF_WEEK = [
 ]
 
 const DATE_RANGE_OPTIONS = [
-  { value: 7, label: "Last 7 days" },
-  { value: 30, label: "Last 30 days" },
-  { value: 90, label: "Last 90 days" },
+  { value: 7, label: "analytics.page.date_range.last_7_days" },
+  { value: 30, label: "analytics.page.date_range.last_30_days" },
+  { value: 90, label: "analytics.page.date_range.last_90_days" },
 ]
 
 export const Analytics: React.FC = () => {
+  const { t } = useTranslation()
   const [dateRangeDays, setDateRangeDays] = useState(30)
   
   const { data: adherenceData, isLoading, error } = useGetAdherenceHistory()
@@ -334,11 +336,11 @@ export const Analytics: React.FC = () => {
   }), [])
 
   const getAdherenceGrade = (rate: number) => {
-    if (rate >= 95) return { grade: "A+", color: "from-emerald-500 to-green-600", text: "Excellent" }
-    if (rate >= 90) return { grade: "A", color: "from-green-500 to-emerald-600", text: "Great" }
-    if (rate >= 80) return { grade: "B", color: "from-blue-500 to-indigo-600", text: "Good" }
-    if (rate >= 70) return { grade: "C", color: "from-yellow-500 to-orange-600", text: "Fair" }
-    return { grade: "D", color: "from-red-500 to-rose-600", text: "Needs Improvement" }
+    if (rate >= 95) return { grade: "A+", color: "from-emerald-500 to-green-600", text: t('analytics.page.overview.grade.excellent') }
+    if (rate >= 90) return { grade: "A", color: "from-green-500 to-emerald-600", text: t('analytics.page.overview.grade.great') }
+    if (rate >= 80) return { grade: "B", color: "from-blue-500 to-indigo-600", text: t('analytics.page.overview.grade.good') }
+    if (rate >= 70) return { grade: "C", color: "from-yellow-500 to-orange-600", text: t('analytics.page.overview.grade.fair') }
+    return { grade: "D", color: "from-red-500 to-rose-600", text: t('analytics.page.overview.grade.needs_improvement') }
   }
 
   if (isLoading) {
@@ -346,7 +348,7 @@ export const Analytics: React.FC = () => {
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center">
         <div className="text-center">
           <LoadingSpinner />
-          <p className="text-indigo-600 font-medium">Analyzing your medication data...</p>
+          <p className="text-indigo-600 font-medium">{t('analytics.page.loading')}</p>
         </div>
       </div>
     )
@@ -363,8 +365,8 @@ export const Analytics: React.FC = () => {
                 <AlertTriangle className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h3 className="font-semibold text-red-800">Analytics Error</h3>
-                <p className="text-red-600">{error?.message || "Failed to load analytics data"}</p>
+                <h3 className="font-semibold text-red-800">{t('analytics.page.error.title')}</h3>
+                <p className="text-red-600">{error?.message || t('analytics.page.error.message')}</p>
               </div>
             </div>
           </div>
@@ -380,7 +382,7 @@ export const Analytics: React.FC = () => {
           <div className="w-16 h-16 mx-auto bg-gradient-to-r from-gray-100 to-gray-200 rounded-full flex items-center justify-center">
             <BarChart3 className="w-8 h-8 text-gray-400" />
           </div>
-          <p className="text-gray-500">No analytics data available</p>
+          <p className="text-gray-500">{t('analytics.page.no_data')}</p>
         </div>
       </div>
     )
@@ -404,9 +406,9 @@ export const Analytics: React.FC = () => {
                     </div>
                     <div>
                       <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
-                        Analytics Dashboard
+                        {t('analytics.page.title')}
                       </h1>
-                      <p className="text-gray-600">Insights into your medication journey</p>
+                      <p className="text-gray-600">{t('analytics.page.subtitle')}</p>
                     </div>
                   </div>
 
@@ -421,7 +423,7 @@ export const Analytics: React.FC = () => {
                       <div>
                         <p className="font-semibold text-gray-800">{adherenceGrade.text}</p>
                         <p className="text-sm text-gray-600">
-                          {formatPercentage(stats.overall.adherenceRate)} adherence
+                          {formatPercentage(stats.overall.adherenceRate)} {t('analytics.page.overview.adherence_rate')}
                         </p>
                       </div>
                     </div>
@@ -439,7 +441,7 @@ export const Analytics: React.FC = () => {
                     >
                       {DATE_RANGE_OPTIONS.map(option => (
                         <option key={option.value} value={option.value}>
-                          {option.label}
+                          {t(option.label)}
                         </option>
                       ))}
                     </select>
@@ -454,28 +456,28 @@ export const Analytics: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
               {
-                title: "Total Doses",
+                title: t('analytics.page.overview.total_doses'),
                 value: stats.overall.total,
                 icon: Calendar,
                 color: "from-blue-500 to-indigo-600",
                 bgColor: "from-blue-50 to-indigo-50",
               },
               {
-                title: "Doses Taken",
+                title: t('analytics.page.overview.doses_taken'),
                 value: stats.overall.taken,
                 icon: Activity,
                 color: "from-emerald-500 to-green-600",
                 bgColor: "from-emerald-50 to-green-50",
               },
               {
-                title: "Doses Skipped",
+                title: t('analytics.page.overview.doses_skipped'),
                 value: stats.overall.skipped,
                 icon: AlertTriangle,
                 color: "from-red-500 to-rose-600",
                 bgColor: "from-red-50 to-rose-50",
               },
               {
-                title: "Adherence Rate",
+                title: t('analytics.page.overview.adherence_rate'),
                 value: formatPercentage(stats.overall.adherenceRate),
                 icon: Target,
                 color: "from-purple-500 to-indigo-600",
@@ -499,121 +501,70 @@ export const Analytics: React.FC = () => {
             ))}
           </div>
 
-          {/* Weekly Trends Chart */}
-          <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-3xl opacity-5"></div>
-            <div className="relative bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 overflow-hidden">
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 border-b border-indigo-100">
-                <div className="flex items-center space-x-3">
-                  <div className="p-3 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl shadow-lg">
-                    <TrendingUp className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-gray-800">Weekly Adherence Trends</h3>
-                    <p className="text-gray-600">Track your progress over time</p>
-                  </div>
+          {/* Charts */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Weekly Trends Chart */}
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-3xl opacity-5"></div>
+              <div className="relative bg-white/80 backdrop-blur-sm rounded-3xl p-6 shadow-xl border border-white/20">
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold text-gray-800">{t('analytics.page.charts.weekly_trends.title')}</h3>
+                  <p className="text-sm text-gray-600">{t('analytics.page.charts.weekly_trends.subtitle')}</p>
                 </div>
-              </div>
-              <div className="p-6">
                 <div className="h-80">
                   <Line data={weeklyTrendsData} options={chartOptions} />
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Medication Performance */}
-          <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-600 rounded-3xl opacity-5"></div>
-            <div className="relative bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 overflow-hidden">
-              <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-6 border-b border-purple-100">
-                <div className="flex items-center space-x-3">
-                  <div className="p-3 bg-gradient-to-r from-purple-500 to-pink-600 rounded-2xl shadow-lg">
-                    <Award className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-gray-800">Medication Performance</h3>
-                    <p className="text-gray-600">Individual medication adherence rates</p>
-                  </div>
+            {/* Day of Week Chart */}
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-3xl opacity-5"></div>
+              <div className="relative bg-white/80 backdrop-blur-sm rounded-3xl p-6 shadow-xl border border-white/20">
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold text-gray-800">{t('analytics.page.charts.day_of_week.title')}</h3>
+                  <p className="text-sm text-gray-600">{t('analytics.page.charts.day_of_week.subtitle')}</p>
                 </div>
-              </div>
-              <div className="p-6">
-                <div className="space-y-4">
-                  {stats.medicationStats.map((med, index) => (
-                    <div
-                      key={med.id}
-                      className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 border border-white/30 hover:shadow-lg transition-all duration-300"
-                    >
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="flex-1">
-                          <h4 className="text-lg font-bold text-gray-800">{med.name}</h4>
-                          <div className="flex items-center space-x-4 mt-2">
-                            <span className="text-sm text-gray-600">
-                              <span className="font-medium text-emerald-600">{med.taken}</span> taken
-                            </span>
-                            <span className="text-sm text-gray-600">
-                              <span className="font-medium text-red-600">{med.skipped}</span> skipped
-                            </span>
-                            <span className="text-sm text-gray-600">
-                              <span className="font-medium text-gray-700">{med.total}</span> total
-                            </span>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-2xl font-bold text-gray-800">{formatPercentage(med.adherenceRate)}</div>
-                          <div
-                            className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                              med.riskScore < 30
-                                ? "bg-emerald-100 text-emerald-800"
-                                : med.riskScore < 70
-                                  ? "bg-yellow-100 text-yellow-800"
-                                  : "bg-red-100 text-red-800"
-                            }`}
-                          >
-                            Risk: {med.riskScore}%
-                          </div>
-                        </div>
-                      </div>
-                      <div className="relative">
-                        <div className="flex-1 h-3 bg-gray-200 rounded-full overflow-hidden">
-                          <div
-                            className={`h-full rounded-full transition-all duration-1000 ${
-                              med.adherenceRate >= 90
-                                ? "bg-gradient-to-r from-emerald-400 to-green-500"
-                                : med.adherenceRate >= 70
-                                  ? "bg-gradient-to-r from-yellow-400 to-orange-500"
-                                  : "bg-gradient-to-r from-red-400 to-rose-500"
-                            }`}
-                            style={{ width: `${med.adherenceRate}%` }}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                <div className="h-80">
+                  <Bar data={dayOfWeekData} options={chartOptions} />
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Day of Week Analysis */}
+          {/* Medication Performance Table */}
           <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-emerald-600 rounded-3xl opacity-5"></div>
-            <div className="relative bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 overflow-hidden">
-              <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-6 border-b border-green-100">
-                <div className="flex items-center space-x-3">
-                  <div className="p-3 bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl shadow-lg">
-                    <PieChart className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-gray-800">Day of Week Analysis</h3>
-                    <p className="text-gray-600">Identify patterns in your adherence</p>
-                  </div>
-                </div>
+            <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 rounded-3xl opacity-5"></div>
+            <div className="relative bg-white/80 backdrop-blur-sm rounded-3xl p-6 shadow-xl border border-white/20">
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-gray-800">{t('analytics.page.medications.title')}</h3>
+                <p className="text-sm text-gray-600">{t('analytics.page.medications.subtitle')}</p>
               </div>
-              <div className="p-6">
-                <div className="h-80">
-                  <Bar data={dayOfWeekData} options={chartOptions} />
-                </div>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="text-left border-b border-gray-200">
+                      <th className="pb-3 font-semibold text-gray-600">{t('analytics.page.medications.table.medication')}</th>
+                      <th className="pb-3 font-semibold text-gray-600">{t('analytics.page.medications.table.adherence')}</th>
+                      <th className="pb-3 font-semibold text-gray-600">{t('analytics.page.medications.table.risk_score')}</th>
+                      <th className="pb-3 font-semibold text-gray-600">{t('analytics.page.medications.table.total_doses')}</th>
+                      <th className="pb-3 font-semibold text-gray-600">{t('analytics.page.medications.table.taken')}</th>
+                      <th className="pb-3 font-semibold text-gray-600">{t('analytics.page.medications.table.skipped')}</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {stats.medicationStats.map((med) => (
+                      <tr key={med.id} className="hover:bg-gray-50">
+                        <td className="py-4 font-medium text-gray-900">{med.name}</td>
+                        <td className="py-4 text-gray-600">{formatPercentage(med.adherenceRate)}</td>
+                        <td className="py-4 text-gray-600">{med.riskScore}%</td>
+                        <td className="py-4 text-gray-600">{med.total}</td>
+                        <td className="py-4 text-gray-600">{med.taken}</td>
+                        <td className="py-4 text-gray-600">{med.skipped}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>

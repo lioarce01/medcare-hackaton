@@ -1,19 +1,30 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { medicationApi } from "../api/medications";
+import { useUser } from "./useUser";
 
 // Obtener todas las medicaciones
 export const useMedications = () => {
+  const { data: user, isPending: isUserLoading } = useUser();
+
   return useQuery({
     queryKey: ["medications"],
     queryFn: medicationApi.getAll,
+    enabled: !!user && !isUserLoading,
+    retry: false,
+    staleTime: 5 * 60 * 1000, // 5 minutos
   });
 };
 
 // Obtener medicaciones activas
 export const useActiveMedications = () => {
+  const { data: user, isPending: isUserLoading } = useUser();
+
   return useQuery({
     queryKey: ["medications", "active"],
     queryFn: medicationApi.getActive,
+    enabled: !!user && !isUserLoading,
+    retry: false,
+    staleTime: 5 * 60 * 1000, // 5 minutos
   });
 };
 

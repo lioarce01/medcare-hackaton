@@ -15,8 +15,10 @@ import {
   CheckCircle,
 } from "lucide-react"
 import { useCreateMedication } from "../hooks/useMedications"
+import { useTranslation } from "react-i18next"
 
 export const AddMedication = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [formData, setFormData] = useState({
     name: "",
@@ -141,10 +143,10 @@ export const AddMedication = () => {
             <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg">
               <CheckCircle className="w-10 h-10 text-white" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-3 text-center">Medication Added!</h2>
-            <p className="text-gray-600 text-center mb-6">Your medication has been successfully added to your list.</p>
+            <h2 className="text-2xl font-bold text-gray-800 mb-3 text-center">{t('add_medication.page.success.title')}</h2>
+            <p className="text-gray-600 text-center mb-6">{t('add_medication.page.success.message')}</p>
             <div className="text-center">
-              <p className="text-sm text-gray-500">Redirecting to medications list...</p>
+              <p className="text-sm text-gray-500">{t('add_medication.page.success.redirecting')}</p>
             </div>
           </div>
         </div>
@@ -160,7 +162,7 @@ export const AddMedication = () => {
           className="mb-6 flex items-center text-gray-600 hover:text-gray-800 transition-colors bg-white/80 backdrop-blur-sm rounded-xl px-4 py-2 shadow-sm border border-white/20 hover:bg-white/90"
         >
           <ArrowLeft className="mr-2" size={20} />
-          Back to Medications
+          {t('add_medication.page.back')}
         </button>
 
         <div className="relative">
@@ -173,9 +175,9 @@ export const AddMedication = () => {
                 </div>
                 <div>
                   <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
-                    Add New Medication
+                    {t('add_medication.page.title')}
                   </h1>
-                  <p className="text-gray-600">Enter the details of your medication</p>
+                  <p className="text-gray-600">{t('add_medication.page.subtitle')}</p>
                 </div>
               </div>
             </div>
@@ -206,12 +208,12 @@ export const AddMedication = () => {
                   <div className="p-2 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl shadow-md">
                     <FileText className="w-5 h-5 text-white" />
                   </div>
-                  <h2 className="text-xl font-bold text-gray-800">Basic Information</h2>
+                  <h2 className="text-xl font-bold text-gray-800">{t('add_medication.sections.basic.title')}</h2>
                 </div>
 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Medication Name *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">{t('add_medication.sections.basic.fields.name')}</label>
                     <input
                       type="text"
                       value={formData.name}
@@ -221,63 +223,52 @@ export const AddMedication = () => {
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Dosage Amount *</label>
-                      <input
-                        type="number"
-                        value={formData.dosage.amount}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            dosage: { ...formData.dosage, amount: e.target.value },
-                          })
-                        }
-                        className="w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-blue-500 bg-white/60 shadow-sm"
-                        required
-                        min="0"
-                        step="any"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Unit *</label>
-                      <select
-                        value={formData.dosage.unit}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            dosage: { ...formData.dosage, unit: e.target.value },
-                          })
-                        }
-                        className="w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-blue-500 bg-white/60 shadow-sm"
-                      >
-                        <option value="mg">mg</option>
-                        <option value="ml">ml</option>
-                        <option value="g">g</option>
-                        <option value="mcg">mcg</option>
-                        <option value="IU">IU</option>
-                        <option value="tablet">tablet</option>
-                        <option value="capsule">capsule</option>
-                        <option value="pill">pill</option>
-                        <option value="injection">injection</option>
-                        <option value="patch">patch</option>
-                      </select>
-                    </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">{t('add_medication.sections.basic.fields.dosage.amount')}</label>
+                    <input
+                      type="number"
+                      value={formData.dosage.amount}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          dosage: { ...formData.dosage, amount: e.target.value },
+                        })
+                      }
+                      className="w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-blue-500 bg-white/60 shadow-sm"
+                      required
+                      min="0"
+                      step="any"
+                    />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Medication Type *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">{t('add_medication.sections.basic.fields.dosage.unit')}</label>
+                    <select
+                      value={formData.dosage.unit}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          dosage: { ...formData.dosage, unit: e.target.value },
+                        })
+                      }
+                      className="w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-blue-500 bg-white/60 shadow-sm"
+                    >
+                      {Object.entries(t('add_medication.sections.basic.fields.dosage.options', { returnObjects: true })).map(([value, label]) => (
+                        <option key={value} value={value}>{label}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">{t('add_medication.sections.basic.fields.type.label')}</label>
                     <select
                       value={formData.medication_type}
                       onChange={(e) => setFormData({ ...formData, medication_type: e.target.value })}
                       className="w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-blue-500 bg-white/60 shadow-sm"
                     >
-                      <option value="prescription">Prescription</option>
-                      <option value="over-the-counter">Over the Counter</option>
-                      <option value="vitamin">Vitamin</option>
-                      <option value="supplement">Supplement</option>
-                      <option value="other">Other</option>
+                      {Object.entries(t('add_medication.sections.basic.fields.type.options', { returnObjects: true })).map(([value, label]) => (
+                        <option key={value} value={value}>{label}</option>
+                      ))}
                     </select>
                   </div>
                 </div>
@@ -289,12 +280,12 @@ export const AddMedication = () => {
                   <div className="p-2 bg-gradient-to-r from-purple-500 to-pink-600 rounded-xl shadow-md">
                     <Calendar className="w-5 h-5 text-white" />
                   </div>
-                  <h2 className="text-xl font-bold text-gray-800">Schedule</h2>
+                  <h2 className="text-xl font-bold text-gray-800">{t('add_medication.sections.schedule.title')}</h2>
                 </div>
 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Specific Days</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">{t('add_medication.sections.schedule.fields.days.label')}</label>
                     <div className="flex flex-wrap gap-2">
                       {["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((day) => (
                         <button
@@ -311,19 +302,19 @@ export const AddMedication = () => {
                         </button>
                       ))}
                     </div>
-                    <p className="text-sm text-gray-500 mt-2">Leave empty to take medication every day</p>
+                    <p className="text-sm text-gray-500 mt-2">{t('add_medication.sections.schedule.fields.days.empty_message')}</p>
                   </div>
 
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <label className="block text-sm font-medium text-gray-700">Scheduled Times *</label>
+                      <label className="block text-sm font-medium text-gray-700">{t('add_medication.sections.schedule.fields.times.label')}</label>
                       <button
                         type="button"
                         onClick={addScheduledTime}
                         className="text-sm text-indigo-600 hover:text-indigo-700 flex items-center bg-indigo-50 hover:bg-indigo-100 px-3 py-1 rounded-lg transition-colors"
                       >
                         <Plus size={16} className="mr-1" />
-                        Add Time
+                        {t('add_medication.sections.schedule.fields.times.add')}
                       </button>
                     </div>
                     <div className="space-y-3">
@@ -359,7 +350,7 @@ export const AddMedication = () => {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('add_medication.sections.schedule.fields.start_date')}</label>
                       <div className="relative">
                         <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
                           <Calendar className="h-5 w-5 text-gray-400" />
@@ -374,7 +365,7 @@ export const AddMedication = () => {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('add_medication.sections.schedule.fields.end_date')}</label>
                       <div className="relative">
                         <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
                           <Calendar className="h-5 w-5 text-gray-400" />
@@ -384,7 +375,6 @@ export const AddMedication = () => {
                           value={formData.end_date}
                           onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
                           className="w-full pl-10 rounded-xl border-gray-300 focus:border-blue-500 focus:ring-blue-500 bg-white/60 shadow-sm"
-                          min={formData.start_date}
                         />
                       </div>
                     </div>
@@ -398,7 +388,7 @@ export const AddMedication = () => {
                   <div className="p-2 bg-gradient-to-r from-amber-500 to-orange-600 rounded-xl shadow-md">
                     <Bell className="w-5 h-5 text-white" />
                   </div>
-                  <h2 className="text-xl font-bold text-gray-800">Refill Reminder</h2>
+                  <h2 className="text-xl font-bold text-gray-800">{t('add_medication.sections.refill.title')}</h2>
                 </div>
 
                 <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl p-4 border border-amber-100">
@@ -411,7 +401,7 @@ export const AddMedication = () => {
                       className="h-5 w-5 text-amber-600 focus:ring-amber-500 border-gray-300 rounded"
                     />
                     <label htmlFor="refillEnabled" className="ml-2 block text-sm text-gray-700">
-                      Enable refill reminders
+                      {t('add_medication.sections.refill.fields.enable')}
                     </label>
                   </div>
 
@@ -419,7 +409,7 @@ export const AddMedication = () => {
                     <div className="space-y-4 pl-6">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Supply Amount</label>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">{t('add_medication.sections.refill.fields.supply.amount')}</label>
                           <input
                             type="number"
                             value={formData.refill_reminder.supply_amount}
@@ -438,7 +428,7 @@ export const AddMedication = () => {
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Supply Unit</label>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">{t('add_medication.sections.refill.fields.supply.unit')}</label>
                           <select
                             value={formData.refill_reminder.supply_unit}
                             onChange={(e) =>
@@ -452,16 +442,16 @@ export const AddMedication = () => {
                             }
                             className="w-full rounded-xl border-gray-300 focus:border-amber-500 focus:ring-amber-500 bg-white/60 shadow-sm"
                           >
-                            <option value="days">Days</option>
-                            <option value="weeks">Weeks</option>
-                            <option value="months">Months</option>
+                            {Object.entries(t('add_medication.sections.refill.fields.supply.options', { returnObjects: true })).map(([value, label]) => (
+                              <option key={value} value={value}>{label}</option>
+                            ))}
                           </select>
                         </div>
                       </div>
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Reminder Threshold (days before refill needed)
+                          {t('add_medication.sections.refill.fields.threshold')}
                         </label>
                         <input
                           type="number"
@@ -490,23 +480,23 @@ export const AddMedication = () => {
                   <div className="p-2 bg-gradient-to-r from-emerald-500 to-green-600 rounded-xl shadow-md">
                     <FileText className="w-5 h-5 text-white" />
                   </div>
-                  <h2 className="text-xl font-bold text-gray-800">Additional Information</h2>
+                  <h2 className="text-xl font-bold text-gray-800">{t('add_medication.sections.additional.title')}</h2>
                 </div>
 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Instructions</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">{t('add_medication.sections.additional.fields.instructions.label')}</label>
                     <textarea
                       value={formData.instructions}
                       onChange={(e) => setFormData({ ...formData, instructions: e.target.value })}
                       className="w-full rounded-xl border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 bg-white/60 shadow-sm"
                       rows={3}
-                      placeholder="E.g., Take with food, Avoid alcohol, etc."
+                      placeholder={t('add_medication.sections.additional.fields.instructions.placeholder')}
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Side Effects to Watch</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">{t('add_medication.sections.additional.fields.side_effects.label')}</label>
                     <div className="space-y-3">
                       <div className="relative">
                         <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
@@ -518,7 +508,7 @@ export const AddMedication = () => {
                           onChange={(e) => setNewSideEffect(e.target.value)}
                           onKeyDown={handleAddSideEffect}
                           className="w-full pl-10 rounded-xl border-gray-300 focus:border-red-500 focus:ring-red-500 bg-white/60 shadow-sm"
-                          placeholder="Press Enter to add"
+                          placeholder={t('add_medication.sections.additional.fields.side_effects.placeholder')}
                         />
                       </div>
                       <div className="flex flex-wrap gap-2">
@@ -542,13 +532,13 @@ export const AddMedication = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Image URL (Optional)</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">{t('add_medication.sections.additional.fields.image.label')}</label>
                     <input
                       type="url"
                       value={formData.image_url}
                       onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
                       className="w-full rounded-xl border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 bg-white/60 shadow-sm"
-                      placeholder="https://example.com/medication-image.jpg"
+                      placeholder={t('add_medication.sections.additional.fields.image.placeholder')}
                     />
                   </div>
 
@@ -561,19 +551,19 @@ export const AddMedication = () => {
                       className="h-5 w-5 text-emerald-600 focus:ring-emerald-500 border-gray-300 rounded"
                     />
                     <label htmlFor="active" className="ml-2 block text-sm text-gray-700">
-                      Active Medication
+                      {t('add_medication.sections.additional.fields.active')}
                     </label>
                   </div>
                 </div>
               </div>
 
-              <div className="pt-6 border-t border-gray-200">
+              <div>
                 <button
                   type="submit"
                   disabled={isPending}
                   className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white py-4 px-6 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                 >
-                  {isPending ? "Adding..." : "Add Medication"}
+                  {isPending ? t('add_medication.actions.adding') : t('add_medication.actions.add')}
                 </button>
               </div>
             </form>
