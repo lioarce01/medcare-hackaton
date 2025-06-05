@@ -9,6 +9,7 @@ import { useUser } from '../hooks/useUser';
 import { useConfirmDose, useGetAdherenceHistory, useSkipDose } from '../hooks/useAdherence';
 import { useActiveMedications } from '../hooks/useMedications';
 import { useGetAnalyticsStats } from '../hooks/useAnalytics';
+import { useTranslation } from 'react-i18next';
 
 interface TodayDose {
   id: string;
@@ -30,6 +31,7 @@ interface TodayDose {
 export const Dashboard: React.FC = () => {
   const { data: user } = useUser();
   const [processingDose, setProcessingDose] = useState<string | null>(null);
+  const { t } = useTranslation();
 
   const { mutate: confirmDose } = useConfirmDose();
   const { mutate: skipDose } = useSkipDose()
@@ -113,7 +115,7 @@ export const Dashboard: React.FC = () => {
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center">
         <div className="text-center">
           <LoadingSpinner />
-          <p className="text-indigo-600 font-medium">Loading your dashboard...</p>
+          <p className="text-indigo-600 font-medium">{t('dashboard.loading')}</p>
         </div>
       </div>
     );
@@ -130,9 +132,9 @@ export const Dashboard: React.FC = () => {
 
   const getGreeting = () => {
     const hour = new Date().getHours();
-    if (hour < 12) return 'Good morning';
-    if (hour < 17) return 'Good afternoon';
-    return 'Good evening';
+    if (hour < 12) return t('dashboard.greetings.morning');
+    if (hour < 17) return t('dashboard.greetings.afternoon');
+    return t('dashboard.greetings.evening');
   };
 
   const getTodayProgress = () => {
@@ -155,8 +157,11 @@ export const Dashboard: React.FC = () => {
               </h1>
               <p className="text-gray-600">
                 {upcomingDoses.length > 0 
-                  ? `You have ${upcomingDoses.length} medication${upcomingDoses.length === 1 ? '' : 's'} scheduled for today`
-                  : 'All medications completed for today! 🎉'
+                  ? t('dashboard.header.medications_scheduled', { 
+                      count: upcomingDoses.length,
+                      plural: upcomingDoses.length === 1 ? '' : 's'
+                    })
+                  : t('dashboard.header.all_completed')
                 }
               </p>
             </div>
@@ -165,7 +170,7 @@ export const Dashboard: React.FC = () => {
               className="group bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-3 rounded-xl flex items-center transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
             >
               <PlusCircle className="mr-2 group-hover:rotate-90 transition-transform duration-200" size={20} />
-              Add Medication
+              {t('dashboard.header.add_medication')}
             </Link>
           </div>
 
@@ -183,7 +188,7 @@ export const Dashboard: React.FC = () => {
             <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-shadow duration-200">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Today's Progress</p>
+                  <p className="text-sm font-medium text-gray-600">{t('dashboard.stats.today_progress')}</p>
                   <p className="text-3xl font-bold text-blue-600">{getTodayProgress()}%</p>
                 </div>
                 <div className="p-3 bg-blue-100 rounded-full">
@@ -201,7 +206,7 @@ export const Dashboard: React.FC = () => {
             <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-shadow duration-200">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Overall Adherence</p>
+                  <p className="text-sm font-medium text-gray-600">{t('dashboard.stats.overall_adherence')}</p>
                   <p className="text-3xl font-bold text-green-600">{Math.round(adherenceStats.overall.adherenceRate)}%</p>
                 </div>
                 <div className="p-3 bg-green-100 rounded-full">
@@ -209,21 +214,24 @@ export const Dashboard: React.FC = () => {
                 </div>
               </div>
               <p className="text-sm text-gray-500 mt-2">
-                {adherenceStats.overall.taken} of {adherenceStats.overall.total} doses taken
+                {t('dashboard.stats.doses_taken', {
+                  taken: adherenceStats.overall.taken,
+                  total: adherenceStats.overall.total
+                })}
               </p>
             </div>
 
             <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-shadow duration-200">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Active Medications</p>
+                  <p className="text-sm font-medium text-gray-600">{t('dashboard.stats.active_medications')}</p>
                   <p className="text-3xl font-bold text-purple-600">{transformedMedications.length}</p>
                 </div>
                 <div className="p-3 bg-purple-100 rounded-full">
                   <Award className="text-purple-600" size={24} />
                 </div>
               </div>
-              <p className="text-sm text-gray-500 mt-2">Currently managing</p>
+              <p className="text-sm text-gray-500 mt-2">{t('dashboard.stats.currently_managing')}</p>
             </div>
           </div>
 
@@ -236,7 +244,7 @@ export const Dashboard: React.FC = () => {
                     <Clock className="text-white" size={24} />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold">Next Medication</h3>
+                    <h3 className="text-lg font-semibold">{t('dashboard.next_dose.title')}</h3>
                     <p className="text-blue-100">
                       {nextDose.medication.name} • {formatTime(nextDose.scheduled_time)}
                     </p>
@@ -249,7 +257,7 @@ export const Dashboard: React.FC = () => {
                     className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg flex items-center transition-all duration-200 disabled:opacity-50"
                   >
                     <CheckCircle className="mr-2" size={16} />
-                    Take Now
+                    {t('dashboard.next_dose.take_now')}
                   </button>
                 </div>
               </div>
@@ -266,7 +274,7 @@ export const Dashboard: React.FC = () => {
             <div className="p-6 border-b border-gray-100">
               <div className="flex items-center">
                 <Calendar className="mr-3 text-blue-600" size={24} />
-                <h2 className="text-2xl font-bold text-gray-800">Today's Schedule</h2>
+                <h2 className="text-2xl font-bold text-gray-800">{t('dashboard.schedule.title')}</h2>
               </div>
             </div>
             
@@ -276,8 +284,8 @@ export const Dashboard: React.FC = () => {
                   <div className="p-4 bg-green-100 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
                     <CheckCircle className="text-green-600" size={32} />
                   </div>
-                  <p className="text-gray-600 text-lg">All medications completed for today!</p>
-                  <p className="text-gray-500 mt-2">Great job staying on track! 🎉</p>
+                  <p className="text-gray-600 text-lg">{t('dashboard.schedule.all_completed.title')}</p>
+                  <p className="text-gray-500 mt-2">{t('dashboard.schedule.all_completed.subtitle')}</p>
                 </div>
               ) : (
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -304,7 +312,9 @@ export const Dashboard: React.FC = () => {
                           {dose.medication.instructions && (
                             <div className="bg-gray-50 rounded-lg p-3">
                               <p className="text-sm text-gray-600 italic">
-                                "{dose.medication.instructions}"
+                                {t('dashboard.schedule.medication.instructions', {
+                                  instructions: dose.medication.instructions
+                                })}
                               </p>
                             </div>
                           )}
@@ -321,7 +331,7 @@ export const Dashboard: React.FC = () => {
                             ) : (
                               <>
                                 <CheckCircle className="mr-2" size={18} />
-                                Take
+                                {t('dashboard.schedule.medication.take')}
                               </>
                             )}
                           </button>
@@ -331,7 +341,7 @@ export const Dashboard: React.FC = () => {
                             className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-xl flex items-center justify-center transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50"
                           >
                             <XCircle className="mr-2" size={18} />
-                            Skip
+                            {t('dashboard.schedule.medication.skip')}
                           </button>
                         </div>
                       </div>
@@ -348,7 +358,7 @@ export const Dashboard: React.FC = () => {
               <div className="p-6 border-b border-gray-100">
                 <div className="flex items-center">
                   <CheckCircle className="mr-3 text-green-500" size={24} />
-                  <h2 className="text-2xl font-bold text-gray-800">Completed Today</h2>
+                  <h2 className="text-2xl font-bold text-gray-800">{t('dashboard.completed.title')}</h2>
                   <span className="ml-3 bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
                     {completedDoses.length}
                   </span>
@@ -359,9 +369,9 @@ export const Dashboard: React.FC = () => {
                 <table className="w-full">
                   <thead>
                     <tr className="bg-gray-50">
-                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Medication</th>
-                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Scheduled Time</th>
-                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('dashboard.completed.table.medication')}</th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('dashboard.completed.table.scheduled_time')}</th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('dashboard.completed.table.status')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
@@ -378,17 +388,12 @@ export const Dashboard: React.FC = () => {
                           {dose.status === 'taken' ? (
                             <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
                               <CheckCircle className="mr-1" size={16} />
-                              Taken
-                            </span>
-                          ) : dose.status === 'skipped' ? (
-                            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
-                              <XCircle className="mr-1" size={16} />
-                              skipped
+                              {t('dashboard.completed.table.taken')}
                             </span>
                           ) : (
-                            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
-                              <AlertCircle className="mr-1" size={16} />
-                              Skipped
+                            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                              <XCircle className="mr-1" size={16} />
+                              {t('dashboard.completed.table.skipped')}
                             </span>
                           )}
                         </td>
@@ -406,7 +411,7 @@ export const Dashboard: React.FC = () => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
                   <PlusCircle className="mr-3 text-blue-600" size={24} />
-                  <h2 className="text-2xl font-bold text-gray-800">Your Medications</h2>
+                  <h2 className="text-2xl font-bold text-gray-800">{t('dashboard.medications.title')}</h2>
                   <span className="ml-3 bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
                     {transformedMedications.length}
                   </span>
@@ -415,7 +420,7 @@ export const Dashboard: React.FC = () => {
                   to="/medications" 
                   className="text-blue-600 hover:text-blue-700 font-medium text-sm transition-colors"
                 >
-                  View All →
+                  {t('dashboard.medications.view_all')}
                 </Link>
               </div>
             </div>

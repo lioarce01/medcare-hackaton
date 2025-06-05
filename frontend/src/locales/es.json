@@ -1,23 +1,70 @@
 {
   "home": {
-    "hero_title": "Toma el control de tu tratamiento",
-    "hero_subtitle": "Controla, gestiona y mantente al día con tus medicamentos con nuestro sistema integral de adherencia.",
+    "hero_title": "Toma el Control de tu Tratamiento Médico",
+    "hero_subtitle": "Registra, gestiona y mantén el control de tus medicamentos con nuestro sistema integral de adherencia a la medicación.",
     "get_started": "Comenzar",
-    "sign_in": "Iniciar sesión",
-    "features_title": "Características que marcan la diferencia",
+    "sign_in": "Iniciar Sesión",
+    "features_title": "Características que Marcan la Diferencia",
     "feature_medication": "Gestión de Medicamentos",
-    "feature_medication_desc": "Controla y gestiona todos tus medicamentos en un solo lugar con información detallada y programación.",
+    "feature_medication_desc": "Registra y gestiona fácilmente todos tus medicamentos en un solo lugar con información detallada y programación.",
     "feature_reminders": "Recordatorios Inteligentes",
-    "feature_reminders_desc": "Nunca olvides una dosis con recordatorios personalizables adaptados a tu horario.",
-    "feature_analytics": "Analíticas de Adherencia",
-    "feature_analytics_desc": "Sigue tu progreso e identifica patrones con informes detallados y análisis.",
+    "feature_reminders_desc": "Nunca olvides una dosis con recordatorios y notificaciones personalizadas adaptadas a tu horario.",
+    "feature_analytics": "Análisis de Adherencia",
+    "feature_analytics_desc": "Sigue tu progreso e identifica patrones con informes detallados y análisis de adherencia.",
     "feature_secure": "Seguro y Privado",
-    "feature_secure_desc": "Tu información de salud está protegida con seguridad y cifrado de nivel industrial.",
-    "cta_title": "¿Listo para tomar el control?",
-    "cta_subtitle": "Únete a miles de usuarios que gestionan sus medicamentos eficazmente.",
-    "cta_button": "Comienza tu viaje"
+    "feature_secure_desc": "Tu información de salud está protegida con seguridad y encriptación de estándar industrial.",
+    "cta_title": "¿Listo para Tomar el Control?",
+    "cta_subtitle": "Únete a miles de usuarios que están gestionando sus medicamentos de manera efectiva.",
+    "cta_button": "Comienza tu Viaje"
   },
   "dashboard": {
-    
+    "greetings": {
+      "morning": "Buenos días",
+      "afternoon": "Buenas tardes",
+      "evening": "Buenas noches"
+    },
+    "header": {
+      "medications_scheduled": "Tienes {{count}} medicamento{{plural}} programado{{plural}} para hoy",
+      "all_completed": "¡Todos los medicamentos completados para hoy! 🎉",
+      "add_medication": "Añadir Medicamento"
+    },
+    "stats": {
+      "today_progress": "Progreso de Hoy",
+      "overall_adherence": "Adherencia General",
+      "active_medications": "Medicamentos Activos",
+      "currently_managing": "Actualmente gestionando",
+      "doses_taken": "{{taken}} de {{total}} dosis tomadas"
+    },
+    "next_dose": {
+      "title": "Próximo Medicamento",
+      "take_now": "Tomar Ahora"
+    },
+    "schedule": {
+      "title": "Horario de Hoy",
+      "all_completed": {
+        "title": "¡Todos los medicamentos completados para hoy!",
+        "subtitle": "¡Excelente trabajo manteniendo el ritmo! 🎉"
+      },
+      "medication": {
+        "take": "Tomar",
+        "skip": "Omitir",
+        "instructions": "\"{{instructions}}\""
+      }
+    },
+    "completed": {
+      "title": "Completados Hoy",
+      "table": {
+        "medication": "Medicamento",
+        "scheduled_time": "Hora Programada",
+        "status": "Estado",
+        "taken": "Tomado",
+        "skipped": "Omitido"
+      }
+    },
+    "medications": {
+      "title": "Tus Medicamentos",
+      "view_all": "Ver Todos →"
+    },
+    "loading": "Cargando tu panel de control..."
   }
 }

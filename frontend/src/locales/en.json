@@ -16,5 +16,55 @@
     "cta_title": "Ready to Take Control?",
     "cta_subtitle": "Join thousands of users who are managing their medications effectively.",
     "cta_button": "Start Your Journey"
+  },
+  "dashboard": {
+    "greetings": {
+      "morning": "Good morning",
+      "afternoon": "Good afternoon",
+      "evening": "Good evening"
+    },
+    "header": {
+      "medications_scheduled": "You have {{count}} medication{{plural}} scheduled for today",
+      "all_completed": "All medications completed for today! 🎉",
+      "add_medication": "Add Medication"
+    },
+    "stats": {
+      "today_progress": "Today's Progress",
+      "overall_adherence": "Overall Adherence",
+      "active_medications": "Active Medications",
+      "currently_managing": "Currently managing",
+      "doses_taken": "{{taken}} of {{total}} doses taken"
+    },
+    "next_dose": {
+      "title": "Next Medication",
+      "take_now": "Take Now"
+    },
+    "schedule": {
+      "title": "Today's Schedule",
+      "all_completed": {
+        "title": "All medications completed for today!",
+        "subtitle": "Great job staying on track! 🎉"
+      },
+      "medication": {
+        "take": "Take",
+        "skip": "Skip",
+        "instructions": "\"{{instructions}}\""
+      }
+    },
+    "completed": {
+      "title": "Completed Today",
+      "table": {
+        "medication": "Medication",
+        "scheduled_time": "Scheduled Time",
+        "status": "Status",
+        "taken": "Taken",
+        "skipped": "Skipped"
+      }
+    },
+    "medications": {
+      "title": "Your Medications",
+      "view_all": "View All →"
+    },
+    "loading": "Loading your dashboard..."
   }
 }
