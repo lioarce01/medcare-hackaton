@@ -650,5 +650,24 @@
       "google": "Continuar con Google",
       "github": "Continuar con GitHub"
     }
+  },
+  "header": {
+    "app_name": "MedTracker",
+    "navigation": {
+      "dashboard": "Panel",
+      "medications": "Medicamentos",
+      "adherence": "Adherencia",
+      "analytics": "Análisis",
+      "profile": "Perfil",
+      "logout": "Cerrar Sesión",
+      "login": "Iniciar Sesión",
+      "sign_up": "Registrarse"
+    },
+    "mobile": {
+      "menu": {
+        "open": "Abrir menú principal",
+        "close": "Cerrar menú principal"
+      }
+    }
   }
 }

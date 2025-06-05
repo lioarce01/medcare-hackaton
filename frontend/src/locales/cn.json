@@ -640,5 +640,24 @@
       "update": "更新药物",
       "updating": "正在更新..."
     }
+  },
+  "header": {
+    "app_name": "MedTracker",
+    "navigation": {
+      "dashboard": "仪表板",
+      "medications": "药物",
+      "adherence": "依从性",
+      "analytics": "分析",
+      "profile": "个人资料",
+      "logout": "退出登录",
+      "login": "登录",
+      "sign_up": "注册"
+    },
+    "mobile": {
+      "menu": {
+        "open": "打开主菜单",
+        "close": "关闭主菜单"
+      }
+    }
   }
 } 

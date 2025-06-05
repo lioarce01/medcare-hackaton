@@ -6,13 +6,14 @@ import { useSignOut } from '../hooks/useAuth';
 import { useTranslation } from 'react-i18next';
 import { useSession } from '../hooks/useSession';
 import { LanguageSwitcher } from './LanguageSwitcher';
+import { Button } from './ui/button';
 
 export const Header: React.FC = () => {
   const { data: user } = useUser();
   const { mutate: logout } = useSignOut()
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { i18n } = useTranslation();
+  const { t } = useTranslation();
   const { data: session } = useSession();
   
   const handleLogout = () => {
@@ -31,6 +32,13 @@ export const Header: React.FC = () => {
     return location.pathname === path;
   };
   
+  const navigation = [
+    { name: t('header.navigation.dashboard'), href: '/dashboard' },
+    { name: t('header.navigation.medications'), href: '/medications' },
+    { name: t('header.navigation.adherence'), href: '/adherence' },
+    { name: t('header.navigation.analytics'), href: '/analytics' },
+  ];
+  
   return (
     <header className="bg-white shadow-sm">
       <div className="container mx-auto px-4">
@@ -39,7 +47,7 @@ export const Header: React.FC = () => {
           <Link to="/" className="flex items-center">
             <div className="flex items-center">
               <Pill className="text-blue-600" size={24} />
-              <span className="ml-2 text-xl font-bold text-gray-800">MedTracker</span>
+              <span className="ml-2 text-xl font-bold text-gray-800">{t('header.app_name')}</span>
             </div>
           </Link>
           
@@ -47,46 +55,19 @@ export const Header: React.FC = () => {
           <nav className="hidden md:flex items-center space-x-1">
             {session ? (
               <>
-                <Link 
-                  to="/dashboard" 
-                  className={`px-3 py-2 rounded-md text-sm font-medium ${
-                    isActive('/dashboard')
-                      ? 'bg-blue-100 text-blue-700'
-                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                  } transition-colors`}
-                >
-                  Dashboard
-                </Link>
-                <Link 
-                  to="/medications" 
-                  className={`px-3 py-2 rounded-md text-sm font-medium ${
-                    isActive('/medications')
-                      ? 'bg-blue-100 text-blue-700'
-                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                  } transition-colors`}
-                >
-                  Medications
-                </Link>
-                <Link 
-                  to="/adherence" 
-                  className={`px-3 py-2 rounded-md text-sm font-medium ${
-                    isActive('/adherence')
-                      ? 'bg-blue-100 text-blue-700'
-                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                  } transition-colors`}
-                >
-                  Adherence
-                </Link>
-                <Link 
-                  to="/analytics" 
-                  className={`px-3 py-2 rounded-md text-sm font-medium ${
-                    isActive('/analytics')
-                      ? 'bg-blue-100 text-blue-700'
-                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                  } transition-colors`}
-                >
-                  Analytics
-                </Link>
+                {navigation.map((item) => (
+                  <Link 
+                    key={item.href}
+                    to={item.href}
+                    className={`px-3 py-2 rounded-md text-sm font-medium ${
+                      isActive(item.href)
+                        ? 'bg-blue-100 text-blue-700'
+                        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                    } transition-colors`}
+                  >
+                    {item.name}
+                  </Link>
+                ))}
                 
                 {/* Profile Dropdown */}
                 <div className="relative ml-3">
@@ -99,7 +80,7 @@ export const Header: React.FC = () => {
                     } transition-colors`}
                   >
                     <User className="mr-1" size={18} />
-                    Profile
+                    {t('header.navigation.profile')}
                   </Link>
                 </div>
                 
@@ -108,22 +89,31 @@ export const Header: React.FC = () => {
                   className="ml-1 px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors flex items-center"
                 >
                   <LogOut className="mr-1" size={18} />
-                  Logout
+                  {t('header.navigation.logout')}
                 </button>
               </>
             ) : (
               <>
+                {navigation.map((item) => (
+                  <Link 
+                    key={item.href}
+                    to={item.href}
+                    className={`px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors`}
+                  >
+                    {item.name}
+                  </Link>
+                ))}
                 <Link 
                   to="/login" 
                   className="px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors"
                 >
-                  Login
+                  {t('header.navigation.login')}
                 </Link>
                 <Link 
                   to="/register" 
                   className="ml-2 px-4 py-2 rounded-md text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 transition-colors"
                 >
-                  Sign Up
+                  {t('header.navigation.sign_up')}
                 </Link>
               </>
             )}
@@ -154,62 +144,23 @@ export const Header: React.FC = () => {
         <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
           {session ? (
             <>
-              <Link
-                to="/dashboard"
-                className={`block px-3 py-2 rounded-md text-base font-medium ${
-                  isActive('/dashboard')
-                    ? 'bg-blue-100 text-blue-700'
-                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                } transition-colors`}
-                onClick={closeMenu}
-              >
-                <div className="flex items-center">
-                  <Home className="mr-2" size={18} />
-                  Dashboard
-                </div>
-              </Link>
-              <Link
-                to="/medications"
-                className={`block px-3 py-2 rounded-md text-base font-medium ${
-                  isActive('/medications')
-                    ? 'bg-blue-100 text-blue-700'
-                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                } transition-colors`}
-                onClick={closeMenu}
-              >
-                <div className="flex items-center">
-                  <Pill className="mr-2" size={18} />
-                  Medications
-                </div>
-              </Link>
-              <Link
-                to="/adherence"
-                className={`block px-3 py-2 rounded-md text-base font-medium ${
-                  isActive('/adherence')
-                    ? 'bg-blue-100 text-blue-700'
-                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                } transition-colors`}
-                onClick={closeMenu}
-              >
-                <div className="flex items-center">
-                  <Bell className="mr-2" size={18} />
-                  Adherence
-                </div>
-              </Link>
-              <Link
-                to="/analytics"
-                className={`block px-3 py-2 rounded-md text-base font-medium ${
-                  isActive('/analytics')
-                    ? 'bg-blue-100 text-blue-700'
-                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                } transition-colors`}
-                onClick={closeMenu}
-              >
-                <div className="flex items-center">
-                  <LineChart className="mr-2" size={18} />
-                  Analytics
-                </div>
-              </Link>
+              {navigation.map((item) => (
+                <Link
+                  key={item.href}
+                  to={item.href}
+                  className={`block px-3 py-2 rounded-md text-base font-medium ${
+                    isActive(item.href)
+                      ? 'bg-blue-100 text-blue-700'
+                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                  } transition-colors`}
+                  onClick={closeMenu}
+                >
+                  <div className="flex items-center">
+                    <Home className="mr-2" size={18} />
+                    {item.name}
+                  </div>
+                </Link>
+              ))}
               <Link
                 to="/profile"
                 className={`block px-3 py-2 rounded-md text-base font-medium ${
@@ -221,7 +172,7 @@ export const Header: React.FC = () => {
               >
                 <div className="flex items-center">
                   <User className="mr-2" size={18} />
-                  Profile
+                  {t('header.navigation.profile')}
                 </div>
               </Link>
               <button
@@ -233,25 +184,35 @@ export const Header: React.FC = () => {
               >
                 <div className="flex items-center">
                   <LogOut className="mr-2" size={18} />
-                  Logout
+                  {t('header.navigation.logout')}
                 </div>
               </button>
             </>
           ) : (
             <>
+              {navigation.map((item) => (
+                <Link
+                  key={item.href}
+                  to={item.href}
+                  className={`block px-3 py-2 rounded-md text-base font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors`}
+                  onClick={closeMenu}
+                >
+                  {item.name}
+                </Link>
+              ))}
               <Link
                 to="/login"
                 className="block px-3 py-2 rounded-md text-base font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors"
                 onClick={closeMenu}
               >
-                Login
+                {t('header.navigation.login')}
               </Link>
               <Link
                 to="/register"
                 className="block px-3 py-2 rounded-md text-base font-medium bg-blue-600 text-white hover:bg-blue-700 transition-colors"
                 onClick={closeMenu}
               >
-                Sign Up
+                {t('header.navigation.sign_up')}
               </Link>
             </>
           )}
