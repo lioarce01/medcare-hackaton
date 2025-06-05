@@ -1,3 +1,4 @@
+[![Netlify Status](https://api.netlify.com/api/v1/badges/2620bd12-4eb5-451d-ac75-6b9553ee72fc/deploy-status)](https://app.netlify.com/projects/medcare-hackaton/deploys)
 # Medication Adherence Tracking System
 
 A comprehensive system for tracking medication adherence, sending reminders, and analyzing patterns.
