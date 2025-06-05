@@ -15,7 +15,7 @@ A comprehensive system for tracking medication adherence, sending reminders, and
 - **Backend**: Node.js, Express.js
 - **Database**: Supabase
 - **Authentication**: Supabase Auth
-- **Email Service**: Supabase Email
+- **Email Service**: Sendgrid Email
 - **Frontend**: React, Tailwind CSS
 - **State Management**: Tanstack Query
 - **Data Visualization**: Chart.js
