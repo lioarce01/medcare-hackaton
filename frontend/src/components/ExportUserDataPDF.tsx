@@ -101,7 +101,6 @@ export const ExportUserDataPDF: React.FC<ExportUserDataPDFProps> = ({
       body: [
         ["Total Doses", analytics?.overall?.total ?? "-"],
         ["Taken", analytics?.overall?.taken ?? "-"],
-        ["Missed", analytics?.overall?.missed ?? "-"],
         ["Skipped", analytics?.overall?.skipped ?? "-"],
         ["Adherence Rate (%)", analytics?.overall?.adherenceRate?.toFixed(2) ?? "-"],
       ],
