@@ -5,12 +5,13 @@ interface AdherenceSummaryProps {
   stats: {
     adherenceRate: number;
     taken: number;
-    missed: number;
+    skipped: number;
     total: number;
   };
 }
 
 export const AdherenceSummary: React.FC<AdherenceSummaryProps> = ({ stats }) => {
+  console.log("stats:", stats)
   const getAdherenceColor = (rate: number) => {
     if (rate >= 90) return 'bg-green-500';
     if (rate >= 70) return 'bg-yellow-500';
@@ -86,13 +87,13 @@ export const AdherenceSummary: React.FC<AdherenceSummaryProps> = ({ stats }) => 
             <p className="text-sm text-gray-500">doses</p>
           </div>
           
-          {/* Missed */}
+          {/* skipped */}
           <div className="bg-red-50 border border-red-100 rounded-lg p-4 flex flex-col items-center justify-center">
             <div className="flex items-center mb-2">
               <XCircle className="text-red-500 mr-2" size={20} />
-              <h4 className="text-gray-700 font-medium">Missed</h4>
+              <h4 className="text-gray-700 font-medium">Skipped</h4>
             </div>
-            <p className="text-2xl font-bold text-gray-800">{stats.missed}</p>
+            <p className="text-2xl font-bold text-gray-800">{stats.skipped}</p>
             <p className="text-sm text-gray-500">doses</p>
           </div>
           

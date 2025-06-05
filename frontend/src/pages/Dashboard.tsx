@@ -23,7 +23,7 @@ interface TodayDose {
     imageUrl?: string;
   };
   scheduled_time: string;
-  status: 'pending' | 'taken' | 'missed' | 'skipped';
+  status: 'pending' | 'taken' | 'skipped';
   taken_time?: string;
 }
 
@@ -75,10 +75,10 @@ export const Dashboard: React.FC = () => {
     (acc: any, record: any) => {
       acc.total++;
       if (record.status === 'taken') acc.taken++;
-      if (record.status === 'missed') acc.missed++;
+      if (record.status === 'skipped') acc.skipped++;
       return acc;
     },
-    { total: 0, taken: 0, missed: 0 }
+    { total: 0, taken: 0, skipped: 0 }
   );
 
   const adherenceStats = {
@@ -125,7 +125,7 @@ export const Dashboard: React.FC = () => {
     return a.scheduled_time.localeCompare(b.scheduled_time);
   });
 
-  // Get taken, missed, and skipped doses
+  // Get taken, skipped, and skipped doses
   const completedDoses = todayDoses.filter(dose => dose.status !== 'pending');
 
   const getGreeting = () => {
@@ -380,10 +380,10 @@ export const Dashboard: React.FC = () => {
                               <CheckCircle className="mr-1" size={16} />
                               Taken
                             </span>
-                          ) : dose.status === 'missed' ? (
+                          ) : dose.status === 'skipped' ? (
                             <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
                               <XCircle className="mr-1" size={16} />
-                              Missed
+                              skipped
                             </span>
                           ) : (
                             <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">

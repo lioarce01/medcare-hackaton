@@ -1,5 +1,5 @@
 import type React from "react"
-import { useState, useEffect } from "react"
+import { useState, useMemo } from "react"
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -26,250 +26,276 @@ import {
 } from "lucide-react"
 import { LoadingSpinner } from "../components/LoadingSpinner"
 import { formatPercentage } from "../utils/formatters"
-import { supabase } from "../config/supabase"
-import { useUser } from "../hooks/useUser"
+import { useGetAdherenceHistory } from "../hooks/useAdherence"
 
 // Register ChartJS components
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend)
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+)
+
+interface AdherenceRecord {
+  id: string
+  user_id: string
+  medication_id: string
+  scheduled_date: string
+  scheduled_time: string
+  status: "taken" | "skipped" | "pending"
+  taken_at?: string
+  notes?: string
+  medication: {
+    id: string
+    name: string
+    dosage: string
+    instructions: string
+  }
+}
+
+interface OverallStats {
+  total: number
+  taken: number
+  skipped: number
+  adherenceRate: number
+}
+
+interface DayOfWeekStat {
+  day: string
+  total: number
+  taken: number
+  rate: number
+}
+
+interface MedicationStat {
+  id: string
+  name: string
+  total: number
+  taken: number
+  skipped: number
+  adherenceRate: number
+  riskScore: number
+}
+
+interface WeeklyTrend {
+  week: string
+  startDate: string
+  endDate: string
+  total: number
+  taken: number
+  skipped: number
+  adherenceRate: number
+}
+
+interface AnalyticsStats {
+  overall: OverallStats
+  dayOfWeekStats: DayOfWeekStat[]
+  medicationStats: MedicationStat[]
+  weeklyTrends: WeeklyTrend[]
+}
+
+const DAYS_OF_WEEK = [
+  "Sunday",
+  "Monday", 
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday"
+]
+
+const DATE_RANGE_OPTIONS = [
+  { value: 7, label: "Last 7 days" },
+  { value: 30, label: "Last 30 days" },
+  { value: 90, label: "Last 90 days" },
+]
 
 export const Analytics: React.FC = () => {
-  const { data: user } = useUser()
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [dateRange, setDateRange] = useState({
-    startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-    endDate: new Date(),
-  })
-  const [stats, setStats] = useState<any>(null)
+  const [dateRangeDays, setDateRangeDays] = useState(30)
+  
+  const { data: adherenceData, isLoading, error } = useGetAdherenceHistory()
 
-  useEffect(() => {
-    console.log('Analytics useEffect', { user });
-    const fetchStats = async () => {
-      if (!user?.id) return
+  const filteredData = useMemo(() => {
+    if (!adherenceData) return []
+    
+    const cutoffDate = new Date()
+    cutoffDate.setDate(cutoffDate.getDate() - dateRangeDays)
+    
+    return adherenceData.filter((record: AdherenceRecord) => {
+      const recordDate = new Date(record.scheduled_date + 'T00:00:00')
+      return recordDate >= cutoffDate
+    })
+  }, [adherenceData, dateRangeDays])
 
-      try {
-        setLoading(true)
-        setError(null)
+  const stats = useMemo((): AnalyticsStats | null => {
+    if (!filteredData.length) return null
 
-        // Fetch adherence records for the date range
-        const { data: adherenceData, error: adherenceError } = await supabase
-          .from("adherence")
-          .select(`
-            *,
-            medication:medications (
-              id,
-              name,
-              medication_type
-            )
-          `)
-          .eq("user_id", user.id)
-          .gte("scheduled_date", dateRange.startDate.toISOString().split("T")[0])
-          .lte("scheduled_date", dateRange.endDate.toISOString().split("T")[0])
+    // Calculate overall stats
+    const total = filteredData.length
+    const taken = filteredData.filter(record => record.status === "taken").length
+    const skipped = filteredData.filter(record => record.status === "skipped").length
+    const pending = filteredData.filter(record => record.status === "pending").length
+    
+    // Adherence rate should exclude pending doses
+    const completedDoses = taken + skipped
+    const adherenceRate = completedDoses > 0 ? (taken / completedDoses) * 100 : 0
 
-        if (adherenceError) throw adherenceError
+    // Calculate day of week stats
+    const dayOfWeekStats: DayOfWeekStat[] = DAYS_OF_WEEK.map((day, index) => {
+      const dayRecords = filteredData.filter(record => {
+        const recordDate = new Date(record.scheduled_date + 'T00:00:00')
+        return recordDate.getDay() === index
+      })
 
-        // Calculate overall stats
-        const total = adherenceData?.length || 0
-        const taken = adherenceData?.filter((record) => record.status === "taken").length || 0
-        const missed = adherenceData?.filter((record) => record.status === "missed").length || 0
-        const skipped = adherenceData?.filter((record) => record.status === "skipped").length || 0
-        const adherenceRate = total > 0 ? (taken / (total - skipped)) * 100 : 0
+      const dayTotal = dayRecords.length
+      const dayTaken = dayRecords.filter(record => record.status === "taken").length
+      const daySkipped = dayRecords.filter(record => record.status === "skipped").length
+      const dayCompleted = dayTaken + daySkipped
+      const dayRate = dayCompleted > 0 ? (dayTaken / dayCompleted) * 100 : 0
 
-        // Calculate day of week stats
-        const dayOfWeekStats = Array.from({ length: 7 }, (_, i) => {
-          const dayRecords =
-            adherenceData?.filter((record) => {
-              const date = new Date(record.scheduled_date)
-              return date.getDay() === i
-            }) || []
-
-          const dayTotal = dayRecords.length
-          const dayTaken = dayRecords.filter((record) => record.status === "taken").length
-          const dayRate = dayTotal > 0 ? (dayTaken / dayTotal) * 100 : 0
-
-          return {
-            day: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][i],
-            total: dayTotal,
-            taken: dayTaken,
-            rate: dayRate,
-          }
-        })
-
-        // Calculate medication-specific stats
-        const medicationStats = Object.values(
-          adherenceData?.reduce((acc: any, record) => {
-            const medId = record.medication.id
-            if (!acc[medId]) {
-              acc[medId] = {
-                id: medId,
-                name: record.medication.name,
-                total: 0,
-                taken: 0,
-                missed: 0,
-                skipped: 0,
-                adherenceRate: 0,
-                riskScore: 0,
-              }
-            }
-
-            acc[medId].total++
-            acc[medId][record.status]++
-
-            // Calculate adherence rate for each medication
-            acc[medId].adherenceRate =
-              acc[medId].total > 0 ? (acc[medId].taken / (acc[medId].total - acc[medId].skipped)) * 100 : 0
-
-            // Calculate simple risk score based on missed doses
-            acc[medId].riskScore = Math.min(100, Math.round((acc[medId].skipped / Math.max(1, acc[medId].total)) * 100))
-
-            return acc
-          }, {}) || {},
-        )
-
-        // Calculate weekly trends
-        const weeklyTrends: {
-          week: string
-          startDate: string
-          endDate: string
-          total: number
-          taken: number
-          missed: number
-          adherenceRate: number
-        }[] = []
-        const currentDate = new Date(dateRange.startDate)
-        while (currentDate <= dateRange.endDate) {
-          const weekEnd = new Date(currentDate)
-          weekEnd.setDate(weekEnd.getDate() + 6)
-
-          const weekRecords =
-            adherenceData?.filter((record) => {
-              const recordDate = new Date(record.scheduled_date)
-              return recordDate >= currentDate && recordDate <= weekEnd
-            }) || []
-
-          const weekTotal = weekRecords.length
-          const weekTaken = weekRecords.filter((record) => record.status === "taken").length
-          const weekMissed = weekRecords.filter((record) => record.status === "missed").length
-          const weekRate = weekTotal > 0 ? (weekTaken / weekTotal) * 100 : 0
-
-          weeklyTrends.push({
-            week: `Week ${weeklyTrends.length + 1}`,
-            startDate: currentDate.toISOString().split("T")[0],
-            endDate: weekEnd.toISOString().split("T")[0],
-            total: weekTotal,
-            taken: weekTaken,
-            missed: weekMissed,
-            adherenceRate: weekRate,
-          })
-
-          currentDate.setDate(currentDate.getDate() + 7)
-        }
-
-        setStats({
-          overall: {
-            total,
-            taken,
-            missed,
-            skipped,
-            adherenceRate,
-          },
-          dayOfWeekStats,
-          medicationStats,
-          weeklyTrends,
-        })
-      } catch (err: any) {
-        setError(err.message || "Failed to fetch analytics data")
-        console.error("Analytics error:", err)
-      } finally {
-        setLoading(false)
+      return {
+        day,
+        total: dayTotal,
+        taken: dayTaken,
+        rate: dayRate,
       }
+    })
+
+    // Calculate medication-specific stats
+    const medicationMap = new Map<string, MedicationStat>()
+    
+    filteredData.forEach(record => {
+      const medId = record.medication.id
+      if (!medicationMap.has(medId)) {
+        medicationMap.set(medId, {
+          id: medId,
+          name: record.medication.name,
+          total: 0,
+          taken: 0,
+          skipped: 0,
+          adherenceRate: 0,
+          riskScore: 0,
+        })
+      }
+
+      const medStat = medicationMap.get(medId)!
+      medStat.total++
+      
+      if (record.status === "taken") {
+        medStat.taken++
+      } else if (record.status === "skipped") {
+        medStat.skipped++
+      }
+    })
+
+    // Calculate adherence rates and risk scores for medications
+    const medicationStats = Array.from(medicationMap.values()).map(medStat => {
+      const completed = medStat.taken + medStat.skipped
+      medStat.adherenceRate = completed > 0 ? (medStat.taken / completed) * 100 : 0
+      medStat.riskScore = medStat.total > 0 ? Math.round((medStat.skipped / medStat.total) * 100) : 0
+      return medStat
+    })
+
+    // Calculate weekly trends
+    const weeklyTrends: WeeklyTrend[] = []
+    const startDate = new Date()
+    startDate.setDate(startDate.getDate() - dateRangeDays)
+    
+    const currentDate = new Date(startDate)
+    let weekIndex = 1
+    
+    while (currentDate <= new Date()) {
+      const weekEnd = new Date(currentDate)
+      weekEnd.setDate(weekEnd.getDate() + 6)
+      
+      const weekRecords = filteredData.filter(record => {
+        const recordDate = new Date(record.scheduled_date + 'T00:00:00')
+        return recordDate >= currentDate && recordDate <= weekEnd
+      })
+
+      const weekTotal = weekRecords.length
+      const weekTaken = weekRecords.filter(record => record.status === "taken").length
+      const weekSkipped = weekRecords.filter(record => record.status === "skipped").length
+      const weekCompleted = weekTaken + weekSkipped
+      const weekRate = weekCompleted > 0 ? (weekTaken / weekCompleted) * 100 : 0
+
+      weeklyTrends.push({
+        week: `Week ${weekIndex}`,
+        startDate: currentDate.toISOString().split("T")[0],
+        endDate: weekEnd.toISOString().split("T")[0],
+        total: weekTotal,
+        taken: weekTaken,
+        skipped: weekSkipped,
+        adherenceRate: weekRate,
+      })
+
+      currentDate.setDate(currentDate.getDate() + 7)
+      weekIndex++
     }
 
-    fetchStats()
-  }, [dateRange, user?.id])
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center">
-        <div className="text-center">
-          <LoadingSpinner />
-          <p className="text-indigo-600 font-medium">Analyzing your medication data...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="relative">
-          <div className="absolute inset-0 bg-gradient-to-r from-red-500 to-rose-500 rounded-2xl opacity-10"></div>
-          <div className="relative bg-white/90 backdrop-blur-sm border border-red-200 rounded-2xl p-8 shadow-lg max-w-md">
-            <div className="flex items-center space-x-3">
-              <div className="p-3 bg-gradient-to-r from-red-500 to-rose-500 rounded-xl">
-                <AlertTriangle className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-red-800">Analytics Error</h3>
-                <p className="text-red-600">{error}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  if (!stats) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <div className="w-16 h-16 mx-auto bg-gradient-to-r from-gray-100 to-gray-200 rounded-full flex items-center justify-center">
-            <BarChart3 className="w-8 h-8 text-gray-400" />
-          </div>
-          <p className="text-gray-500">No analytics data available</p>
-        </div>
-      </div>
-    )
-  }
-
-  const weeklyTrendsData = {
-    labels: stats.weeklyTrends.map((trend: any) => trend.week),
-    datasets: [
-      {
-        label: "Adherence Rate (%)",
-        data: stats.weeklyTrends.map((trend: any) => trend.adherenceRate),
-        borderColor: "#3b82f6",
-        backgroundColor: "rgba(59, 130, 246, 0.1)",
-        tension: 0.4,
-        borderWidth: 3,
-        pointBackgroundColor: "#3b82f6",
-        pointBorderColor: "#ffffff",
-        pointBorderWidth: 2,
-        pointRadius: 6,
-        pointHoverRadius: 8,
+    return {
+      overall: {
+        total,
+        taken,
+        skipped,
+        adherenceRate,
       },
-    ],
-  }
+      dayOfWeekStats,
+      medicationStats,
+      weeklyTrends,
+    }
+  }, [filteredData])
 
-  const dayOfWeekData = {
-    labels: stats.dayOfWeekStats.map((stat: any) => stat.day.slice(0, 3)),
-    datasets: [
-      {
-        label: "Adherence Rate (%)",
-        data: stats.dayOfWeekStats.map((stat: any) => stat.rate),
-        backgroundColor: stats.dayOfWeekStats.map((stat: any) => {
-          if (stat.rate >= 90) return "#10b981"
-          if (stat.rate >= 70) return "#f59e0b"
-          return "#ef4444"
-        }),
-        borderRadius: 8,
-        borderSkipped: false,
-      },
-    ],
-  }
+  // Chart configurations
+  const weeklyTrendsData = useMemo(() => {
+    if (!stats) return { labels: [], datasets: [] }
+    
+    return {
+      labels: stats.weeklyTrends.map(trend => trend.week),
+      datasets: [
+        {
+          label: "Adherence Rate (%)",
+          data: stats.weeklyTrends.map(trend => trend.adherenceRate),
+          borderColor: "#3b82f6",
+          backgroundColor: "rgba(59, 130, 246, 0.1)",
+          tension: 0.4,
+          borderWidth: 3,
+          pointBackgroundColor: "#3b82f6",
+          pointBorderColor: "#ffffff",
+          pointBorderWidth: 2,
+          pointRadius: 6,
+          pointHoverRadius: 8,
+        },
+      ],
+    }
+  }, [stats])
 
-  const chartOptions = {
+  const dayOfWeekData = useMemo(() => {
+    if (!stats) return { labels: [], datasets: [] }
+    
+    return {
+      labels: stats.dayOfWeekStats.map(stat => stat.day.slice(0, 3)),
+      datasets: [
+        {
+          label: "Adherence Rate (%)",
+          data: stats.dayOfWeekStats.map(stat => stat.rate),
+          backgroundColor: stats.dayOfWeekStats.map(stat => {
+            if (stat.rate >= 90) return "#10b981"
+            if (stat.rate >= 70) return "#f59e0b"
+            return "#ef4444"
+          }),
+          borderRadius: 8,
+          borderSkipped: false,
+        },
+      ],
+    }
+  }, [stats])
+
+  const chartOptions = useMemo(() => ({
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
@@ -305,7 +331,7 @@ export const Analytics: React.FC = () => {
         },
       },
     },
-  }
+  }), [])
 
   const getAdherenceGrade = (rate: number) => {
     if (rate >= 95) return { grade: "A+", color: "from-emerald-500 to-green-600", text: "Excellent" }
@@ -315,13 +341,58 @@ export const Analytics: React.FC = () => {
     return { grade: "D", color: "from-red-500 to-rose-600", text: "Needs Improvement" }
   }
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <LoadingSpinner />
+          <p className="text-indigo-600 font-medium">Analyzing your medication data...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="relative">
+          <div className="absolute inset-0 bg-gradient-to-r from-red-500 to-rose-500 rounded-2xl opacity-10"></div>
+          <div className="relative bg-white/90 backdrop-blur-sm border border-red-200 rounded-2xl p-8 shadow-lg max-w-md">
+            <div className="flex items-center space-x-3">
+              <div className="p-3 bg-gradient-to-r from-red-500 to-rose-500 rounded-xl">
+                <AlertTriangle className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-red-800">Analytics Error</h3>
+                <p className="text-red-600">{error?.message || "Failed to load analytics data"}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!stats) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="w-16 h-16 mx-auto bg-gradient-to-r from-gray-100 to-gray-200 rounded-full flex items-center justify-center">
+            <BarChart3 className="w-8 h-8 text-gray-400" />
+          </div>
+          <p className="text-gray-500">No analytics data available</p>
+        </div>
+      </div>
+    )
+  }
+
   const adherenceGrade = getAdherenceGrade(stats.overall.adherenceRate)
 
   return (
     <div className="min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="space-y-8">
-          {/* Enhanced Header */}
+          {/* Header */}
           <div className="relative">
             <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-3xl opacity-10"></div>
             <div className="relative bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/20">
@@ -357,29 +428,20 @@ export const Analytics: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Enhanced Date Range Selector */}
+                {/* Date Range Selector */}
                 <div className="relative">
                   <div className="flex items-center space-x-2 bg-white/60 backdrop-blur-sm rounded-2xl p-2 shadow-lg border border-white/30">
                     <Filter className="w-5 h-5 text-gray-500 ml-2" />
                     <select
                       className="bg-transparent border-none focus:ring-0 text-gray-700 font-medium pr-8 appearance-none cursor-pointer"
-                      value={dateRange.startDate.toISOString().split("T")[0]}
-                      onChange={(e) =>
-                        setDateRange((prev) => ({
-                          ...prev,
-                          startDate: new Date(e.target.value),
-                        }))
-                      }
+                      value={dateRangeDays}
+                      onChange={(e) => setDateRangeDays(Number(e.target.value))}
                     >
-                      <option value={new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0]}>
-                        Last 7 days
-                      </option>
-                      <option value={new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0]}>
-                        Last 30 days
-                      </option>
-                      <option value={new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().split("T")[0]}>
-                        Last 90 days
-                      </option>
+                      {DATE_RANGE_OPTIONS.map(option => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
                     </select>
                     <ChevronDown className="w-4 h-4 text-gray-500 pointer-events-none" />
                   </div>
@@ -388,7 +450,7 @@ export const Analytics: React.FC = () => {
             </div>
           </div>
 
-          {/* Enhanced Overall Stats */}
+          {/* Overall Stats */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
               {
@@ -406,8 +468,8 @@ export const Analytics: React.FC = () => {
                 bgColor: "from-emerald-50 to-green-50",
               },
               {
-                title: "Doses Missed",
-                value: stats.overall.missed,
+                title: "Doses Skipped",
+                value: stats.overall.skipped,
                 icon: AlertTriangle,
                 color: "from-red-500 to-rose-600",
                 bgColor: "from-red-50 to-rose-50",
@@ -420,7 +482,7 @@ export const Analytics: React.FC = () => {
                 bgColor: "from-purple-50 to-indigo-50",
               },
             ].map((stat, index) => (
-              <div key={stat.title} className="relative group" style={{ animationDelay: `${index * 100}ms` }}>
+              <div key={stat.title} className="relative group">
                 <div
                   className={`absolute inset-0 bg-gradient-to-r ${stat.bgColor} rounded-2xl opacity-50 group-hover:opacity-70 transition-opacity`}
                 ></div>
@@ -437,7 +499,7 @@ export const Analytics: React.FC = () => {
             ))}
           </div>
 
-          {/* Enhanced Weekly Trends Chart */}
+          {/* Weekly Trends Chart */}
           <div className="relative">
             <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-3xl opacity-5"></div>
             <div className="relative bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 overflow-hidden">
@@ -460,7 +522,7 @@ export const Analytics: React.FC = () => {
             </div>
           </div>
 
-          {/* Enhanced Medication Performance */}
+          {/* Medication Performance */}
           <div className="relative">
             <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-600 rounded-3xl opacity-5"></div>
             <div className="relative bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 overflow-hidden">
@@ -477,11 +539,10 @@ export const Analytics: React.FC = () => {
               </div>
               <div className="p-6">
                 <div className="space-y-4">
-                  {stats.medicationStats.map((med: any, index: number) => (
+                  {stats.medicationStats.map((med, index) => (
                     <div
                       key={med.id}
                       className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 border border-white/30 hover:shadow-lg transition-all duration-300"
-                      style={{ animationDelay: `${index * 100}ms` }}
                     >
                       <div className="flex items-center justify-between mb-4">
                         <div className="flex-1">
@@ -534,7 +595,7 @@ export const Analytics: React.FC = () => {
             </div>
           </div>
 
-          {/* Enhanced Day of Week Analysis */}
+          {/* Day of Week Analysis */}
           <div className="relative">
             <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-emerald-600 rounded-3xl opacity-5"></div>
             <div className="relative bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 overflow-hidden">
