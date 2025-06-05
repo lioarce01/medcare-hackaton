@@ -18,6 +18,7 @@ import {
 } from "lucide-react"
 import { useUpdateMedication, useMedicationById } from "../hooks/useMedications"
 import { useTranslation } from "react-i18next"
+import { LoadingSpinner } from "../components/LoadingSpinner"
 
 export const EditMedication = () => {
   const { t } = useTranslation()
@@ -163,8 +164,8 @@ export const EditMedication = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">{t('edit_medication.page.loading')}</p>
+          <LoadingSpinner/>
+          <p className="text-indigo-600 font-medium">{t('edit_medication.page.loading')}</p>
         </div>
       </div>
     )

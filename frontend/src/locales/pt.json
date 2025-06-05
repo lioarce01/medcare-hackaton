@@ -1,0 +1,711 @@
+{
+  "home": {
+    "hero_title": "Tome Controle da Sua Jornada Medicamentosa",
+    "hero_subtitle": "Acompanhe, gerencie e mantenha o controle dos seus medicamentos com nosso sistema abrangente de adesão medicamentosa.",
+    "get_started": "Começar",
+    "sign_in": "Entrar",
+    "features_title": "Recursos que Fazem a Diferença",
+    "feature_medication": "Gerenciamento de Medicamentos",
+    "feature_medication_desc": "Acompanhe e gerencie facilmente todos os seus medicamentos em um só lugar com informações detalhadas e agendamento.",
+    "feature_reminders": "Lembretes Inteligentes",
+    "feature_reminders_desc": "Nunca perca uma dose com lembretes e notificações personalizadas adaptadas à sua rotina.",
+    "feature_analytics": "Análise de Adesão",
+    "feature_analytics_desc": "Acompanhe seu progresso e identifique padrões com relatórios detalhados e insights de adesão.",
+    "feature_secure": "Seguro e Privado",
+    "feature_secure_desc": "Suas informações de saúde estão protegidas com segurança e criptografia de padrão industrial.",
+    "cta_title": "Pronto para Tomar Controle?",
+    "cta_subtitle": "Junte-se a milhares de usuários que estão gerenciando seus medicamentos de forma eficaz.",
+    "cta_button": "Comece Sua Jornada"
+  },
+  "dashboard": {
+    "greetings": {
+      "morning": "Bom dia",
+      "afternoon": "Boa tarde",
+      "evening": "Boa noite"
+    },
+    "header": {
+      "medications_scheduled": "Você tem {{count}} medicamento{{plural}} agendado{{plural}} para hoje",
+      "all_completed": "Todos os medicamentos completados para hoje! 🎉",
+      "add_medication": "Adicionar Medicamento"
+    },
+    "stats": {
+      "today_progress": "Progresso de Hoje",
+      "overall_adherence": "Adesão Geral",
+      "active_medications": "Medicamentos Ativos",
+      "currently_managing": "Atualmente gerenciando",
+      "doses_taken": "{{taken}} de {{total}} doses tomadas"
+    },
+    "next_dose": {
+      "title": "Próximo Medicamento",
+      "take_now": "Tomar Agora"
+    },
+    "schedule": {
+      "title": "Agenda de Hoje",
+      "all_completed": {
+        "title": "Todos os medicamentos completados para hoje!",
+        "subtitle": "Ótimo trabalho mantendo o controle! 🎉"
+      },
+      "medication": {
+        "take": "Tomar",
+        "skip": "Pular",
+        "instructions": "\"{{instructions}}\""
+      }
+    },
+    "completed": {
+      "title": "Completados Hoje",
+      "table": {
+        "medication": "Medicamento",
+        "scheduled_time": "Horário Programado",
+        "status": "Status",
+        "taken": "Tomado",
+        "skipped": "Pulado"
+      }
+    },
+    "medications": {
+      "title": "Seus Medicamentos",
+      "view_all": "Ver Todos →"
+    },
+    "loading": "Carregando seu painel...",
+    "please_login": "Por favor, faça login para acessar seu painel"
+  },
+  "header": {
+    "app_name": "MedTracker",
+    "navigation": {
+      "dashboard": "Painel",
+      "medications": "Medicamentos",
+      "adherence": "Adesão",
+      "analytics": "Análises",
+      "profile": "Perfil",
+      "logout": "Sair",
+      "login": "Entrar",
+      "sign_up": "Cadastrar"
+    },
+    "mobile": {
+      "menu": {
+        "open": "Abrir menu principal",
+        "close": "Fechar menu principal"
+      }
+    }
+  },
+  "medications": {
+    "page": {
+      "title": "Meus Medicamentos",
+      "subtitle": "Gerencie e acompanhe todos os seus medicamentos",
+      "loading": "Carregando medicamentos...",
+      "auth_required": {
+        "title": "Acesso Necessário",
+        "message": "Por favor, faça login para ver seus medicamentos",
+        "sign_in": "Entrar"
+      },
+      "actions": {
+        "refresh": "Atualizar",
+        "refreshing": "Atualizando...",
+        "add_medication": "Adicionar Medicamento"
+      },
+      "error": {
+        "title": "Erro ao carregar medicamentos",
+        "retry": "Tentar novamente"
+      },
+      "search": {
+        "label": "Buscar medicamentos",
+        "placeholder": "Buscar por nome ou dosagem..."
+      },
+      "filter": {
+        "label": "Filtrar por status",
+        "all": "Todos os medicamentos",
+        "active": "Apenas ativos",
+        "inactive": "Apenas inativos"
+      },
+      "stats": {
+        "title": "Visão Geral dos Medicamentos",
+        "total": "Total de Medicamentos",
+        "active": "Ativos",
+        "inactive": "Inativos"
+      },
+      "schedule": {
+        "title": "Agenda de Hoje",
+        "subtitle": "Visão rápida da sua agenda de medicamentos",
+        "active_count": "Você tem {{count}} medicamentos ativos para acompanhar"
+      },
+      "empty": {
+        "title": "Comece sua jornada medicamentosa",
+        "message": "Comece a acompanhar seus medicamentos e nunca mais perca uma dose. Adicione seu primeiro medicamento para começar.",
+        "add_first": "Adicionar Seu Primeiro Medicamento",
+        "no_results": {
+          "title": "Nenhum medicamento encontrado",
+          "search_message": "Nenhum medicamento corresponde a \"{{term}}\"",
+          "filter_message": "Nenhum medicamento {{status}} encontrado",
+          "clear_filters": "Limpar todos os filtros"
+        }
+      },
+      "results": {
+        "summary": "{{filtered}} de {{total}} medicamentos",
+        "matching": "correspondendo a \"{{term}}\"",
+        "filtered_by": "filtrado por {{status}}"
+      }
+    },
+    "list": {
+      "empty": {
+        "title": "Nenhum medicamento encontrado",
+        "message": "Você ainda não tem nenhum medicamento. Comece a construir sua agenda de medicamentos adicionando seu primeiro medicamento.",
+        "add_first": "Adicionar Seu Primeiro Medicamento"
+      },
+      "medication": {
+        "status": {
+          "active": "Ativo",
+          "inactive": "Inativo"
+        },
+        "type": {
+          "prescription": "Prescrição",
+          "over-the-counter": "Sem Receita",
+          "vitamin": "Vitamina",
+          "supplement": "Suplemento"
+        },
+        "details": {
+          "dosage": "Dosagem",
+          "schedule": "Horários",
+          "frequency": "Frequência",
+          "every_day": "Todos os dias",
+          "instructions": "Instruções"
+        },
+        "actions": {
+          "edit": "Editar",
+          "delete": "Excluir"
+        }
+      }
+    }
+  },
+  "adherence": {
+    "page": {
+      "title": "Adesão aos Medicamentos",
+      "subtitle": "Acompanhe e analise seus padrões de adesão aos medicamentos",
+      "loading": "Carregando dados de adesão...",
+      "auth_required": {
+        "title": "Acesso Necessário",
+        "message": "Por favor, faça login para ver seus dados de adesão",
+        "sign_in": "Entrar"
+      },
+      "error": {
+        "title": "Erro ao carregar dados de adesão",
+        "retry": "Tentar novamente"
+      },
+      "overview": {
+        "title": "Visão Geral da Adesão",
+        "total_medications": "Total de Medicamentos",
+        "overall_adherence": "Adesão Geral",
+        "current_streak": "Sequência Atual",
+        "days": "dias"
+      },
+      "chart": {
+        "title": "Tendências de Adesão",
+        "subtitle": "Sua adesão aos medicamentos ao longo do tempo",
+        "daily": "Diário",
+        "weekly": "Semanal",
+        "monthly": "Mensal",
+        "no_data": "Nenhum dado de adesão disponível para o período selecionado"
+      },
+      "medications": {
+        "title": "Desempenho dos Medicamentos",
+        "subtitle": "Taxas de adesão individual por medicamento",
+        "table": {
+          "medication": "Medicamento",
+          "adherence": "Taxa de Adesão",
+          "missed_doses": "Doses Perdidas",
+          "taken_doses": "Doses Tomadas",
+          "total_doses": "Total de Doses"
+        },
+        "no_data": "Nenhum dado de medicamento disponível"
+      },
+      "insights": {
+        "title": "Insights de Adesão",
+        "subtitle": "Observações importantes sobre sua adesão aos medicamentos",
+        "good": {
+          "title": "Ótimo Trabalho!",
+          "message": "Você está mantendo uma excelente adesão aos seus medicamentos"
+        },
+        "warning": {
+          "title": "Espaço para Melhorias",
+          "message": "Considere configurar lembretes para melhorar sua adesão"
+        },
+        "poor": {
+          "title": "Precisa de Atenção",
+          "message": "Sua taxa de adesão está abaixo do nível recomendado"
+        }
+      },
+      "tips": {
+        "title": "Dicas para Melhor Adesão",
+        "subtitle": "Estratégias simples para melhorar sua adesão aos medicamentos",
+        "list": {
+          "reminders": "Configure lembretes de medicamentos",
+          "routine": "Incorpore os medicamentos à sua rotina diária",
+          "tracking": "Acompanhe suas doses consistentemente",
+          "communication": "Comunique-se com seu profissional de saúde",
+          "organization": "Mantenha seus medicamentos organizados"
+        }
+      }
+    },
+    "summary": {
+      "title": "Resumo de Adesão",
+      "adherence": "Adesão",
+      "status": {
+        "excellent": "Excelente",
+        "good": "Bom",
+        "fair": "Regular",
+        "needs_improvement": "Precisa Melhorar"
+      },
+      "stats": {
+        "taken": "Tomadas",
+        "skipped": "Puladas",
+        "total": "Total",
+        "doses": "doses",
+        "scheduled": "programadas"
+      }
+    }
+  },
+  "analytics": {
+    "page": {
+      "title": "Painel de Análises",
+      "subtitle": "Insights sobre sua jornada medicamentosa",
+      "loading": "Analisando seus dados de medicamentos...",
+      "error": {
+        "title": "Erro de Análise",
+        "message": "Falha ao carregar dados de análise"
+      },
+      "no_data": "Nenhum dado de análise disponível",
+      "date_range": {
+        "label": "Período",
+        "last_7_days": "Últimos 7 dias",
+        "last_30_days": "Últimos 30 dias",
+        "last_90_days": "Últimos 90 dias"
+      },
+      "overview": {
+        "total_doses": "Total de Doses",
+        "doses_taken": "Doses Tomadas",
+        "doses_skipped": "Doses Puladas",
+        "adherence_rate": "Taxa de Adesão",
+        "grade": {
+          "excellent": "Excelente",
+          "great": "Muito Bom",
+          "good": "Bom",
+          "fair": "Regular",
+          "needs_improvement": "Precisa Melhorar"
+        }
+      },
+      "charts": {
+        "weekly_trends": {
+          "title": "Tendências Semanais",
+          "subtitle": "Sua adesão aos medicamentos nas últimas semanas",
+          "label": "Taxa de Adesão (%)"
+        },
+        "day_of_week": {
+          "title": "Análise por Dia da Semana",
+          "subtitle": "Padrões de adesão por dia da semana",
+          "label": "Taxa de Adesão (%)"
+        }
+      },
+      "medications": {
+        "title": "Desempenho dos Medicamentos",
+        "subtitle": "Taxas de adesão individual por medicamento",
+        "table": {
+          "medication": "Medicamento",
+          "adherence": "Taxa de Adesão",
+          "risk_score": "Nível de Risco",
+          "total_doses": "Total de Doses",
+          "taken": "Tomadas",
+          "skipped": "Puladas"
+        }
+      }
+    }
+  },
+  "profile": {
+    "page": {
+      "title": "Configurações do Perfil",
+      "loading": "Carregando seu perfil...",
+      "error": {
+        "title": "Erro",
+        "message": "Falha ao atualizar perfil"
+      },
+      "success": {
+        "title": "Sucesso",
+        "message": "Perfil atualizado com sucesso"
+      },
+      "actions": {
+        "edit": "Editar Perfil",
+        "cancel": "Cancelar",
+        "save": "Salvar Alterações",
+        "saving": "Salvando..."
+      }
+    },
+    "sections": {
+      "personal": {
+        "title": "Informações Pessoais",
+        "fields": {
+          "name": "Nome",
+          "email": "E-mail",
+          "date_of_birth": "Data de Nascimento",
+          "gender": "Gênero",
+          "gender_options": {
+            "select": "Selecionar gênero",
+            "male": "Masculino",
+            "female": "Feminino",
+            "other": "Outro",
+            "prefer_not_to_say": "Prefiro não dizer"
+          }
+        }
+      },
+      "medical": {
+        "title": "Informações Médicas",
+        "fields": {
+          "allergies": {
+            "label": "Alergias",
+            "placeholder": "Pressione Enter para adicionar alergia"
+          },
+          "conditions": {
+            "label": "Condições Médicas",
+            "placeholder": "Pressione Enter para adicionar condição"
+          }
+        }
+      },
+      "contact": {
+        "title": "Informações de Contato",
+        "fields": {
+          "phone": "Número de Telefone",
+          "emergency": {
+            "name": "Nome do Contato de Emergência",
+            "relationship": "Relacionamento",
+            "phone": "Telefone de Emergência"
+          }
+        }
+      },
+      "notifications": {
+        "title": "Configurações de Notificações",
+        "email": "Ativar notificações por e-mail para lembretes de medicamentos",
+        "reminder_times": "Horários Preferidos de Lembretes"
+      },
+      "privacy": {
+        "title": "Configurações de Privacidade",
+        "description": "Você pode baixar todos os seus dados pessoais, medicamentos, registros de adesão e análises como PDF para seus próprios registros."
+      }
+    }
+  },
+  "login": {
+    "page": {
+      "title": "Bem-vindo de Volta",
+      "subtitle": "Entre na sua conta para continuar",
+      "success": {
+        "title": "Login Realizado com Sucesso",
+        "message": "Você entrou com sucesso na sua conta",
+        "redirecting": "Redirecionando para o painel..."
+      },
+      "error": {
+        "title": "Falha no Login",
+        "message": "Por favor, verifique suas credenciais e tente novamente"
+      }
+    },
+    "form": {
+      "email": {
+        "label": "E-mail",
+        "placeholder": "Digite seu e-mail"
+      },
+      "password": {
+        "label": "Senha",
+        "placeholder": "Digite sua senha"
+      },
+      "remember": "Lembrar-me",
+      "forgot": "Esqueceu a senha?"
+    },
+    "actions": {
+      "sign_in": "Entrar",
+      "signing_in": "Entrando...",
+      "create_account": "Criar uma conta",
+      "or": "ou"
+    },
+    "oauth": {
+      "google": "Continuar com Google",
+      "github": "Continuar com GitHub"
+    }
+  },
+  "register": {
+    "page": {
+      "title": "Criar uma Conta",
+      "subtitle": "Junte-se a nós para começar a gerenciar seus medicamentos",
+      "success": {
+        "title": "Conta Criada com Sucesso",
+        "message": "Sua conta foi criada com sucesso",
+        "redirecting": "Redirecionando para o painel..."
+      },
+      "error": {
+        "title": "Falha no Registro",
+        "message": "Por favor, verifique suas informações e tente novamente"
+      }
+    },
+    "form": {
+      "name": {
+        "label": "Nome Completo",
+        "placeholder": "Digite seu nome completo"
+      },
+      "email": {
+        "label": "E-mail",
+        "placeholder": "Digite seu e-mail"
+      },
+      "password": {
+        "label": "Senha",
+        "placeholder": "Crie uma senha",
+        "requirements": "A senha deve ter pelo menos 8 caracteres"
+      },
+      "terms": "Eu concordo com os Termos de Serviço e Política de Privacidade",
+      "terms_required": "Você deve aceitar os termos e condições"
+    },
+    "actions": {
+      "register": "Criar Conta",
+      "registering": "Criando conta...",
+      "sign_in": "Já tem uma conta? Entre",
+      "or": "ou"
+    },
+    "oauth": {
+      "google": "Continuar com Google",
+      "github": "Continuar com GitHub"
+    }
+  },
+  "not_found": {
+    "title": "Página Não Encontrada",
+    "message": "A página que você está procurando não existe ou foi movida.",
+    "back_home": "Voltar para o Início"
+  },
+  "toast": {
+    "success": "Operação realizada com sucesso",
+    "error": "Ocorreu um erro",
+    "warning": "Atenção",
+    "info": "Informação"
+  },
+  "common": {
+    "loading": "Carregando...",
+    "error": "Erro",
+    "success": "Sucesso",
+    "warning": "Atenção",
+    "info": "Informação",
+    "retry": "Tentar novamente",
+    "cancel": "Cancelar",
+    "save": "Salvar",
+    "delete": "Excluir",
+    "edit": "Editar",
+    "add": "Adicionar",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "no_results": "Nenhum resultado encontrado",
+    "required": "Obrigatório",
+    "optional": "Opcional"
+  },
+  "language": {
+    "switcher": {
+      "label": "Selecionar idioma",
+      "en": "Inglês",
+      "es": "Espanhol",
+      "cn": "Chinês",
+      "pt": "Português"
+    }
+  },
+  "add_medication": {
+    "page": {
+      "title": "Adicionar Novo Medicamento",
+      "subtitle": "Insira os detalhes do seu medicamento",
+      "back": "Voltar para Medicamentos",
+      "success": {
+        "title": "Medicamento Adicionado!",
+        "message": "Seu medicamento foi adicionado com sucesso à sua lista.",
+        "redirecting": "Redirecionando para a lista de medicamentos..."
+      }
+    },
+    "sections": {
+      "basic": {
+        "title": "Informações Básicas",
+        "fields": {
+          "name": "Nome do Medicamento *",
+          "dosage": {
+            "amount": "Quantidade da Dosagem *",
+            "unit": "Unidade *",
+            "options": {
+              "mg": "mg",
+              "ml": "ml",
+              "g": "g",
+              "mcg": "mcg",
+              "IU": "UI",
+              "tablet": "comprimido",
+              "capsule": "cápsula",
+              "pill": "pílula",
+              "injection": "injeção",
+              "patch": "adesivo"
+            }
+          },
+          "type": {
+            "label": "Tipo de Medicamento *",
+            "options": {
+              "prescription": "Prescrição",
+              "over-the-counter": "Sem Receita",
+              "vitamin": "Vitamina",
+              "supplement": "Suplemento",
+              "other": "Outro"
+            }
+          }
+        }
+      },
+      "schedule": {
+        "title": "Agenda",
+        "fields": {
+          "days": {
+            "label": "Dias Específicos",
+            "empty_message": "Deixe em branco para tomar o medicamento todos os dias"
+          },
+          "times": {
+            "label": "Horários Programados *",
+            "add": "Adicionar Horário"
+          },
+          "start_date": "Data de Início",
+          "end_date": "Data de Término (Opcional)"
+        }
+      },
+      "refill": {
+        "title": "Lembrete de Reabastecimento",
+        "fields": {
+          "enable": "Ativar lembretes de reabastecimento",
+          "supply": {
+            "amount": "Quantidade do Suprimento",
+            "unit": "Unidade do Suprimento",
+            "options": {
+              "days": "Dias",
+              "weeks": "Semanas",
+              "months": "Meses"
+            }
+          },
+          "threshold": "Limite de Lembrete (dias antes do reabastecimento necessário)"
+        }
+      },
+      "additional": {
+        "title": "Informações Adicionais",
+        "fields": {
+          "instructions": {
+            "label": "Instruções",
+            "placeholder": "Ex., Tomar com comida, Evitar álcool, etc."
+          },
+          "side_effects": {
+            "label": "Efeitos Colaterais para Observar",
+            "placeholder": "Pressione Enter para adicionar"
+          },
+          "image": {
+            "label": "URL da Imagem (Opcional)",
+            "placeholder": "https://exemplo.com/imagem-medicamento.jpg"
+          },
+          "active": "Medicamento Ativo"
+        }
+      }
+    },
+    "actions": {
+      "add": "Adicionar Medicamento",
+      "adding": "Adicionando..."
+    }
+  },
+  "edit_medication": {
+    "page": {
+      "title": "Editar Medicamento",
+      "subtitle": "Atualize os detalhes do seu medicamento",
+      "back": "Voltar para Medicamentos",
+      "loading": "Carregando detalhes do medicamento...",
+      "success": {
+        "title": "Medicamento Atualizado!",
+        "message": "Seu medicamento foi atualizado com sucesso.",
+        "redirecting": "Redirecionando para a lista de medicamentos..."
+      },
+      "error": {
+        "title": "Erro ocorreu",
+        "message": "Falha ao atualizar medicamento"
+      }
+    },
+    "sections": {
+      "basic": {
+        "title": "Informações Básicas",
+        "fields": {
+          "name": "Nome do Medicamento *",
+          "dosage": {
+            "amount": "Quantidade da Dosagem *",
+            "unit": "Unidade *",
+            "options": {
+              "mg": "mg",
+              "ml": "ml",
+              "g": "g",
+              "mcg": "mcg",
+              "IU": "UI",
+              "tablet": "comprimido",
+              "capsule": "cápsula",
+              "pill": "pílula",
+              "injection": "injeção",
+              "patch": "adesivo"
+            }
+          },
+          "type": {
+            "label": "Tipo de Medicamento *",
+            "options": {
+              "prescription": "Prescrição",
+              "over-the-counter": "Sem Receita",
+              "vitamin": "Vitamina",
+              "supplement": "Suplemento",
+              "other": "Outro"
+            }
+          }
+        }
+      },
+      "schedule": {
+        "title": "Agenda",
+        "fields": {
+          "days": {
+            "label": "Dias Específicos",
+            "empty_message": "Deixe em branco para tomar o medicamento todos os dias"
+          },
+          "times": {
+            "label": "Horários Programados *",
+            "add": "Adicionar Horário"
+          },
+          "start_date": "Data de Início",
+          "end_date": "Data de Término (Opcional)"
+        }
+      },
+      "refill": {
+        "title": "Lembrete de Reabastecimento",
+        "fields": {
+          "enable": "Ativar lembretes de reabastecimento",
+          "supply": {
+            "amount": "Quantidade do Suprimento",
+            "unit": "Unidade do Suprimento",
+            "options": {
+              "days": "Dias",
+              "weeks": "Semanas",
+              "months": "Meses"
+            }
+          },
+          "threshold": "Limite de Lembrete (dias antes do reabastecimento necessário)"
+        }
+      },
+      "additional": {
+        "title": "Informações Adicionais",
+        "fields": {
+          "instructions": {
+            "label": "Instruções",
+            "placeholder": "Ex., Tomar com comida, Evitar álcool, etc."
+          },
+          "side_effects": {
+            "label": "Efeitos Colaterais para Observar",
+            "placeholder": "Pressione Enter para adicionar"
+          },
+          "image": {
+            "label": "URL da Imagem (Opcional)",
+            "placeholder": "https://exemplo.com/imagem-medicamento.jpg"
+          },
+          "active": "Medicamento Ativo"
+        }
+      }
+    },
+    "actions": {
+      "update": "Atualizar Medicamento",
+      "updating": "Atualizando..."
+    }
+  }
+} 
