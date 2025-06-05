@@ -1,50 +1,52 @@
-import Adherence from '../models/adherenceModel.js';
-import Medication from '../models/medicationModel.js';
-import Reminder from '../models/reminderModel.js';
+import { supabase } from '../config/supabase.js'; // Import your Supabase client
 import { logger } from '../utils/logger.js';
 
 // Generate adherence records and reminders for a medication
 export const generateAdherenceRecords = async (medicationId, userId) => {
   try {
-    const medication = await Medication.findById(medicationId);
+    // Get medication using Supabase
+    const { data: medication, error: medicationError } = await supabase
+      .from('medications')
+      .select('*')
+      .eq('id', medicationId)
+      .single();
     
-    if (!medication) {
+    if (medicationError || !medication) {
       throw new Error('Medication not found');
     }
     
     // Generate records for the next 7 days
     const today = new Date();
-    today.setHours(0, 0, 0, 0); // Start of today
+    today.setHours(0, 0, 0, 0);
     
     const endDate = new Date();
-    endDate.setDate(today.getDate() + 7); // 7 days from today
+    endDate.setDate(today.getDate() + 7);
     
     // Check if the medication has an end date before our generation period
-    if (medication.endDate && medication.endDate < today) {
+    if (medication.end_date && new Date(medication.end_date) < today) {
       logger.info(`Skipping adherence generation for expired medication: ${medication.name}`);
       return;
     }
     
     // Adjust end date if medication ends sooner
-    if (medication.endDate && medication.endDate < endDate) {
-      endDate.setTime(medication.endDate.getTime());
+    if (medication.end_date && new Date(medication.end_date) < endDate) {
+      endDate.setTime(new Date(medication.end_date).getTime());
     }
     
     // Generate records for each day
     for (let date = new Date(today); date < endDate; date.setDate(date.getDate() + 1)) {
-      // Check if this is a day we should generate records for
-      const dayOfWeek = date.getDay(); // 0 = Sunday, 1 = Monday, etc.
+      const dayOfWeek = date.getDay();
       const dayName = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][dayOfWeek];
       
-      // Skip if medication is configured for specific days and today is not one of them
-      if (medication.frequency.specificDays.length > 0 && 
-          !medication.frequency.specificDays.includes(dayName)) {
+      // Skip if medication is configured for specific days
+      if (medication.frequency?.specific_days?.length > 0 && 
+          !medication.frequency.specific_days.includes(dayName)) {
         continue;
       }
       
-      // Skip if medication is configured for intervals and today is not a day to take it
-      if (medication.frequency.interval > 1) {
-        const startDate = new Date(medication.startDate);
+      // Skip if medication is configured for intervals
+      if (medication.frequency?.interval > 1) {
+        const startDate = new Date(medication.start_date);
         const diffDays = Math.floor((date - startDate) / (24 * 60 * 60 * 1000));
         if (diffDays % medication.frequency.interval !== 0) {
           continue;
@@ -52,7 +54,7 @@ export const generateAdherenceRecords = async (medicationId, userId) => {
       }
       
       // Generate records for each scheduled time
-      for (const timeStr of medication.scheduledTimes) {
+      for (const timeStr of medication.scheduled_times || []) {
         const [hours, minutes] = timeStr.split(':').map(Number);
         
         const scheduledDateTime = new Date(date);
@@ -65,24 +67,39 @@ export const generateAdherenceRecords = async (medicationId, userId) => {
         }
         
         // Create adherence record
-        const adherenceRecord = await Adherence.create({
-          user: userId,
-          medication: medicationId,
-          scheduledTime: timeStr,
-          scheduledDate: new Date(date),
-          status: 'pending'
-        });
+        const { data: adherenceRecord, error: adherenceError } = await supabase
+          .from('adherence')
+          .insert([{
+            user_id: userId,
+            medication_id: medicationId,
+            scheduled_time: timeStr,
+            scheduled_date: date.toISOString().split('T')[0],
+            status: 'pending'
+          }])
+          .select()
+          .single();
+        
+        if (adherenceError) {
+          logger.error(`Error creating adherence record: ${adherenceError.message}`);
+          continue;
+        }
         
         // Create reminder record
-        await Reminder.create({
-          user: userId,
-          medication: medicationId,
-          scheduledTime: timeStr,
-          scheduledDate: new Date(date),
-          status: 'pending',
-          message: `Time to take ${medication.name} - ${medication.dosage.amount} ${medication.dosage.unit}`,
-          adherenceRecord: adherenceRecord._id
-        });
+        const { error: reminderError } = await supabase
+          .from('reminders')
+          .insert([{
+            user_id: userId,
+            medication_id: medicationId,
+            scheduled_time: timeStr,
+            scheduled_date: date.toISOString().split('T')[0],
+            status: 'pending',
+            message: `Time to take ${medication.name} - ${medication.dosage?.amount} ${medication.dosage?.unit}`,
+            adherence_record_id: adherenceRecord.id
+          }]);
+        
+        if (reminderError) {
+          logger.error(`Error creating reminder: ${reminderError.message}`);
+        }
         
         logger.info(`Generated adherence record and reminder for ${medication.name} at ${timeStr} on ${date.toISOString().split('T')[0]}`);
       }
@@ -100,42 +117,47 @@ export const processMissedAdherenceRecords = async () => {
   const todayStr = now.toISOString().split('T')[0];
 
   try {
-    // 1. Registros pendientes de días anteriores
-    const { data: pendingRecords, error: pendingError } = await Adherence.supabase
+    // 1. Get pending records from previous days
+    const { data: pendingRecords, error: pendingError } = await supabase
       .from('adherence')
       .select('*')
       .eq('status', 'pending')
       .lt('scheduled_date', todayStr);
+    
     if (pendingError) throw pendingError;
 
-    // 2. Registros pendientes de hoy
-    const { data: todayPending, error: todayError } = await Adherence.supabase
+    // 2. Get pending records from today
+    const { data: todayPending, error: todayError } = await supabase
       .from('adherence')
       .select('*')
       .eq('status', 'pending')
       .eq('scheduled_date', todayStr);
+    
     if (todayError) throw todayError;
 
-    // 3. Filtrar los de hoy que ya pasaron el cutoff
-    const missedToday = (todayPending || []).filter(record => {
+    // 3. Filter today's records that passed the cutoff time
+    const skippedToday = (todayPending || []).filter(record => {
       const [h, m] = record.scheduled_time.split(':').map(Number);
       const sched = new Date(record.scheduled_date);
       sched.setHours(h, m, 0, 0);
       return sched < cutoffTime;
     });
 
-    const allMissed = [...(pendingRecords || []), ...missedToday];
+    const allSkipped = [...(pendingRecords || []), ...skippedToday];
 
-    // 4. Actualizar estado a 'missed'
-    for (const record of allMissed) {
-      await Adherence.supabase
+    // 4. Update status to 'skipped' for all missed records
+    if (allSkipped.length > 0) {
+      const ids = allSkipped.map(record => record.id);
+      const { error: updateError } = await supabase
         .from('adherence')
-        .update({ status: 'missed' })
-        .eq('id', record.id);
+        .update({ status: 'skipped' })
+        .in('id', ids);
+      
+      if (updateError) throw updateError;
     }
 
-    logger.info(`Processed ${allMissed.length} missed adherence records`);
-    return allMissed.length;
+    logger.info(`Processed ${allSkipped.length} skipped adherence records`);
+    return allSkipped.length;
   } catch (error) {
     logger.error(`Error processing missed adherence records: ${error.message}`);
     throw error;
