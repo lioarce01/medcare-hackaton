@@ -732,5 +732,35 @@
   },
   "common": {
     "loading": "正在加载页面..."
+  },
+  "subscription": {
+    "premium": {
+      "title": "高级功能已激活",
+      "description": "您可以使用所有高级功能"
+    },
+    "upgrade": {
+      "title": "升级至高级版",
+      "description": "获取高级功能，更好地管理您的药物",
+      "button": "立即升级",
+      "price": "仅需 $4.99/月"
+    },
+    "features": {
+      "sms": {
+        "title": "短信提醒",
+        "description": "通过短信接收药物提醒"
+      },
+      "sounds": {
+        "title": "自定义提示音",
+        "description": "选择您喜欢的通知提示音"
+      },
+      "priority": {
+        "title": "优先通知",
+        "description": "获取重要药物的优先提醒"
+      },
+      "family": {
+        "title": "家人通知",
+        "description": "与一位家人共享药物状态"
+      }
+    }
   }
 } 

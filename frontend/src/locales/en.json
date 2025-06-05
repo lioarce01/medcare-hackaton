@@ -366,6 +366,14 @@
       "privacy": {
         "title": "Privacy Settings",
         "description": "You can download all your personal data, medications, adherence records, and analytics as a PDF for your own records."
+      },
+      "subscription": {
+        "title": "Subscription Status",
+        "status": "Current Plan",
+        "premium": "Premium Plan Active",
+        "free": "Free Plan",
+        "manage": "Manage Subscription",
+        "upgrade": "Upgrade to Premium"
       }
     }
   },
@@ -665,7 +673,8 @@
       "profile": "Profile",
       "logout": "Logout",
       "login": "Login",
-      "sign_up": "Sign Up"
+      "sign_up": "Sign Up",
+      "subscription": "Premium Features"
     },
     "mobile": {
       "menu": {
@@ -676,5 +685,35 @@
   },
   "common": {
     "loading": "Loading page..."
+  },
+  "subscription": {
+    "premium": {
+      "title": "Premium Features Active",
+      "description": "You have access to all premium features"
+    },
+    "upgrade": {
+      "title": "Upgrade to Premium",
+      "description": "Get access to advanced features to better manage your medications",
+      "button": "Upgrade Now",
+      "price": "Only $4.99/month"
+    },
+    "features": {
+      "sms": {
+        "title": "SMS Reminders",
+        "description": "Get medication reminders via SMS"
+      },
+      "sounds": {
+        "title": "Custom Sounds",
+        "description": "Choose your preferred notification sound"
+      },
+      "priority": {
+        "title": "Priority Notifications",
+        "description": "Get priority alerts for critical medications"
+      },
+      "family": {
+        "title": "Family Notifications",
+        "description": "Share medication status with one family member"
+      }
+    }
   }
 }

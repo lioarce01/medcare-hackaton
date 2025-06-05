@@ -1,26 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { updateUserProfile } from "../api/users";
 import { supabase } from "../config/supabase";
-
-interface UserProfile {
-  id: string;
-  name?: string;
-  email?: string;
-  date_of_birth?: string;
-  gender?: string;
-  allergies?: string[];
-  conditions?: string[];
-  phone_number?: string;
-  emergency_contact?: {
-    name: string;
-    relationship: string;
-    phone_number: string;
-  };
-  preferred_reminder_time?: string[];
-  email_notifications_enabled?: boolean;
-  created_at?: string;
-  updated_at?: string;
-}
+import { UserProfile } from "../types/user_types";
 
 const fetchUserProfile = async (): Promise<UserProfile> => {
   // Primero obtener el usuario autenticado

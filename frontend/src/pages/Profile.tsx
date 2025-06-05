@@ -17,8 +17,8 @@ import {
 } from "lucide-react"
 import { useUpdateUserProfile, useUser } from "../hooks/useUser"
 import ExportUserDataCall from "../components/ExportUserDataCall"
-import { LoadingSpinner } from "../components/LoadingSpinner"
 import { useTranslation } from "react-i18next"
+import { Link } from "react-router-dom"
 
 export const Profile = () => {
   const { t } = useTranslation()
@@ -552,6 +552,34 @@ export const Profile = () => {
                     {t('profile.sections.privacy.description')}
                   </p>
                   <ExportUserDataCall />
+                </div>
+              </div>
+            </div>
+
+            <div className="mb-8 p-8 space-y-8">
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                {t('profile.sections.subscription.title')}
+              </h2>
+              <div className="bg-white rounded-lg shadow p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="text-lg font-medium text-gray-900">
+                      {t('profile.sections.subscription.status')}
+                    </h3>
+                    <p className="text-gray-600">
+                      {user?.subscription?.status === 'premium' 
+                        ? t('profile.sections.subscription.premium')
+                        : t('profile.sections.subscription.free')}
+                    </p>
+                  </div>
+                  <Link
+                    to="/subscription"
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+                  >
+                    {user?.subscription?.status === 'premium' 
+                      ? t('profile.sections.subscription.manage')
+                      : t('profile.sections.subscription.upgrade')}
+                  </Link>
                 </div>
               </div>
             </div>

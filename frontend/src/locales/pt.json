@@ -707,5 +707,35 @@
       "update": "Atualizar Medicamento",
       "updating": "Atualizando..."
     }
+  },
+  "subscription": {
+    "premium": {
+      "title": "Recursos Premium Ativos",
+      "description": "Você tem acesso a todos os recursos premium"
+    },
+    "upgrade": {
+      "title": "Atualizar para Premium",
+      "description": "Obtenha acesso a recursos avançados para gerenciar melhor seus medicamentos",
+      "button": "Atualizar Agora",
+      "price": "Apenas $4.99/mês"
+    },
+    "features": {
+      "sms": {
+        "title": "Lembretes por SMS",
+        "description": "Receba lembretes de medicamentos por SMS"
+      },
+      "sounds": {
+        "title": "Sons Personalizados",
+        "description": "Escolha seu som de notificação preferido"
+      },
+      "priority": {
+        "title": "Notificações Prioritárias",
+        "description": "Receba alertas prioritários para medicamentos críticos"
+      },
+      "family": {
+        "title": "Notificações Familiares",
+        "description": "Compartilhe o status dos medicamentos com um familiar"
+      }
+    }
   }
 } 

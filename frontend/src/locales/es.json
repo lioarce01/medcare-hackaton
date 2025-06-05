@@ -689,5 +689,35 @@
   },
   "common": {
     "loading": "Cargando página..."
+  },
+  "subscription": {
+    "premium": {
+      "title": "Características Premium Activas",
+      "description": "Tienes acceso a todas las características premium"
+    },
+    "upgrade": {
+      "title": "Actualizar a Premium",
+      "description": "Obtén acceso a funciones avanzadas para gestionar mejor tus medicamentos",
+      "button": "Actualizar Ahora",
+      "price": "Solo $4.99/mes"
+    },
+    "features": {
+      "sms": {
+        "title": "Recordatorios por SMS",
+        "description": "Recibe recordatorios de medicamentos por SMS"
+      },
+      "sounds": {
+        "title": "Sonidos Personalizados",
+        "description": "Elige tu sonido de notificación preferido"
+      },
+      "priority": {
+        "title": "Notificaciones Prioritarias",
+        "description": "Recibe alertas prioritarias para medicamentos críticos"
+      },
+      "family": {
+        "title": "Notificaciones Familiares",
+        "description": "Comparte el estado de los medicamentos con un familiar"
+      }
+    }
   }
 }
