@@ -11,7 +11,6 @@ interface AdherenceSummaryProps {
 }
 
 export const AdherenceSummary: React.FC<AdherenceSummaryProps> = ({ stats }) => {
-  console.log("stats:", stats)
   const getAdherenceColor = (rate: number) => {
     if (rate >= 90) return 'bg-green-500';
     if (rate >= 70) return 'bg-yellow-500';

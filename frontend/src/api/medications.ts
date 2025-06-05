@@ -89,25 +89,13 @@ function convertLocalTimeToUTC(
   localTime: string,
   userTimezone: string
 ): string {
-  const [hours, minutes] = localTime.split(":").map(Number);
-
-  // Create a date with today's date and the local time in user's timezone
-  const today = new Date();
-  const localDate = new Date(
-    today.getFullYear(),
-    today.getMonth(),
-    today.getDate(),
-    hours,
-    minutes
-  );
-
-  // Convert to UTC
-  return localToUTC(localTime);
+  // Use the imported localToUTC function with the timezone parameter
+  return localToUTC(localTime, userTimezone);
 }
 
 // Convert UTC time to local time considering user's timezone
 function convertUTCToLocalTime(utcTime: string, userTimezone: string): string {
-  return UTCToLocal(utcTime);
+  return UTCToLocal(utcTime, userTimezone);
 }
 
 export const medicationApi = {
@@ -224,27 +212,35 @@ export const medicationApi = {
           const utcTime = utcScheduledTimes[i];
           const nextDate = getNextOccurrence(day, localTime);
 
-          // If the next occurrence is today, create a record for today
-          if (nextDate.toDateString() === today.toDateString()) {
+          // Create adherence record with the properly converted UTC time
+          adherenceRecords.push({
+            user_id: user.id,
+            medication_id: medData.id,
+            scheduled_time: utcTime, // This now contains the correct UTC time
+            scheduled_date: formatUTCDate(nextDate),
+            user_timezone: userTimezone,
+            status: "pending",
+          });
+
+          // If the next occurrence is today and different from the calculated next date
+          const todayOccurrence = new Date(today);
+          const [hours, minutes] = localTime.split(":").map(Number);
+          todayOccurrence.setHours(hours, minutes, 0, 0);
+
+          if (
+            nextDate.toDateString() !== today.toDateString() &&
+            todayOccurrence > now &&
+            todayOccurrence.getDay() === today.getDay()
+          ) {
             adherenceRecords.push({
               user_id: user.id,
               medication_id: medData.id,
-              scheduled_time: utcTime, // Store UTC time
+              scheduled_time: utcTime,
               scheduled_date: formatUTCDate(today),
               user_timezone: userTimezone,
               status: "pending",
             });
           }
-
-          // Also create a record for the next occurrence
-          adherenceRecords.push({
-            user_id: user.id,
-            medication_id: medData.id,
-            scheduled_time: utcTime, // Store UTC time
-            scheduled_date: formatUTCDate(nextDate),
-            user_timezone: userTimezone,
-            status: "pending",
-          });
         }
       }
     } else {
@@ -254,27 +250,18 @@ export const medicationApi = {
         const utcTime = utcScheduledTimes[i];
         const nextDate = getNextDailyOccurrence(localTime);
 
-        // If the next occurrence is today, create a record for today
-        if (nextDate.toDateString() === today.toDateString()) {
-          adherenceRecords.push({
-            user_id: user.id,
-            medication_id: medData.id,
-            scheduled_time: utcTime, // Store UTC time
-            scheduled_date: formatUTCDate(today),
-            user_timezone: userTimezone,
-            status: "pending",
-          });
-        }
-
-        // Also create a record for the next occurrence
+        // Create adherence record with the properly converted UTC time
         adherenceRecords.push({
           user_id: user.id,
           medication_id: medData.id,
-          scheduled_time: utcTime, // Store UTC time
+          scheduled_time: utcTime, // This now contains the correct UTC time
           scheduled_date: formatUTCDate(nextDate),
           user_timezone: userTimezone,
           status: "pending",
         });
+
+        // If the next occurrence is today, we already created the record above
+        // No need for duplicate logic here
       }
     }
 

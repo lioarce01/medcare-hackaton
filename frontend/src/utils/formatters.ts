@@ -50,42 +50,93 @@ export const capitalize = (str: string): string => {
   return str.charAt(0).toUpperCase() + str.slice(1);
 };
 
-// Convert local time to UTC
-export const localToUTC = (timeStr: string): string => {
+export const localToUTC = (timeStr: string, timezone?: string): string => {
   // Parse the input time
   const [hours, minutes] = timeStr.split(":").map(Number);
 
-  // Create a date object with today's date and the input time in local timezone
-  const localDate = new Date();
-  localDate.setHours(hours, minutes, 0, 0);
+  // Create a date object with today's date and the input time
+  const today = new Date();
+  const localDate = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate(),
+    hours,
+    minutes,
+    0,
+    0
+  );
 
-  // Convert to UTC
-  const utcHours = localDate.getUTCHours();
-  const utcMinutes = localDate.getUTCMinutes();
+  if (timezone) {
+    // If timezone is provided, create a date in that specific timezone
+    const timezonedDate = new Date(
+      localDate.toLocaleString("en-US", { timeZone: timezone })
+    );
 
-  // Return the UTC time
-  return `${utcHours.toString().padStart(2, "0")}:${utcMinutes
-    .toString()
-    .padStart(2, "0")}`;
+    // Calculate the offset between the specified timezone and UTC
+    const utcTime = new Date(
+      localDate.getTime() - (timezonedDate.getTime() - localDate.getTime())
+    );
+
+    const utcHours = utcTime.getUTCHours();
+    const utcMinutes = utcTime.getUTCMinutes();
+
+    return `${utcHours.toString().padStart(2, "0")}:${utcMinutes
+      .toString()
+      .padStart(2, "0")}`;
+  } else {
+    // Use system's local timezone (original behavior)
+    const utcHours = localDate.getUTCHours();
+    const utcMinutes = localDate.getUTCMinutes();
+
+    return `${utcHours.toString().padStart(2, "0")}:${utcMinutes
+      .toString()
+      .padStart(2, "0")}`;
+  }
 };
 
-// Convert UTC to local time
-export const UTCToLocal = (timeStr: string): string => {
+export const UTCToLocal = (timeStr: string, timezone?: string): string => {
   // Parse the UTC time
   const [hours, minutes] = timeStr.split(":").map(Number);
 
   // Create a date object with today's date and the input time in UTC
-  const utcDate = new Date();
-  utcDate.setUTCHours(hours, minutes, 0, 0);
+  const today = new Date();
+  const utcDate = new Date(
+    Date.UTC(
+      today.getUTCFullYear(),
+      today.getUTCMonth(),
+      today.getUTCDate(),
+      hours,
+      minutes,
+      0,
+      0
+    )
+  );
 
-  // Get local hours and minutes
-  const localHours = utcDate.getHours();
-  const localMinutes = utcDate.getMinutes();
+  if (timezone) {
+    // Convert UTC to the specified timezone
+    const localTimeString = utcDate.toLocaleString("en-US", {
+      timeZone: timezone,
+      hour12: false,
+      hour: "2-digit",
+      minute: "2-digit",
+    });
 
-  // Return the local time
-  return `${localHours.toString().padStart(2, "0")}:${localMinutes
-    .toString()
-    .padStart(2, "0")}`;
+    // Extract just the time part (HH:MM)
+    const timePart = localTimeString.split(", ")[1] || localTimeString;
+    const [localHours, localMinutes] = timePart.split(":").map(Number);
+
+    return `${localHours.toString().padStart(2, "0")}:${localMinutes
+      .toString()
+      .padStart(2, "0")}`;
+  } else {
+    // Use system's local timezone (original behavior)
+    const localHours = utcDate.getHours();
+    const localMinutes = utcDate.getMinutes();
+
+    return `${localHours.toString().padStart(2, "0")}:${localMinutes
+      .toString()
+      .padStart(2, "0")}`;
+  }
 };
 
 // Format datetime with timezone
