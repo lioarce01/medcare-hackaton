@@ -624,11 +624,8 @@
         "placeholder": "Create a password",
         "requirements": "Password must be at least 8 characters long"
       },
-      "confirm_password": {
-        "label": "Confirm Password",
-        "placeholder": "Confirm your password"
-      },
-      "terms": "I agree to the Terms of Service and Privacy Policy"
+      "terms": "I agree to the Terms of Service and Privacy Policy",
+      "terms_required": "You must accept the terms and conditions"
     },
     "actions": {
       "register": "Create Account",

@@ -12,7 +12,6 @@ interface FormData {
   name: string;
   email: string;
   password: string;
-  confirmPassword: string;
   agreeToTerms: boolean;
 }
 
@@ -24,7 +23,6 @@ export const Register: React.FC = () => {
     name: '',
     email: '',
     password: '',
-    confirmPassword: '',
     agreeToTerms: false,
   });
   const [error, setError] = useState<string | null>(null);
@@ -33,11 +31,6 @@ export const Register: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-
-    if (formData.password !== formData.confirmPassword) {
-      setError(t('register.form.password_mismatch'));
-      return;
-    }
 
     if (!formData.agreeToTerms) {
       setError(t('register.form.terms_required'));
@@ -151,21 +144,6 @@ export const Register: React.FC = () => {
               <p className="mt-1 text-sm text-gray-500">
                 {t('register.form.password.requirements')}
               </p>
-            </div>
-
-            <div>
-              <Label htmlFor="confirmPassword">{t('register.form.confirm_password.label')}</Label>
-              <Input
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                autoComplete="new-password"
-                required
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                placeholder={t('register.form.confirm_password.placeholder')}
-                className="mt-1"
-              />
             </div>
 
             <div className="flex items-center">

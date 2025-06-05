@@ -637,12 +637,7 @@
         "placeholder": "Crea una contraseña",
         "requirements": "La contraseña debe tener al menos 8 caracteres"
       },
-      "confirm_password": {
-        "label": "Confirmar Contraseña",
-        "placeholder": "Confirma tu contraseña"
-      },
       "terms": "Acepto los Términos de Servicio y la Política de Privacidad",
-      "password_mismatch": "Las contraseñas no coinciden",
       "terms_required": "Debes aceptar los términos y condiciones"
     },
     "actions": {
