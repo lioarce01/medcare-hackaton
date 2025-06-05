@@ -339,17 +339,6 @@ export const Analytics: React.FC = () => {
     return { grade: "D", color: "from-red-500 to-rose-600", text: t('analytics.page.overview.grade.needs_improvement') }
   }
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center">
-        <div className="text-center">
-          <LoadingSpinner />
-          <p className="text-indigo-600 font-medium">{t('analytics.page.loading')}</p>
-        </div>
-      </div>
-    )
-  }
-
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center">

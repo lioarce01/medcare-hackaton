@@ -673,5 +673,8 @@
         "close": "Close main menu"
       }
     }
+  },
+  "common": {
+    "loading": "Loading page..."
   }
 }

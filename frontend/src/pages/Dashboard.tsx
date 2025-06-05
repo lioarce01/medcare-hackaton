@@ -44,18 +44,6 @@ export const Dashboard: React.FC = () => {
   const { data: activeMedications = [], isLoading: isLoadingMeds, error: medsError } = useActiveMedications();
   const { data: analyticsData = [], isLoading: isLoadingAnalytics, error: analyticsError } = useGetAnalyticsStats();
 
-  // Estado de carga inicial (solo autenticación)
-  if (isUserLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center">
-        <div className="text-center">
-          <LoadingSpinner />
-          <p className="text-indigo-600 font-medium mt-4">{t('dashboard.loading')}</p>
-        </div>
-      </div>
-    );
-  }
-
   // Si no hay usuario autenticado después de la carga, mostrar mensaje
   if (!user) {
     return (
@@ -67,13 +55,12 @@ export const Dashboard: React.FC = () => {
     );
   }
 
-  // Estado de carga de datos (después de la autenticación)
-  const isLoading = isLoadingAdherence || isLoadingMeds || isLoadingAnalytics;
   // Solo mostrar errores si el usuario está autenticado
   const error = user ? (adherenceError || medsError || analyticsError) : null;
 
   const transformedMedications = activeMedications.map((med: any) => ({
     id: med.id,
+    userId: med.user_id,
     name: med.name,
     dosage: med.dosage,
     scheduled_times: med.scheduled_times ?? [],
@@ -82,6 +69,19 @@ export const Dashboard: React.FC = () => {
     active: med.active ?? true,
     medication_type: med.medication_type ?? 'prescription',
     image_url: med.image_url ?? '',
+    createdAt: med.created_at,
+    updatedAt: med.updated_at,
+    start_date: med.start_date,
+    end_date: med.end_date,
+    refill_reminder: med.refill_reminder ?? {
+      enabled: false,
+      threshold: 0,
+      last_refill: null,
+      next_refill: null,
+      supply_amount: 0,
+      supply_unit: ''
+    },
+    side_effects_to_watch: med.side_effects_to_watch ?? []
   }));
 
   // Use adherenceRecords as todayDoses
@@ -134,17 +134,6 @@ export const Dashboard: React.FC = () => {
         setProcessingDose(null)
       }
     })
-  }
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center">
-        <div className="text-center">
-          <LoadingSpinner />
-          <p className="text-indigo-600 font-medium mt-4">{t('dashboard.loading')}</p>
-        </div>
-      </div>
-    );
   }
 
   // Get pending doses
@@ -293,7 +282,12 @@ export const Dashboard: React.FC = () => {
           
           {/* Adherence Summary */}
           <div className="bg-white rounded-2xl shadow-lg border border-gray-100">
-            <AdherenceSummary stats={adherenceStats.overall} />
+            <AdherenceSummary
+              adherenceRate={Math.round(adherenceStats.overall.adherenceRate)}
+              totalDoses={adherenceStats.overall.total}
+              takenDoses={adherenceStats.overall.taken}
+              streakDays={0}
+            />
           </div>
           
           {/* Today's Schedule */}

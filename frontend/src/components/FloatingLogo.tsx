@@ -1,4 +1,5 @@
 import React from 'react';
+import { OptimizedImage } from './OptimizedImage';
 
 export const FloatingLogo: React.FC = () => {
   return (
@@ -9,10 +10,13 @@ export const FloatingLogo: React.FC = () => {
         rel="noopener noreferrer"
         className="block hover:scale-110 transition-transform duration-200"
       >
-        <img 
-          src="/black_circle_360x360.png" 
+        <OptimizedImage 
+          src="/black_circle_360x360.webp" 
           alt="MedTracker Logo" 
+          width={64}
+          height={64}
           className="h-16 w-16 object-contain"
+          loading="eager"
         />
       </a>
     </div>

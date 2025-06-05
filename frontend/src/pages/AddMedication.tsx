@@ -1,5 +1,5 @@
 import type React from "react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import {
   ArrowLeft,
@@ -16,11 +16,42 @@ import {
 } from "lucide-react"
 import { useCreateMedication } from "../hooks/useMedications"
 import { useTranslation } from "react-i18next"
+import { useToast } from "../components/Toast"
+
+interface MedicationFormData {
+  name: string
+  dosage: {
+    amount: number | string
+    unit: string
+  }
+  scheduled_times: string[]
+  frequency: {
+    times_per_day: number
+    specific_days: string[]
+  }
+  instructions?: string
+  active: boolean
+  medication_type: string
+  image_url?: string
+  start_date: string
+  end_date?: string
+  refill_reminder: {
+    enabled: boolean
+    threshold: number
+    last_refill: string | null
+    next_refill: string | null
+    supply_amount: number
+    supply_unit: string
+  }
+  side_effects_to_watch: string[]
+}
 
 export const AddMedication = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const [formData, setFormData] = useState({
+  const createMedication = useCreateMedication()
+  const { showToast } = useToast()
+  const [formData, setFormData] = useState<MedicationFormData>({
     name: "",
     dosage: {
       amount: "",
@@ -28,7 +59,7 @@ export const AddMedication = () => {
     },
     frequency: {
       times_per_day: 1,
-      specific_days: [] as string[],
+      specific_days: [],
     },
     scheduled_times: ["08:00"],
     instructions: "",
@@ -44,39 +75,41 @@ export const AddMedication = () => {
       supply_amount: 0,
       supply_unit: "days",
     },
-    side_effects_to_watch: [] as string[],
+    side_effects_to_watch: [],
     image_url: "",
   })
-
-  const { mutate: AddMedication, isPending, isError, error } = useCreateMedication()
 
   const [newSideEffect, setNewSideEffect] = useState("")
   const [formSubmitted, setFormSubmitted] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (createMedication.isError) {
+      showToast(t("medications.add.error"), "error")
+    }
+  }, [createMedication.isError, t, showToast])
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
   
-    // Prepara los datos - Para app internacional
     const startDate = new Date(formData.start_date)
     startDate.setHours(0, 0, 0, 0)
   
     const medicationData = {
       ...formData,
-      scheduled_times: formData.scheduled_times, // Enviar en hora local (se convertirá a UTC en el API)
+      scheduled_times: formData.scheduled_times,
       start_date: startDate.toISOString(),
-      user_timezone: Intl.DateTimeFormat().resolvedOptions().timeZone, // Detectar zona horaria automáticamente
+      user_timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     }
   
-    AddMedication(medicationData, {
-      onSuccess: () => {
-        setFormSubmitted(true)
-        setTimeout(() => navigate("/medications"), 1500)
-      },
-      onError: (err: any) => {
-        console.error("Error adding medication:", err)
-      },
-    })
-  }  
+    try {
+      await createMedication.mutateAsync(medicationData)
+      showToast(t("medications.add.success"), "success")
+      setFormSubmitted(true)
+      setTimeout(() => navigate("/medications"), 1500)
+    } catch (err) {
+      showToast(t("medications.add.error"), "error")
+    }
+  }
 
   const addScheduledTime = () => {
     setFormData((prev) => ({
@@ -182,7 +215,7 @@ export const AddMedication = () => {
               </div>
             </div>
 
-            {isError && (
+            {createMedication.isError && (
               <div className="mx-8 mt-6">
                 <div className="relative">
                   <div className="absolute inset-0 bg-gradient-to-r from-red-500 to-rose-500 rounded-2xl opacity-10"></div>
@@ -192,8 +225,8 @@ export const AddMedication = () => {
                         <AlertTriangle className="w-5 h-5 text-white" />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-red-800">Error occurred</h3>
-                        <p className="text-red-600">{(error as Error)?.message || "Unexpected Error"}</p>
+                        <h3 className="font-semibold text-red-800">{t('add_medication.page.error.title')}</h3>
+                        <p className="text-red-600">{(createMedication.error as Error)?.message || t('add_medication.page.error.message')}</p>
                       </div>
                     </div>
                   </div>
@@ -560,10 +593,10 @@ export const AddMedication = () => {
               <div>
                 <button
                   type="submit"
-                  disabled={isPending}
+                  disabled={createMedication.isPending}
                   className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white py-4 px-6 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                 >
-                  {isPending ? t('add_medication.actions.adding') : t('add_medication.actions.add')}
+                  {createMedication.isPending ? t('add_medication.actions.adding') : t('add_medication.actions.add')}
                 </button>
               </div>
             </form>

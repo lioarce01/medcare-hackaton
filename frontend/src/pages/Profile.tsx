@@ -117,19 +117,6 @@ export const Profile = () => {
     }))
   }
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="relative">
-            <LoadingSpinner/>
-          </div>
-          <p className="text-indigo-600 font-medium">{t('profile.page.loading')}</p>
-        </div>
-      </div>
-    )
-  }
-
   return (
     <div className="min-h-screen py-8">
       <div className="max-w-4xl mx-auto px-4">

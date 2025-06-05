@@ -1,25 +1,15 @@
+import React from 'react'
+import { ExportUserDataPDFProps } from '../types/ui_types'
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
-interface ExportUserDataPDFProps {
-  profile: any;
-  medications: any[];
-  adherence: any[];
-  analytics: any;
-}
-
-export const ExportUserDataPDF: React.FC<ExportUserDataPDFProps> = ({
-  profile,
-  medications,
-  adherence,
-  analytics,
-}) => {
+export const ExportUserDataPDF: React.FC<ExportUserDataPDFProps> = ({ userData }) => {
   const handleExport = () => {
     const doc = new jsPDF();
 
     // Title
     doc.setFontSize(22);
-    doc.text(`${profile.name} - Adherence Data`, 14, 18);
+    doc.text(`${userData.profile.name} - Adherence Data`, 14, 18);
 
     // Profile Section
     doc.setFontSize(16);
@@ -30,18 +20,18 @@ export const ExportUserDataPDF: React.FC<ExportUserDataPDFProps> = ({
       theme: "grid",
       head: [["Field", "Value"]],
       body: [
-        ["Name", profile.name],
-        ["Email", profile.email],
-        ["Date of Birth", profile.date_of_birth],
-        ["Gender", profile.gender],
-        ["Phone", profile.phone_number],
-        ["Allergies", profile.allergies?.join(", ")],
-        ["Conditions", profile.conditions?.join(", ")],
-        ["Preferred Reminder Times", profile.preferred_reminder_time?.join(", ")],
-        ["Email Notifications", profile.email_notifications_enabled ? "Enabled" : "Disabled"],
-        ["Emergency Contact Name", profile.emergency_contact?.name],
-        ["Emergency Contact Relationship", profile.emergency_contact?.relationship],
-        ["Emergency Contact Phone", profile.emergency_contact?.phone_number],
+        ["Name", userData.profile.name],
+        ["Email", userData.profile.email],
+        ["Date of Birth", userData.profile.date_of_birth],
+        ["Gender", userData.profile.gender],
+        ["Phone", userData.profile.phone_number],
+        ["Allergies", userData.profile.allergies?.join(", ")],
+        ["Conditions", userData.profile.conditions?.join(", ")],
+        ["Preferred Reminder Times", userData.profile.preferred_reminder_time?.join(", ")],
+        ["Email Notifications", userData.profile.email_notifications_enabled ? "Enabled" : "Disabled"],
+        ["Emergency Contact Name", userData.profile.emergency_contact?.name],
+        ["Emergency Contact Relationship", userData.profile.emergency_contact?.relationship],
+        ["Emergency Contact Phone", userData.profile.emergency_contact?.phone_number],
       ],
       styles: { fontSize: 10 },
     });
@@ -56,7 +46,7 @@ export const ExportUserDataPDF: React.FC<ExportUserDataPDFProps> = ({
       startY: y + 4,
       theme: "striped",
       head: [["Name", "Dosage", "Type", "Frequency", "Active"]],
-      body: medications.map((m) => [
+      body: userData.medications.map((m) => [
         m.name,
         `${m.dosage?.amount} ${m.dosage?.unit}`,
         m.medication_type,
@@ -78,7 +68,7 @@ export const ExportUserDataPDF: React.FC<ExportUserDataPDFProps> = ({
       startY: y + 4,
       theme: "grid",
       head: [["Date", "Medication", "Scheduled Time", "Status", "Taken Time"]],
-      body: adherence.map((a) => [
+      body: userData.adherence.map((a) => [
         a.scheduled_date,
         a.medication?.name,
         a.scheduled_time,
@@ -99,10 +89,10 @@ export const ExportUserDataPDF: React.FC<ExportUserDataPDFProps> = ({
       theme: "grid",
       head: [["Metric", "Value"]],
       body: [
-        ["Total Doses", analytics?.overall?.total ?? "-"],
-        ["Taken", analytics?.overall?.taken ?? "-"],
-        ["Skipped", analytics?.overall?.skipped ?? "-"],
-        ["Adherence Rate (%)", analytics?.overall?.adherenceRate?.toFixed(2) ?? "-"],
+        ["Total Doses", userData.analytics?.overall?.total ?? "-"],
+        ["Taken", userData.analytics?.overall?.taken ?? "-"],
+        ["Skipped", userData.analytics?.overall?.skipped ?? "-"],
+        ["Adherence Rate (%)", userData.analytics?.overall?.adherenceRate?.toFixed(2) ?? "-"],
       ],
       styles: { fontSize: 10 },
     });
@@ -110,16 +100,16 @@ export const ExportUserDataPDF: React.FC<ExportUserDataPDFProps> = ({
     // Save the PDF with user name and date
     const today = new Date();
     const dateStr = today.toISOString().split("T")[0];
-    const safeName = (profile.name || "user").replace(/[^a-z0-9]/gi, "_");
+    const safeName = (userData.profile.name || "user").replace(/[^a-z0-9]/gi, "_");
     doc.save(`${safeName} - ${dateStr}.pdf`);
   };
 
   return (
     <button
       onClick={handleExport}
-      className="mt-4 px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl font-medium shadow hover:from-blue-600 hover:to-indigo-700 transition"
+      className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
     >
-      Download My Data as PDF
+      Export Data
     </button>
   );
 };

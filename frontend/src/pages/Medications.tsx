@@ -15,22 +15,10 @@ import {
   Clock,
 } from "lucide-react"
 import { MedicationList } from "../components/MedicationList"
-import { LoadingSpinner } from "../components/LoadingSpinner"
 import { useUser } from "../hooks/useUser"
 import { useDeleteMedication, useMedications } from "../hooks/useMedications"
 import { useTranslation } from "react-i18next"
-
-interface Medication {
-  id: string
-  name: string
-  dosage: { amount: number; unit: string }
-  frequency: string
-  active: boolean
-  created_at: string
-  updated_at: string
-  scheduled_times: string[]
-  medication_type: string
-}
+import { Medication } from "../types/medication_types"
 
 type FilterType = "all" | "active" | "inactive"
 
@@ -64,9 +52,7 @@ const filterMedications = (
     .filter((med) => {
       const search = searchTerm.toLowerCase();
       const nameMatch = med.name.toLowerCase().includes(search);
-      const dosage = typeof med.dosage === "string"
-        ? med.dosage
-        : `${med.dosage?.amount} ${med.dosage?.unit}`;
+      const dosage = `${med.dosage.amount} ${med.dosage.unit}`;
       const dosageMatch = dosage.toLowerCase().includes(search);
       return nameMatch || dosageMatch;
     });
@@ -79,13 +65,13 @@ export const Medications = () => {
   const [filter, setFilter] = useState<FilterType>("all")
   const { t } = useTranslation()
 
-  const { data: medications = [], isError, error, refetch, isPending: isRefreshing } = useMedications()
+  const { data: medicationsData, isError, error, refetch, isPending: isRefreshing } = useMedications()
   const {mutate: deleteMedication } = useDeleteMedication()
 
   const filteredMedications = useMemo(() => {
-    if (!medications) return [];
-    return filterMedications(medications, filter, searchTerm);
-  }, [medications, filter, searchTerm]);
+    if (!medicationsData?.all) return [];
+    return filterMedications(medicationsData.all, filter, searchTerm);
+  }, [medicationsData?.all, filter, searchTerm]);
 
   // Efecto para cargar medicamentos inicialmente
   useEffect(() => {
@@ -98,21 +84,7 @@ export const Medications = () => {
   // Función para refrescar
   const handleRefresh = async () => {
     await refetch({ throwOnError: true });
-};
-
-  // Show loading while auth is loading or data is loading
-  if (authLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="relative">
-            <LoadingSpinner />
-          </div>
-          <p className="text-indigo-600 font-medium">{t('medications.page.loading')}</p>
-        </div>
-      </div>
-    )
-  }
+  };
 
   // Show message if not authenticated
   if (!user) {
@@ -261,7 +233,7 @@ export const Medications = () => {
                       <p className="text-sm text-gray-700">
                         {t('medications.page.results.summary', { 
                           filtered: filteredMedications.length,
-                          total: medications?.length 
+                          total: medicationsData?.all.length 
                         })}
                         {searchTerm && (
                           <span>
@@ -289,7 +261,7 @@ export const Medications = () => {
             <div className="relative bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 overflow-hidden">
               {filteredMedications.length === 0 ? (
                 <div className="p-12 text-center">
-                  {medications?.length === 0 ? (
+                  {medicationsData?.all.length === 0 ? (
                     // No medications at all
                     <>
                       <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-2xl shadow-lg flex items-center justify-center transform transition-transform hover:scale-110 duration-300">
@@ -336,11 +308,7 @@ export const Medications = () => {
                 </div>
               ) : (
                 <MedicationList
-                  medications={filteredMedications.map((med) => ({
-                    ...med,
-                    dosage: parseDosage(med.dosage),
-                    frequency: parseFrequency(med.frequency),
-                  }))}
+                  medications={filteredMedications}
                   onDelete={handleDelete}
                 />
               )}
@@ -348,7 +316,7 @@ export const Medications = () => {
           </div>
 
           {/* Enhanced Stats Summary */}
-          {medications?.length > 0 && (
+          {medicationsData?.all && medicationsData.all.length > 0 && (
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-600 rounded-3xl opacity-5"></div>
               <div className="relative bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 overflow-hidden">
@@ -363,21 +331,21 @@ export const Medications = () => {
                     {[
                       {
                         title: t('medications.page.stats.total'),
-                        value: medications?.length,
+                        value: medicationsData.all.length,
                         icon: Pill,
                         color: "from-blue-500 to-indigo-600",
                         bgColor: "from-blue-50 to-indigo-50",
                       },
                       {
                         title: t('medications.page.stats.active'),
-                        value: medications?.filter((med) => med.active).length,
+                        value: medicationsData.all.filter((med) => med.active).length,
                         icon: Activity,
                         color: "from-emerald-500 to-green-600",
                         bgColor: "from-emerald-50 to-green-50",
                       },
                       {
                         title: t('medications.page.stats.inactive'),
-                        value: medications?.filter((med) => !med.active).length,
+                        value: medicationsData.all.filter((med) => !med.active).length,
                         icon: Pause,
                         color: "from-gray-500 to-slate-600",
                         bgColor: "from-gray-50 to-slate-50",
@@ -403,7 +371,7 @@ export const Medications = () => {
           )}
 
           {/* Daily Schedule Preview */}
-          {medications?.length > 0 && (
+          {medicationsData?.all && medicationsData.all.length > 0 && (
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-emerald-600 rounded-3xl opacity-5"></div>
               <div className="relative bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 overflow-hidden">
@@ -424,7 +392,7 @@ export const Medications = () => {
                       <Clock className="w-5 h-5 text-emerald-600" />
                       <span className="text-gray-700">
                         {t('medications.page.schedule.active_count', { 
-                          count: medications?.filter((med) => med.active).length 
+                          count: medicationsData.all.filter((med) => med.active).length 
                         })}
                       </span>
                     </div>

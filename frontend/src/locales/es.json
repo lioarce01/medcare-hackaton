@@ -686,5 +686,8 @@
         "close": "Cerrar menú principal"
       }
     }
+  },
+  "common": {
+    "loading": "Cargando página..."
   }
 }
