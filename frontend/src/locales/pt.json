@@ -384,7 +384,53 @@
       },
       "privacy": {
         "title": "Configurações de Privacidade",
-        "description": "Você pode baixar todos os seus dados pessoais, medicamentos, registros de adesão e análises como PDF para seus próprios registros."
+        "description": "Você pode baixar todos os seus dados pessoais, medicamentos, registros de aderência e análises como PDF para seus próprios registros.",
+        "export": {
+          "button": "Exportar Dados",
+          "title": "{{name}} - Dados de Aderência",
+          "sections": {
+            "profile": "Perfil",
+            "medications": "Medicamentos",
+            "adherence": "Registros de Aderência",
+            "analytics": "Análises"
+          },
+          "fields": {
+            "name": "Nome",
+            "email": "E-mail",
+            "date_of_birth": "Data de Nascimento",
+            "gender": "Gênero",
+            "phone": "Telefone",
+            "allergies": "Alergias",
+            "conditions": "Condições",
+            "reminder_times": "Horários Preferidos de Lembretes",
+            "email_notifications": "Notificações por E-mail",
+            "emergency_contact": {
+              "name": "Nome do Contato de Emergência",
+              "relationship": "Relação do Contato de Emergência",
+              "phone": "Telefone do Contato de Emergência"
+            }
+          },
+          "medications": {
+            "name": "Nome",
+            "dosage": "Dosagem",
+            "type": "Tipo",
+            "frequency": "Frequência",
+            "active": "Ativo"
+          },
+          "adherence": {
+            "date": "Data",
+            "medication": "Medicamento",
+            "scheduled_time": "Horário Programado",
+            "status": "Status",
+            "taken_time": "Horário de Tomada"
+          },
+          "analytics": {
+            "total_doses": "Total de Doses",
+            "taken": "Tomadas",
+            "skipped": "Puladas",
+            "adherence_rate": "Taxa de Aderência (%)"
+          }
+        }
       }
     }
   },

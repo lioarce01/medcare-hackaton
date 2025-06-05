@@ -5,21 +5,22 @@ import { summarizeAnalytics, useGetAnalyticsStats } from '../hooks/useAnalytics'
 import { useUser } from '../hooks/useUser';
 
 const ExportUserDataCall = () => {
-
-    const { data: user } = useUser()
-const { data: medications = [] } = useMedications();
-const { data: adherence = [] } = useGetAdherenceHistory();
-const { data: analytics = [] } = useGetAnalyticsStats()
+  const { data: user } = useUser()
+  const { data: medications = [] } = useMedications();
+  const { data: adherence = [] } = useGetAdherenceHistory();
+  const { data: analytics = [] } = useGetAnalyticsStats()
 
 const analyticsReports = summarizeAnalytics(analytics)
 
   return (
     <>
         <ExportUserDataPDF
-        profile={user}
-        medications={medications}
-        adherence={adherence}
-        analytics={analyticsReports}
+        userData={{
+            profile: user,
+            medications: (medications as { all: any[] })?.all || [],
+            adherence,
+            analytics: analyticsReports
+        }}
         />
     </>
   )

@@ -378,7 +378,61 @@
       },
       "privacy": {
         "title": "Configuración de Privacidad",
-        "description": "Puedes descargar todos tus datos personales, medicamentos, registros de adherencia y análisis como PDF para tus propios registros."
+        "description": "Puedes descargar todos tus datos personales, medicamentos, registros de adherencia y análisis como PDF para tus propios registros.",
+        "export": {
+          "button": "Exportar Datos",
+          "title": "{{name}} - Datos de Adherencia",
+          "sections": {
+            "profile": "Perfil",
+            "medications": "Medicamentos",
+            "adherence": "Registros de Adherencia",
+            "analytics": "Análisis"
+          },
+          "fields": {
+            "name": "Nombre",
+            "email": "Correo Electrónico",
+            "date_of_birth": "Fecha de Nacimiento",
+            "gender": "Género",
+            "phone": "Teléfono",
+            "allergies": "Alergias",
+            "conditions": "Condiciones",
+            "reminder_times": "Horarios Preferidos de Recordatorios",
+            "email_notifications": "Notificaciones por Correo",
+            "emergency_contact": {
+              "name": "Nombre del Contacto de Emergencia",
+              "relationship": "Relación del Contacto de Emergencia",
+              "phone": "Teléfono del Contacto de Emergencia"
+            }
+          },
+          "medications": {
+            "name": "Nombre",
+            "dosage": "Dosis",
+            "type": "Tipo",
+            "frequency": "Frecuencia",
+            "active": "Activo"
+          },
+          "adherence": {
+            "date": "Fecha",
+            "medication": "Medicamento",
+            "scheduled_time": "Hora Programada",
+            "status": "Estado",
+            "taken_time": "Hora de Toma"
+          },
+          "analytics": {
+            "total_doses": "Total de Dosis",
+            "taken": "Tomadas",
+            "skipped": "Omitidas",
+            "adherence_rate": "Tasa de Adherencia (%)"
+          }
+        }
+      },
+      "subscription": {
+        "title": "Estado de Suscripción",
+        "status": "Plan Actual",
+        "premium": "Plan Premium Activo",
+        "free": "Plan Gratuito",
+        "manage": "Gestionar Suscripción",
+        "upgrade": "Actualizar a Premium"
       }
     }
   },

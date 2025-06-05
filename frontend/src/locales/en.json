@@ -365,7 +365,53 @@
       },
       "privacy": {
         "title": "Privacy Settings",
-        "description": "You can download all your personal data, medications, adherence records, and analytics as a PDF for your own records."
+        "description": "You can download all your personal data, medications, adherence records, and analytics as a PDF for your own records.",
+        "export": {
+          "button": "Export Data",
+          "title": "{{name}} - Adherence Data",
+          "sections": {
+            "profile": "Profile",
+            "medications": "Medications",
+            "adherence": "Adherence Records",
+            "analytics": "Analytics"
+          },
+          "fields": {
+            "name": "Name",
+            "email": "Email",
+            "date_of_birth": "Date of Birth",
+            "gender": "Gender",
+            "phone": "Phone",
+            "allergies": "Allergies",
+            "conditions": "Conditions",
+            "reminder_times": "Preferred Reminder Times",
+            "email_notifications": "Email Notifications",
+            "emergency_contact": {
+              "name": "Emergency Contact Name",
+              "relationship": "Emergency Contact Relationship",
+              "phone": "Emergency Contact Phone"
+            }
+          },
+          "medications": {
+            "name": "Name",
+            "dosage": "Dosage",
+            "type": "Type",
+            "frequency": "Frequency",
+            "active": "Active"
+          },
+          "adherence": {
+            "date": "Date",
+            "medication": "Medication",
+            "scheduled_time": "Scheduled Time",
+            "status": "Status",
+            "taken_time": "Taken Time"
+          },
+          "analytics": {
+            "total_doses": "Total Doses",
+            "taken": "Taken",
+            "skipped": "Skipped",
+            "adherence_rate": "Adherence Rate (%)"
+          }
+        }
       },
       "subscription": {
         "title": "Subscription Status",
