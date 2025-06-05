@@ -4,7 +4,7 @@ import { Clock, Calendar, CheckCircle, XCircle, AlertCircle, PlusCircle, Trendin
 import { AdherenceSummary } from '../components/AdherenceSummary';
 import { MedicationList } from '../components/MedicationList';
 import { LoadingSpinner } from '../components/LoadingSpinner';
-import { formatTime } from '../utils/formatters';
+import { formatTime } from '../lib/formatters';
 import { useUser } from '../hooks/useUser';
 import { useConfirmDose, useGetAdherenceHistory, useSkipDose } from '../hooks/useAdherence';
 import { useActiveMedications } from '../hooks/useMedications';

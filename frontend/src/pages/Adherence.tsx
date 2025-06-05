@@ -12,7 +12,7 @@ import {
   TrendingUp,
 } from "lucide-react"
 import { LoadingSpinner } from "../components/LoadingSpinner"
-import { formatTime, formatDate } from "../utils/formatters"
+import { formatTime, formatDate } from "../lib/formatters"
 import { useUser } from "../hooks/useUser"
 import { useConfirmDose, useGetAdherenceHistory, useSkipDose } from "../hooks/useAdherence"
 import { useTranslation } from "react-i18next"

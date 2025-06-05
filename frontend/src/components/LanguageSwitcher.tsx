@@ -45,7 +45,7 @@ export const LanguageSwitcher: React.FC = () => {
         aria-haspopup="true"
         aria-label={t('language.switcher.label', 'Select language')}
       >
-        <Globe size={16} className="text-gray-500" />
+        {/* <Globe size={16} className="text-gray-500" /> */}
         <span className="flex items-center">
           <span className="mr-2">{selectedLanguage?.flag}</span>
           <span className="hidden sm:inline">{selectedLanguage?.nativeName}</span>

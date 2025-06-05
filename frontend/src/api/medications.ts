@@ -1,5 +1,5 @@
 import { supabase } from "../config/supabase";
-import { localToUTC, UTCToLocal } from "../utils/formatters";
+import { localToUTC, UTCToLocal } from "../lib/formatters";
 
 async function getUser() {
   const {

@@ -22,7 +22,7 @@ import {
   Filter,
 } from "lucide-react"
 import { LoadingSpinner } from "../components/LoadingSpinner"
-import { formatPercentage } from "../utils/formatters"
+import { formatPercentage } from "../lib/formatters"
 import { useGetAdherenceHistory } from "../hooks/useAdherence"
 import { useTranslation } from "react-i18next"
 
