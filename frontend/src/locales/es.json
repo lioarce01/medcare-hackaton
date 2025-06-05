@@ -237,7 +237,24 @@
           "organization": "Mantén tus medicamentos organizados"
         }
       }
-    }
+    },
+    "summary": {
+        "title": "Resumen de Adherencia",
+        "adherence": "Adherencia",
+        "status": {
+          "excellent": "Excelente",
+          "good": "Bueno",
+          "fair": "Regular",
+          "needs_improvement": "Necesita Mejora"
+        },
+        "stats": {
+          "taken": "Tomadas",
+          "skipped": "Omitidas",
+          "total": "Total",
+          "doses": "dosis",
+          "scheduled": "programadas"
+        }
+      }
   },
   "analytics": {
     "page": {

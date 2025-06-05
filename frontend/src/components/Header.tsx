@@ -1,15 +1,12 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, User, Pill, LineChart, LogOut, Home, Bell } from 'lucide-react';
-import { useUser } from '../hooks/useUser';
+import { Menu, X, User, Pill, LogOut, Home } from 'lucide-react';
 import { useSignOut } from '../hooks/useAuth';
 import { useTranslation } from 'react-i18next';
 import { useSession } from '../hooks/useSession';
 import { LanguageSwitcher } from './LanguageSwitcher';
-import { Button } from './ui/button';
 
 export const Header: React.FC = () => {
-  const { data: user } = useUser();
   const { mutate: logout } = useSignOut()
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);

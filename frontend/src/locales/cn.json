@@ -265,6 +265,23 @@
           "organization": "保持药物有序"
         }
       }
+    },
+    "summary": {
+      "title": "依从性摘要",
+      "adherence": "依从性",
+      "status": {
+        "excellent": "优秀",
+        "good": "良好",
+        "fair": "一般",
+        "needs_improvement": "需要改进"
+      },
+      "stats": {
+        "taken": "已服用",
+        "skipped": "已跳过",
+        "total": "总计",
+        "doses": "剂量",
+        "scheduled": "计划"
+      }
     }
   },
   "analytics": {
@@ -408,31 +425,84 @@
       }
     }
   },
+  "login": {
+    "page": {
+      "title": "欢迎回来",
+      "subtitle": "登录您的账户以继续",
+      "success": {
+        "title": "登录成功",
+        "message": "您已成功登录到您的账户",
+        "redirecting": "正在重定向到仪表板..."
+      },
+      "error": {
+        "title": "登录失败",
+        "message": "请检查您的凭据并重试"
+      }
+    },
+    "form": {
+      "email": {
+        "label": "电子邮件地址",
+        "placeholder": "输入您的电子邮件地址"
+      },
+      "password": {
+        "label": "密码",
+        "placeholder": "输入您的密码"
+      },
+      "remember": "记住我",
+      "forgot": "忘记密码？"
+    },
+    "actions": {
+      "sign_in": "登录",
+      "signing_in": "正在登录...",
+      "create_account": "创建账户",
+      "or": "或"
+    },
+    "oauth": {
+      "google": "使用 Google 继续",
+      "github": "使用 GitHub 继续"
+    }
+  },
   "register": {
-    "title": "创建账户",
-    "subtitle": "开始您的药物管理之旅",
-    "success": "账户创建成功！正在重定向...",
-    "error": "注册时出错",
-    "name": {
-      "label": "姓名",
-      "placeholder": "输入您的姓名"
+    "page": {
+      "title": "创建账户",
+      "subtitle": "加入我们开始管理您的药物",
+      "success": {
+        "title": "账户创建成功",
+        "message": "您的账户已成功创建",
+        "redirecting": "正在重定向到仪表板..."
+      },
+      "error": {
+        "title": "注册失败",
+        "message": "请检查您的信息并重试"
+      }
     },
-    "email": {
-      "label": "电子邮件",
-      "placeholder": "输入您的电子邮件"
+    "form": {
+      "name": {
+        "label": "姓名",
+        "placeholder": "输入您的姓名"
+      },
+      "email": {
+        "label": "电子邮件地址",
+        "placeholder": "输入您的电子邮件地址"
+      },
+      "password": {
+        "label": "密码",
+        "placeholder": "创建密码",
+        "requirements": "密码长度必须至少为8个字符"
+      },
+      "terms": "我同意服务条款和隐私政策",
+      "terms_required": "您必须接受条款和条件"
     },
-    "password": {
-      "label": "密码",
-      "placeholder": "创建密码"
+    "actions": {
+      "register": "创建账户",
+      "registering": "正在创建账户...",
+      "sign_in": "已有账户？登录",
+      "or": "或"
     },
-    "terms": "我同意服务条款和隐私政策",
-    "terms_required": "您必须接受条款和条件",
-    "register": "创建账户",
-    "have_account": "已有账户？",
-    "login": "登录",
-    "or": "或",
-    "google": "使用 Google 继续",
-    "github": "使用 GitHub 继续"
+    "oauth": {
+      "google": "使用 Google 继续",
+      "github": "使用 GitHub 继续"
+    }
   },
   "not_found": {
     "title": "页面未找到",

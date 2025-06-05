@@ -224,7 +224,24 @@
           "organization": "Keep your medications organized"
         }
       }
-    }
+    },
+    "summary": {
+        "title": "Adherence Summary",
+        "adherence": "Adherence",
+        "status": {
+          "excellent": "Excellent",
+          "good": "Good",
+          "fair": "Fair",
+          "needs_improvement": "Needs Improvement"
+        },
+        "stats": {
+          "taken": "Taken",
+          "skipped": "Skipped",
+          "total": "Total",
+          "doses": "doses",
+          "scheduled": "scheduled"
+        }
+      }
   },
   "analytics": {
     "page": {

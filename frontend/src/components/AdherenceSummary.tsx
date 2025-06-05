@@ -1,5 +1,6 @@
 import React from 'react';
 import { CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface AdherenceSummaryProps {
   stats: {
@@ -11,6 +12,8 @@ interface AdherenceSummaryProps {
 }
 
 export const AdherenceSummary: React.FC<AdherenceSummaryProps> = ({ stats }) => {
+  const { t } = useTranslation();
+
   const getAdherenceColor = (rate: number) => {
     if (rate >= 90) return 'bg-green-500';
     if (rate >= 70) return 'bg-yellow-500';
@@ -18,10 +21,10 @@ export const AdherenceSummary: React.FC<AdherenceSummaryProps> = ({ stats }) => 
   };
   
   const getAdherenceText = (rate: number) => {
-    if (rate >= 90) return 'Excellent';
-    if (rate >= 70) return 'Good';
-    if (rate >= 50) return 'Fair';
-    return 'Needs Improvement';
+    if (rate >= 90) return t('adherence.summary.status.excellent');
+    if (rate >= 70) return t('adherence.summary.status.good');
+    if (rate >= 50) return t('adherence.summary.status.fair');
+    return t('adherence.summary.status.needs_improvement');
   };
   
   const adherenceColor = getAdherenceColor(stats.adherenceRate);
@@ -29,7 +32,7 @@ export const AdherenceSummary: React.FC<AdherenceSummaryProps> = ({ stats }) => 
   
   return (
     <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
-      <h3 className="text-lg font-semibold text-gray-800 mb-4">Adherence Summary</h3>
+      <h3 className="text-lg font-semibold text-gray-800 mb-4">{t('adherence.summary.title')}</h3>
       
       <div className="flex flex-col md:flex-row">
         {/* Adherence Rate */}
@@ -65,7 +68,7 @@ export const AdherenceSummary: React.FC<AdherenceSummaryProps> = ({ stats }) => 
                 <span className="text-3xl font-bold text-gray-800">
                   {Math.round(stats.adherenceRate)}%
                 </span>
-                <span className="text-sm text-gray-500">Adherence</span>
+                <span className="text-sm text-gray-500">{t('adherence.summary.adherence')}</span>
               </div>
             </div>
             <div className={`mt-2 px-3 py-1 rounded-full text-white text-sm font-medium ${adherenceColor}`}>
@@ -80,30 +83,30 @@ export const AdherenceSummary: React.FC<AdherenceSummaryProps> = ({ stats }) => 
           <div className="bg-green-50 border border-green-100 rounded-lg p-4 flex flex-col items-center justify-center">
             <div className="flex items-center mb-2">
               <CheckCircle className="text-green-500 mr-2" size={20} />
-              <h4 className="text-gray-700 font-medium">Taken</h4>
+              <h4 className="text-gray-700 font-medium">{t('adherence.summary.stats.taken')}</h4>
             </div>
             <p className="text-2xl font-bold text-gray-800">{stats.taken}</p>
-            <p className="text-sm text-gray-500">doses</p>
+            <p className="text-sm text-gray-500">{t('adherence.summary.stats.doses')}</p>
           </div>
           
           {/* skipped */}
           <div className="bg-red-50 border border-red-100 rounded-lg p-4 flex flex-col items-center justify-center">
             <div className="flex items-center mb-2">
               <XCircle className="text-red-500 mr-2" size={20} />
-              <h4 className="text-gray-700 font-medium">Skipped</h4>
+              <h4 className="text-gray-700 font-medium">{t('adherence.summary.stats.skipped')}</h4>
             </div>
             <p className="text-2xl font-bold text-gray-800">{stats.skipped}</p>
-            <p className="text-sm text-gray-500">doses</p>
+            <p className="text-sm text-gray-500">{t('adherence.summary.stats.doses')}</p>
           </div>
           
           {/* Total */}
           <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 flex flex-col items-center justify-center">
             <div className="flex items-center mb-2">
               <AlertTriangle className="text-blue-500 mr-2" size={20} />
-              <h4 className="text-gray-700 font-medium">Total</h4>
+              <h4 className="text-gray-700 font-medium">{t('adherence.summary.stats.total')}</h4>
             </div>
             <p className="text-2xl font-bold text-gray-800">{stats.total}</p>
-            <p className="text-sm text-gray-500">scheduled</p>
+            <p className="text-sm text-gray-500">{t('adherence.summary.stats.scheduled')}</p>
           </div>
         </div>
       </div>
