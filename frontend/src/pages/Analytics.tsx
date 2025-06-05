@@ -14,13 +14,10 @@ import {
 import { Line, Bar } from "react-chartjs-2"
 import {
   Calendar,
-  TrendingUp,
   Activity,
   AlertTriangle,
   BarChart3,
-  PieChart,
   Target,
-  Award,
   ChevronDown,
   Filter,
 } from "lucide-react"
@@ -140,7 +137,6 @@ export const Analytics: React.FC = () => {
     const total = filteredData.length
     const taken = filteredData.filter(record => record.status === "taken").length
     const skipped = filteredData.filter(record => record.status === "skipped").length
-    const pending = filteredData.filter(record => record.status === "pending").length
     
     // Adherence rate should exclude pending doses
     const completedDoses = taken + skipped
@@ -483,7 +479,7 @@ export const Analytics: React.FC = () => {
                 color: "from-purple-500 to-indigo-600",
                 bgColor: "from-purple-50 to-indigo-50",
               },
-            ].map((stat, index) => (
+            ].map((stat) => (
               <div key={stat.title} className="relative group">
                 <div
                   className={`absolute inset-0 bg-gradient-to-r ${stat.bgColor} rounded-2xl opacity-50 group-hover:opacity-70 transition-opacity`}
