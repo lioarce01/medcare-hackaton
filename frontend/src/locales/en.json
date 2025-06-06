@@ -226,22 +226,49 @@
       }
     },
     "summary": {
-        "title": "Adherence Summary",
-        "adherence": "Adherence",
-        "status": {
-          "excellent": "Excellent",
-          "good": "Good",
-          "fair": "Fair",
-          "needs_improvement": "Needs Improvement"
-        },
-        "stats": {
-          "taken": "Taken",
-          "skipped": "Skipped",
-          "total": "Total",
-          "doses": "doses",
-          "scheduled": "scheduled"
-        }
+      "title": "Adherence Summary",
+      "subtitle": "Your medication adherence overview",
+      "complete": "Complete",
+      "health_hero": "Health Hero",
+      "adherence": "Adherence",
+      "status": {
+        "excellent": "Excellent",
+        "good": "Good",
+        "fair": "Fair",
+        "needs_improvement": "Needs Improvement"
+      },
+      "stats": {
+        "taken": "Taken",
+        "skipped": "Skipped",
+        "total": "Total",
+        "doses": "doses",
+        "scheduled": "scheduled",
+        "doses_taken": "Doses Taken",
+        "keep_up_work": "Keep up the great work!",
+        "streak_days": "Streak Days",
+        "on_fire": "You're on fire! 🔥",
+        "building_momentum": "Building momentum! ⚡",
+        "total_goal": "Total Goal",
+        "health_target": "Your health target"
+      },
+      "messages": {
+        "excellent": "🌟 Amazing! You're a health superstar!",
+        "good": "💪 Great job! You're doing wonderful!",
+        "fair": "👍 Good progress! Keep it up!",
+        "needs_improvement": "🌱 Every step counts! You've got this!"
+      },
+      "emoji": {
+        "excellent": "🏆",
+        "good": "⭐",
+        "fair": "🌟"
+      },
+      "encouragement": {
+        "fantastic": "You're doing fantastic!",
+        "every_dose": "Every dose matters!",
+        "commitment": "Your commitment to your health is inspiring. Keep up this amazing momentum!",
+        "investment": "Remember, taking care of yourself is the best investment you can make. You've got this!"
       }
+    }
   },
   "analytics": {
     "page": {
@@ -365,7 +392,61 @@
       },
       "privacy": {
         "title": "Privacy Settings",
-        "description": "You can download all your personal data, medications, adherence records, and analytics as a PDF for your own records."
+        "description": "You can download all your personal data, medications, adherence records, and analytics as a PDF for your own records.",
+        "export": {
+          "button": "Export Data",
+          "title": "{{name}} - Adherence Data",
+          "sections": {
+            "profile": "Profile",
+            "medications": "Medications",
+            "adherence": "Adherence Records",
+            "analytics": "Analytics"
+          },
+          "fields": {
+            "name": "Name",
+            "email": "Email",
+            "date_of_birth": "Date of Birth",
+            "gender": "Gender",
+            "phone": "Phone",
+            "allergies": "Allergies",
+            "conditions": "Conditions",
+            "reminder_times": "Preferred Reminder Times",
+            "email_notifications": "Email Notifications",
+            "emergency_contact": {
+              "name": "Emergency Contact Name",
+              "relationship": "Emergency Contact Relationship",
+              "phone": "Emergency Contact Phone"
+            }
+          },
+          "medications": {
+            "name": "Name",
+            "dosage": "Dosage",
+            "type": "Type",
+            "frequency": "Frequency",
+            "active": "Active"
+          },
+          "adherence": {
+            "date": "Date",
+            "medication": "Medication",
+            "scheduled_time": "Scheduled Time",
+            "status": "Status",
+            "taken_time": "Taken Time"
+          },
+          "analytics": {
+            "total_doses": "Total Doses",
+            "taken": "Taken",
+            "skipped": "Skipped",
+            "adherence_rate": "Adherence Rate (%)"
+          }
+        }
+      },
+      "subscription": {
+        "title": "Subscription Status",
+        "status": "Current Plan",
+        "premium": "Premium Plan Active",
+        "free": "Free Plan",
+        "manage": "Manage Subscription",
+        "upgrade": "Upgrade to Premium"
       }
     }
   },
@@ -665,12 +746,47 @@
       "profile": "Profile",
       "logout": "Logout",
       "login": "Login",
-      "sign_up": "Sign Up"
+      "sign_up": "Sign Up",
+      "subscription": "Get Premium",
+      "premium_feature": "Premium Feature"
     },
     "mobile": {
       "menu": {
         "open": "Open main menu",
         "close": "Close main menu"
+      }
+    }
+  },
+  "common": {
+    "loading": "Loading page..."
+  },
+  "subscription": {
+    "premium": {
+      "title": "Premium Features Active",
+      "description": "You have access to all premium features"
+    },
+    "upgrade": {
+      "title": "Upgrade to Premium",
+      "description": "Get access to advanced features to better manage your medications",
+      "button": "Get Premium",
+      "price": "Only $4.99/month"
+    },
+    "features": {
+      "sms": {
+        "title": "SMS Reminders",
+        "description": "Get medication reminders via SMS"
+      },
+      "sounds": {
+        "title": "Custom Sounds",
+        "description": "Choose your preferred notification sound"
+      },
+      "priority": {
+        "title": "Priority Notifications",
+        "description": "Get priority alerts for critical medications"
+      },
+      "family": {
+        "title": "Family Notifications",
+        "description": "Share medication status with one family member"
       }
     }
   }

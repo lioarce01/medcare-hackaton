@@ -239,22 +239,50 @@
       }
     },
     "summary": {
-        "title": "Resumen de Adherencia",
-        "adherence": "Adherencia",
-        "status": {
-          "excellent": "Excelente",
-          "good": "Bueno",
-          "fair": "Regular",
-          "needs_improvement": "Necesita Mejora"
-        },
-        "stats": {
-          "taken": "Tomadas",
-          "skipped": "Omitidas",
-          "total": "Total",
-          "doses": "dosis",
-          "scheduled": "programadas"
-        }
+      "title": "Resumen de Adherencia",
+      "subtitle": "Vista general de tu adherencia a la medicación",
+      "complete": "Completo",
+      "health_hero": "Héroe de la Salud",
+      "adherence": "Adherencia",
+      "status": {
+        "excellent": "Excelente",
+        "good": "Bueno",
+        "fair": "Regular",
+        "needs_improvement": "Necesita Mejorar"
+      },
+      "stats": {
+        "taken": "Tomadas",
+        "skipped": "Omitidas",
+        "total": "Total",
+        "doses": "dosis",
+        "scheduled": "programadas",
+        "remaining": "restantes",
+        "doses_taken": "Dosis Tomadas",
+        "keep_up_work": "¡Sigue con el buen trabajo!",
+        "streak_days": "Días Consecutivos",
+        "on_fire": "¡Estás en racha! 🔥",
+        "building_momentum": "¡Construyendo impulso! ⚡",
+        "total_goal": "Meta Total",
+        "health_target": "Tu objetivo de salud"
+      },
+      "messages": {
+        "excellent": "🌟 ¡Increíble! ¡Eres una estrella de la salud!",
+        "good": "💪 ¡Excelente trabajo! ¡Lo estás haciendo muy bien!",
+        "fair": "👍 ¡Buen progreso! ¡Sigue así!",
+        "needs_improvement": "🌱 ¡Cada paso cuenta! ¡Tú puedes!"
+      },
+      "emoji": {
+        "excellent": "🏆",
+        "good": "⭐",
+        "fair": "🌟"
+      },
+      "encouragement": {
+        "fantastic": "¡Lo estás haciendo fantástico!",
+        "every_dose": "¡Cada dosis importa!",
+        "commitment": "Tu compromiso con tu salud es inspirador. ¡Mantén este increíble impulso!",
+        "investment": "Recuerda, cuidar de ti mismo es la mejor inversión que puedes hacer. ¡Tú puedes!"
       }
+    }
   },
   "analytics": {
     "page": {
@@ -378,7 +406,61 @@
       },
       "privacy": {
         "title": "Configuración de Privacidad",
-        "description": "Puedes descargar todos tus datos personales, medicamentos, registros de adherencia y análisis como PDF para tus propios registros."
+        "description": "Puedes descargar todos tus datos personales, medicamentos, registros de adherencia y análisis como PDF para tus propios registros.",
+        "export": {
+          "button": "Exportar Datos",
+          "title": "{{name}} - Datos de Adherencia",
+          "sections": {
+            "profile": "Perfil",
+            "medications": "Medicamentos",
+            "adherence": "Registros de Adherencia",
+            "analytics": "Análisis"
+          },
+          "fields": {
+            "name": "Nombre",
+            "email": "Correo Electrónico",
+            "date_of_birth": "Fecha de Nacimiento",
+            "gender": "Género",
+            "phone": "Teléfono",
+            "allergies": "Alergias",
+            "conditions": "Condiciones",
+            "reminder_times": "Horarios Preferidos de Recordatorios",
+            "email_notifications": "Notificaciones por Correo",
+            "emergency_contact": {
+              "name": "Nombre del Contacto de Emergencia",
+              "relationship": "Relación del Contacto de Emergencia",
+              "phone": "Teléfono del Contacto de Emergencia"
+            }
+          },
+          "medications": {
+            "name": "Nombre",
+            "dosage": "Dosis",
+            "type": "Tipo",
+            "frequency": "Frecuencia",
+            "active": "Activo"
+          },
+          "adherence": {
+            "date": "Fecha",
+            "medication": "Medicamento",
+            "scheduled_time": "Hora Programada",
+            "status": "Estado",
+            "taken_time": "Hora de Toma"
+          },
+          "analytics": {
+            "total_doses": "Total de Dosis",
+            "taken": "Tomadas",
+            "skipped": "Omitidas",
+            "adherence_rate": "Tasa de Adherencia (%)"
+          }
+        }
+      },
+      "subscription": {
+        "title": "Estado de Suscripción",
+        "status": "Plan Actual",
+        "premium": "Plan Premium Activo",
+        "free": "Plan Gratuito",
+        "manage": "Gestionar Suscripción",
+        "upgrade": "Actualizar a Premium"
       }
     }
   },
@@ -671,19 +753,54 @@
   "header": {
     "app_name": "MedTracker",
     "navigation": {
-      "dashboard": "Panel",
+      "dashboard": "Panel de Control",
       "medications": "Medicamentos",
-      "adherence": "Adherencia",
+      "adherence": "Cumplimiento",
       "analytics": "Análisis",
       "profile": "Perfil",
       "logout": "Cerrar Sesión",
       "login": "Iniciar Sesión",
-      "sign_up": "Registrarse"
+      "sign_up": "Registrarse",
+      "subscription": "Obtener Premium",
+      "premium_feature": "Característica Premium"
     },
     "mobile": {
       "menu": {
         "open": "Abrir menú principal",
         "close": "Cerrar menú principal"
+      }
+    }
+  },
+  "common": {
+    "loading": "Cargando página..."
+  },
+  "subscription": {
+    "premium": {
+      "title": "Características Premium Activas",
+      "description": "Tienes acceso a todas las características premium"
+    },
+    "upgrade": {
+      "title": "Actualizar a Premium",
+      "description": "Obtén acceso a funciones avanzadas para gestionar mejor tus medicamentos",
+      "button": "Obtener Premium",
+      "price": "Solo $4.99/mes"
+    },
+    "features": {
+      "sms": {
+        "title": "Recordatorios por SMS",
+        "description": "Recibe recordatorios de medicamentos por SMS"
+      },
+      "sounds": {
+        "title": "Sonidos Personalizados",
+        "description": "Elige tu sonido de notificación preferido"
+      },
+      "priority": {
+        "title": "Notificaciones Prioritarias",
+        "description": "Recibe alertas prioritarias para medicamentos críticos"
+      },
+      "family": {
+        "title": "Notificaciones Familiares",
+        "description": "Comparte el estado de los medicamentos con un familiar"
       }
     }
   }

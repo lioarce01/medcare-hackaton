@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, User, Pill, LogOut, Home, ChevronDown } from 'lucide-react';
+import { Menu, X, User, Pill, LogOut, Home, ChevronDown, Crown } from 'lucide-react';
 import { useSignOut } from '../hooks/useAuth';
 import { useTranslation } from 'react-i18next';
 import { useSession } from '../hooks/useSession';
@@ -119,6 +119,17 @@ export const Header: React.FC = () => {
                             {t('header.navigation.profile')}
                           </div>
                         </Link>
+                        <Link
+                          to="/subscription"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                          role="menuitem"
+                          onClick={() => setIsDropdownOpen(false)}
+                        >
+                          <div className="flex items-center">
+                            <Crown className="mr-2" size={16} />
+                            {t('header.navigation.subscription')}
+                          </div>
+                        </Link>
                         <button
                           onClick={handleLogout}
                           className="w-full text-left block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
@@ -206,6 +217,20 @@ export const Header: React.FC = () => {
                 <div className="flex items-center">
                   <User className="mr-2" size={18} />
                   {t('header.navigation.profile')}
+                </div>
+              </Link>
+              <Link
+                to="/subscription"
+                className={`block px-3 py-2 rounded-md text-base font-medium ${
+                  isActive('/subscription')
+                    ? 'bg-blue-100 text-blue-700'
+                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                } transition-colors`}
+                onClick={closeMenu}
+              >
+                <div className="flex items-center">
+                  <Crown className="mr-2" size={18} />
+                  {t('header.navigation.subscription')}
                 </div>
               </Link>
               <button

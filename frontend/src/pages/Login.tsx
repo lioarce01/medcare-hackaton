@@ -7,12 +7,7 @@ import { Input } from "../components/ui/input"
 import { Label } from "../components/ui/label"
 import { Checkbox } from "../components/ui/checkbox"
 import { AlertCircle, CheckCircle } from "lucide-react"
-
-interface FormData {
-  email: string;
-  password: string;
-  rememberMe: boolean;
-}
+import { FormData } from '../types/auth_types'
 
 export default function Login() {
   const { t } = useTranslation()
@@ -21,7 +16,6 @@ export default function Login() {
   const [formData, setFormData] = useState<FormData>({
     email: "",
     password: "",
-    rememberMe: false,
   })
   const [isSuccess, setIsSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)

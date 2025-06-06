@@ -7,23 +7,18 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Checkbox } from '../components/ui/checkbox';
 import { LoadingSpinner } from '../components/LoadingSpinner';
-
-interface FormData {
-  name: string;
-  email: string;
-  password: string;
-  agreeToTerms: boolean;
-}
+import { supabase } from '../lib/supabase';
+import { RegisterFormData } from '../types/auth_types';
 
 export const Register: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { mutate: signUp, isPending } = useSignUp();
-  const [formData, setFormData] = useState<FormData>({
-    name: '',
+  const [formData, setFormData] = useState<RegisterFormData>({
     email: '',
     password: '',
-    agreeToTerms: false,
+    confirmPassword: '',
+    name: '',
   });
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);

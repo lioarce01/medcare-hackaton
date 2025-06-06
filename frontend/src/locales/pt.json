@@ -78,7 +78,9 @@
       "profile": "Perfil",
       "logout": "Sair",
       "login": "Entrar",
-      "sign_up": "Cadastrar"
+      "sign_up": "Cadastrar",
+      "subscription": "Obter Premium",
+      "premium_feature": "Recurso Premium"
     },
     "mobile": {
       "menu": {
@@ -246,6 +248,9 @@
     },
     "summary": {
       "title": "Resumo de Adesão",
+      "subtitle": "Visão geral da sua adesão à medicação",
+      "complete": "Completo",
+      "health_hero": "Herói da Saúde",
       "adherence": "Adesão",
       "status": {
         "excellent": "Excelente",
@@ -258,7 +263,32 @@
         "skipped": "Puladas",
         "total": "Total",
         "doses": "doses",
-        "scheduled": "programadas"
+        "scheduled": "agendadas",
+        "remaining": "restantes",
+        "doses_taken": "Doses Tomadas",
+        "keep_up_work": "Continue o bom trabalho!",
+        "streak_days": "Dias Consecutivos",
+        "on_fire": "Você está arrasando! 🔥",
+        "building_momentum": "Construindo impulso! ⚡",
+        "total_goal": "Meta Total",
+        "health_target": "Seu objetivo de saúde"
+      },
+      "messages": {
+        "excellent": "🌟 Incrível! Você é uma estrela da saúde!",
+        "good": "💪 Ótimo trabalho! Você está indo muito bem!",
+        "fair": "👍 Bom progresso! Continue assim!",
+        "needs_improvement": "🌱 Cada passo conta! Você consegue!"
+      },
+      "emoji": {
+        "excellent": "🏆",
+        "good": "⭐",
+        "fair": "🌟"
+      },
+      "encouragement": {
+        "fantastic": "Você está fantástico!",
+        "every_dose": "Cada dose importa!",
+        "commitment": "Seu compromisso com sua saúde é inspirador. Mantenha esse incrível impulso!",
+        "investment": "Lembre-se, cuidar de si mesmo é o melhor investimento que você pode fazer. Você consegue!"
       }
     }
   },
@@ -384,7 +414,53 @@
       },
       "privacy": {
         "title": "Configurações de Privacidade",
-        "description": "Você pode baixar todos os seus dados pessoais, medicamentos, registros de adesão e análises como PDF para seus próprios registros."
+        "description": "Você pode baixar todos os seus dados pessoais, medicamentos, registros de aderência e análises como PDF para seus próprios registros.",
+        "export": {
+          "button": "Exportar Dados",
+          "title": "{{name}} - Dados de Aderência",
+          "sections": {
+            "profile": "Perfil",
+            "medications": "Medicamentos",
+            "adherence": "Registros de Aderência",
+            "analytics": "Análises"
+          },
+          "fields": {
+            "name": "Nome",
+            "email": "E-mail",
+            "date_of_birth": "Data de Nascimento",
+            "gender": "Gênero",
+            "phone": "Telefone",
+            "allergies": "Alergias",
+            "conditions": "Condições",
+            "reminder_times": "Horários Preferidos de Lembretes",
+            "email_notifications": "Notificações por E-mail",
+            "emergency_contact": {
+              "name": "Nome do Contato de Emergência",
+              "relationship": "Relação do Contato de Emergência",
+              "phone": "Telefone do Contato de Emergência"
+            }
+          },
+          "medications": {
+            "name": "Nome",
+            "dosage": "Dosagem",
+            "type": "Tipo",
+            "frequency": "Frequência",
+            "active": "Ativo"
+          },
+          "adherence": {
+            "date": "Data",
+            "medication": "Medicamento",
+            "scheduled_time": "Horário Programado",
+            "status": "Status",
+            "taken_time": "Horário de Tomada"
+          },
+          "analytics": {
+            "total_doses": "Total de Doses",
+            "taken": "Tomadas",
+            "skipped": "Puladas",
+            "adherence_rate": "Taxa de Aderência (%)"
+          }
+        }
       }
     }
   },
@@ -479,7 +555,7 @@
     "info": "Informação"
   },
   "common": {
-    "loading": "Carregando...",
+    "loading": "Carregando página...",
     "error": "Erro",
     "success": "Sucesso",
     "warning": "Atenção",
@@ -706,6 +782,36 @@
     "actions": {
       "update": "Atualizar Medicamento",
       "updating": "Atualizando..."
+    }
+  },
+  "subscription": {
+    "premium": {
+      "title": "Recursos Premium Ativos",
+      "description": "Você tem acesso a todos os recursos premium"
+    },
+    "upgrade": {
+      "title": "Atualizar para Premium",
+      "description": "Obtenha acesso a recursos avançados para gerenciar melhor seus medicamentos",
+      "button": "Obter Premium",
+      "price": "Apenas $4.99/mês"
+    },
+    "features": {
+      "sms": {
+        "title": "Lembretes por SMS",
+        "description": "Receba lembretes de medicamentos por SMS"
+      },
+      "sounds": {
+        "title": "Sons Personalizados",
+        "description": "Escolha seu som de notificação preferido"
+      },
+      "priority": {
+        "title": "Notificações Prioritárias",
+        "description": "Receba alertas prioritários para medicamentos críticos"
+      },
+      "family": {
+        "title": "Notificações Familiares",
+        "description": "Compartilhe o status dos medicamentos com um familiar"
+      }
     }
   }
 } 

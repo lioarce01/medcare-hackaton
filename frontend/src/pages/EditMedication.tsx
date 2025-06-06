@@ -16,15 +16,44 @@ import {
   AlertCircle,
   CheckCircle,
 } from "lucide-react"
-import { useUpdateMedication, useMedicationById } from "../hooks/useMedications"
+import { useUpdateMedication, useMedications } from "../hooks/useMedications"
 import { useTranslation } from "react-i18next"
 import { LoadingSpinner } from "../components/LoadingSpinner"
+import { Toast } from "../components/Toast"
+
+interface MedicationFormData {
+  name: string
+  dosage: {
+    amount: number | string
+    unit: string
+  }
+  scheduled_times: string[]
+  frequency: {
+    times_per_day: number
+    specific_days: string[]
+  }
+  instructions?: string
+  active: boolean
+  medication_type: string
+  image_url?: string
+  start_date: string
+  end_date?: string
+  refill_reminder: {
+    enabled: boolean
+    threshold: number
+    last_refill: string | null
+    next_refill: string | null
+    supply_amount: number
+    supply_unit: string
+  }
+  side_effects_to_watch: string[]
+}
 
 export const EditMedication = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { id } = useParams()
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<MedicationFormData>({
     name: "",
     dosage: {
       amount: "",
@@ -32,7 +61,7 @@ export const EditMedication = () => {
     },
     frequency: {
       times_per_day: 1,
-      specific_days: [] as string[],
+      specific_days: [],
     },
     scheduled_times: ["08:00"],
     instructions: "",
@@ -48,12 +77,19 @@ export const EditMedication = () => {
       supply_amount: 0,
       supply_unit: "days",
     },
-    side_effects_to_watch: [] as string[],
+    side_effects_to_watch: [],
     image_url: "",
   })
 
   const { mutate: updateMedication, isPending, isError, error } = useUpdateMedication()
-  const { data: medication, isLoading } = useMedicationById(id ?? '')
+  const { data: medicationsData, isLoading, error: medicationsError } = useMedications()
+  const medication = id && medicationsData?.byId ? medicationsData.byId[id] : undefined
+
+  const [showToast, setShowToast] = useState(false)
+  const [toastMessage, setToastMessage] = useState("")
+  const [toastType, setToastType] = useState<"success" | "error">("success")
+  const [newSideEffect, setNewSideEffect] = useState("")
+  const [formSubmitted, setFormSubmitted] = useState(false)
 
   useEffect(() => {
     if (!id) {
@@ -61,9 +97,6 @@ export const EditMedication = () => {
       return
     }
   }, [id, navigate])
-
-  const [newSideEffect, setNewSideEffect] = useState("")
-  const [formSubmitted, setFormSubmitted] = useState(false)
 
   useEffect(() => {
     if (medication) {
@@ -75,7 +108,15 @@ export const EditMedication = () => {
     }
   }, [medication])
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (error || medicationsError) {
+      setToastMessage(t("medications.edit.error"))
+      setToastType("error")
+      setShowToast(true)
+    }
+  }, [error, medicationsError, t])
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
   
     if (!id) {
@@ -93,15 +134,18 @@ export const EditMedication = () => {
       user_timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     }
   
-    updateMedication({ id, medication: medicationData }, {
-      onSuccess: () => {
-        setFormSubmitted(true)
-        setTimeout(() => navigate("/medications"), 1500)
-      },
-      onError: (err: any) => {
-        console.error("Error updating medication:", err)
-      },
-    })
+    try {
+      await updateMedication({ id, medication: medicationData })
+      setToastMessage(t("medications.edit.success"))
+      setToastType("success")
+      setShowToast(true)
+      setFormSubmitted(true)
+      setTimeout(() => navigate("/medications"), 1500)
+    } catch (err) {
+      setToastMessage(t("medications.edit.error"))
+      setToastType("error")
+      setShowToast(true)
+    }
   }
 
   const addScheduledTime = () => {
@@ -161,12 +205,13 @@ export const EditMedication = () => {
   }
 
   if (isLoading) {
+    return <LoadingSpinner />
+  }
+
+  if (!medication) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center">
-        <div className="text-center">
-          <LoadingSpinner/>
-          <p className="text-indigo-600 font-medium">{t('edit_medication.page.loading')}</p>
-        </div>
+      <div className="flex items-center justify-center min-h-[400px]">
+        <p className="text-gray-500">{t("medications.edit.not_found")}</p>
       </div>
     )
   }
@@ -607,6 +652,14 @@ export const EditMedication = () => {
           </div>
         </div>
       </div>
+
+      {showToast && (
+        <Toast
+          message={toastMessage}
+          type={toastType}
+          onClose={() => setShowToast(false)}
+        />
+      )}
     </div>
   )
 }

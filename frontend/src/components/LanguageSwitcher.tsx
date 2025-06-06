@@ -1,20 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLanguage } from '../hooks/useLanguage';
-import { ChevronDown, Globe } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
+import { Language } from '../types/ui_types';
 
-interface Language {
-  code: string;
-  flag: string;
-  name: string;
-  nativeName: string;
-}
-
-const LANGUAGES: Language[] = [
-  { code: 'en', flag: '🇺🇸', name: 'English', nativeName: 'English' },
-  { code: 'es', flag: '🇪🇸', name: 'Spanish', nativeName: 'Español' },
-  { code: 'cn', flag: '🇨🇳', name: 'Chinese', nativeName: '中文' },
-  { code: 'pt', flag: '🇧🇷', name: 'Portuguese', nativeName: 'Português' }
+const languages: Language[] = [
+  { code: 'en', name: 'English', flag: '🇺🇸' },
+  { code: 'es', name: 'Español', flag: '🇪🇸' },
+  { code: 'cn', name: '中文', flag: '🇨🇳' },
+  { code: 'pt', name: 'Português', flag: '🇵🇹' }
 ];
 
 export const LanguageSwitcher: React.FC = () => {
@@ -23,7 +17,7 @@ export const LanguageSwitcher: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const selectedLanguage = LANGUAGES.find(lang => lang.code === currentLangCode);
+  const selectedLanguage = languages.find(lang => lang.code === currentLangCode);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -48,7 +42,7 @@ export const LanguageSwitcher: React.FC = () => {
         {/* <Globe size={16} className="text-gray-500" /> */}
         <span className="flex items-center">
           <span className="mr-2">{selectedLanguage?.flag}</span>
-          <span className="hidden sm:inline">{selectedLanguage?.nativeName}</span>
+          <span className="hidden sm:inline">{selectedLanguage?.name}</span>
         </span>
         <ChevronDown 
           size={16} 
@@ -65,7 +59,7 @@ export const LanguageSwitcher: React.FC = () => {
           aria-labelledby="language-menu"
         >
           <div className="py-1" role="none">
-            {LANGUAGES.map((language) => (
+            {languages.map((language) => (
               <button
                 key={language.code}
                 onClick={() => {
@@ -81,7 +75,7 @@ export const LanguageSwitcher: React.FC = () => {
                 aria-current={currentLangCode === language.code ? 'true' : undefined}
               >
                 <span className="mr-2">{language.flag}</span>
-                <span className="flex-1">{language.nativeName}</span>
+                <span className="flex-1">{language.name}</span>
                 {currentLangCode === language.code && (
                   <span className="text-blue-600" aria-hidden="true">✓</span>
                 )}
