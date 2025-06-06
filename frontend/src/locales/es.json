@@ -753,14 +753,16 @@
   "header": {
     "app_name": "MedTracker",
     "navigation": {
-      "dashboard": "Panel",
+      "dashboard": "Panel de Control",
       "medications": "Medicamentos",
-      "adherence": "Adherencia",
+      "adherence": "Cumplimiento",
       "analytics": "Análisis",
       "profile": "Perfil",
       "logout": "Cerrar Sesión",
       "login": "Iniciar Sesión",
-      "sign_up": "Registrarse"
+      "sign_up": "Registrarse",
+      "subscription": "Obtener Premium",
+      "premium_feature": "Característica Premium"
     },
     "mobile": {
       "menu": {
@@ -780,7 +782,7 @@
     "upgrade": {
       "title": "Actualizar a Premium",
       "description": "Obtén acceso a funciones avanzadas para gestionar mejor tus medicamentos",
-      "button": "Actualizar Ahora",
+      "button": "Obtener Premium",
       "price": "Solo $4.99/mes"
     },
     "features": {

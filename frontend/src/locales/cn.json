@@ -803,7 +803,9 @@
       "profile": "个人资料",
       "logout": "退出登录",
       "login": "登录",
-      "sign_up": "注册"
+      "sign_up": "注册",
+      "subscription": "获取高级版",
+      "premium_feature": "高级功能"
     },
     "mobile": {
       "menu": {
@@ -823,7 +825,7 @@
     "upgrade": {
       "title": "升级至高级版",
       "description": "获取高级功能，更好地管理您的药物",
-      "button": "立即升级",
+      "button": "获取高级版",
       "price": "仅需 $4.99/月"
     },
     "features": {

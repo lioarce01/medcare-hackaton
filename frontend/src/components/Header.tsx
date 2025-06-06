@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, User, Pill, LogOut, Home, ChevronDown } from 'lucide-react';
+import { Menu, X, User, Pill, LogOut, Home, ChevronDown, Crown } from 'lucide-react';
 import { useSignOut } from '../hooks/useAuth';
 import { useTranslation } from 'react-i18next';
 import { useSession } from '../hooks/useSession';
@@ -126,6 +126,7 @@ export const Header: React.FC = () => {
                           onClick={() => setIsDropdownOpen(false)}
                         >
                           <div className="flex items-center">
+                            <Crown className="mr-2" size={16} />
                             {t('header.navigation.subscription')}
                           </div>
                         </Link>
@@ -228,6 +229,7 @@ export const Header: React.FC = () => {
                 onClick={closeMenu}
               >
                 <div className="flex items-center">
+                  <Crown className="mr-2" size={18} />
                   {t('header.navigation.subscription')}
                 </div>
               </Link>

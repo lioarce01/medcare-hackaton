@@ -172,7 +172,7 @@ export const AddMedication = () => {
   if (formSubmitted) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 flex items-center justify-center p-4">
-        <div className="text-center p-12 bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/50 max-w-md">
+        <div className="text-center p-8 bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/50 max-w-md">
           <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-r from-green-400 to-emerald-500 rounded-2xl flex items-center justify-center shadow-lg">
             <CheckCircle className="w-12 h-12 text-white" />
           </div>
@@ -189,16 +189,16 @@ export const AddMedication = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 py-8">
-      <div className="max-w-4xl mx-auto px-4">
+      <div className="max-w-3xl mx-auto px-4">
         {/* Header Section */}
-        <div className="text-center py-6 mb-8">
+        <div className="text-center py-4 mb-6">
           <h1 className="text-3xl font-bold text-gray-800 mb-2">Add New Medication 💊</h1>
           <p className="text-gray-600">Let's add a new medication to your health journey</p>
         </div>
 
         <button
           onClick={() => navigate(-1)}
-          className="mb-8 flex items-center text-gray-600 hover:text-gray-800 transition-colors bg-white/80 backdrop-blur-sm rounded-xl px-6 py-3 shadow-lg border border-white/50 hover:bg-white/90 hover:shadow-xl transform hover:-translate-y-1"
+          className="mb-6 flex items-center text-gray-600 hover:text-gray-800 transition-colors bg-white/80 backdrop-blur-sm rounded-xl px-6 py-3 shadow-lg border border-white/50 hover:bg-white/90 hover:shadow-xl transform hover:-translate-y-1"
         >
           <ArrowLeft className="mr-2" size={20} />
           {t("add_medication.page.back")}
@@ -218,7 +218,7 @@ export const AddMedication = () => {
           </div>
 
           {createMedication.isError && (
-            <div className="mx-8 mt-8">
+            <div className="mx-8 mt-6">
               <div className="bg-gradient-to-r from-red-400 to-rose-500 text-white rounded-2xl shadow-lg p-6">
                 <div className="flex items-center space-x-4">
                   <div className="p-3 bg-white/20 rounded-2xl">
@@ -235,10 +235,10 @@ export const AddMedication = () => {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="p-8 space-y-10">
+          <form onSubmit={handleSubmit} className="p-6 space-y-8">
             {/* Basic Information */}
-            <div className="bg-gradient-to-br from-white to-purple-50 rounded-3xl shadow-lg border border-purple-100/50 p-8">
-              <div className="flex items-center space-x-4 mb-8">
+            <div className="bg-gradient-to-br from-white to-purple-50 rounded-3xl shadow-lg border border-purple-100/50 p-6">
+              <div className="flex items-center space-x-4 mb-6">
                 <div className="p-3 bg-gradient-to-r from-blue-500 to-purple-500 rounded-2xl shadow-lg">
                   <FileText className="w-6 h-6 text-white" />
                 </div>
@@ -248,7 +248,7 @@ export const AddMedication = () => {
                 </div>
               </div>
 
-              <div className="space-y-6">
+              <div className="space-y-5">
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-3">
                     {t("add_medication.sections.basic.fields.name")}
@@ -257,7 +257,7 @@ export const AddMedication = () => {
                     type="text"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-blue-500 bg-white/80 shadow-sm text-lg py-4 px-4"
+                    className="w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-blue-500 bg-white/80 shadow-sm text-lg py-3 px-4"
                     required
                     placeholder="Enter medication name"
                   />
@@ -277,7 +277,7 @@ export const AddMedication = () => {
                           dosage: { ...formData.dosage, amount: e.target.value },
                         })
                       }
-                      className="w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-blue-500 bg-white/80 shadow-sm text-lg py-4 px-4"
+                      className="w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-blue-500 bg-white/80 shadow-sm text-lg py-3 px-4"
                       required
                       min="0"
                       step="any"
@@ -297,7 +297,7 @@ export const AddMedication = () => {
                           dosage: { ...formData.dosage, unit: e.target.value },
                         })
                       }
-                      className="w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-blue-500 bg-white/80 shadow-sm text-lg py-4 px-4"
+                      className="w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-blue-500 bg-white/80 shadow-sm text-lg py-3 px-4"
                     >
                       {Object.entries(
                         t("add_medication.sections.basic.fields.dosage.options", { returnObjects: true }),
@@ -317,7 +317,7 @@ export const AddMedication = () => {
                   <select
                     value={formData.medication_type}
                     onChange={(e) => setFormData({ ...formData, medication_type: e.target.value })}
-                    className="w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-blue-500 bg-white/80 shadow-sm text-lg py-4 px-4"
+                    className="w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-blue-500 bg-white/80 shadow-sm text-lg py-3 px-4"
                   >
                     {Object.entries(
                       t("add_medication.sections.basic.fields.type.options", { returnObjects: true }),
@@ -332,8 +332,8 @@ export const AddMedication = () => {
             </div>
 
             {/* Schedule */}
-            <div className="bg-gradient-to-br from-white to-pink-50 rounded-3xl shadow-lg border border-pink-100/50 p-8">
-              <div className="flex items-center space-x-4 mb-8">
+            <div className="bg-gradient-to-br from-white to-pink-50 rounded-3xl shadow-lg border border-pink-100/50 p-6">
+              <div className="flex items-center space-x-4 mb-6">
                 <div className="p-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl shadow-lg">
                   <Calendar className="w-6 h-6 text-white" />
                 </div>
@@ -429,7 +429,7 @@ export const AddMedication = () => {
                         type="date"
                         value={formData.start_date}
                         onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
-                        className="w-full pl-12 rounded-xl border-gray-300 focus:border-purple-500 focus:ring-purple-500 bg-white/80 shadow-sm text-lg py-4"
+                        className="w-full pl-12 rounded-xl border-gray-300 focus:border-purple-500 focus:ring-purple-500 bg-white/80 shadow-sm text-lg py-3"
                       />
                     </div>
                   </div>
@@ -446,7 +446,7 @@ export const AddMedication = () => {
                         type="date"
                         value={formData.end_date}
                         onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
-                        className="w-full pl-12 rounded-xl border-gray-300 focus:border-purple-500 focus:ring-purple-500 bg-white/80 shadow-sm text-lg py-4"
+                        className="w-full pl-12 rounded-xl border-gray-300 focus:border-purple-500 focus:ring-purple-500 bg-white/80 shadow-sm text-lg py-3"
                       />
                     </div>
                   </div>
@@ -455,8 +455,8 @@ export const AddMedication = () => {
             </div>
 
             {/* Refill Reminder */}
-            <div className="bg-gradient-to-br from-white to-orange-50 rounded-3xl shadow-lg border border-orange-100/50 p-8">
-              <div className="flex items-center space-x-4 mb-8">
+            <div className="bg-gradient-to-br from-white to-orange-50 rounded-3xl shadow-lg border border-orange-100/50 p-6">
+              <div className="flex items-center space-x-4 mb-6">
                 <div className="p-3 bg-gradient-to-r from-amber-500 to-orange-500 rounded-2xl shadow-lg">
                   <Bell className="w-6 h-6 text-white" />
                 </div>
@@ -499,7 +499,7 @@ export const AddMedication = () => {
                               },
                             })
                           }
-                          className="w-full rounded-xl border-gray-300 focus:border-amber-500 focus:ring-amber-500 bg-white/80 shadow-sm text-lg py-4 px-4"
+                          className="w-full rounded-xl border-gray-300 focus:border-amber-500 focus:ring-amber-500 bg-white/80 shadow-sm text-lg py-3 px-4"
                           min="1"
                         />
                       </div>
@@ -519,7 +519,7 @@ export const AddMedication = () => {
                               },
                             })
                           }
-                          className="w-full rounded-xl border-gray-300 focus:border-amber-500 focus:ring-amber-500 bg-white/80 shadow-sm text-lg py-4 px-4"
+                          className="w-full rounded-xl border-gray-300 focus:border-amber-500 focus:ring-amber-500 bg-white/80 shadow-sm text-lg py-3 px-4"
                         >
                           {Object.entries(
                             t("add_medication.sections.refill.fields.supply.options", { returnObjects: true }),
@@ -548,7 +548,7 @@ export const AddMedication = () => {
                             },
                           })
                         }
-                        className="w-full rounded-xl border-gray-300 focus:border-amber-500 focus:ring-amber-500 bg-white/80 shadow-sm text-lg py-4 px-4"
+                        className="w-full rounded-xl border-gray-300 focus:border-amber-500 focus:ring-amber-500 bg-white/80 shadow-sm text-lg py-3 px-4"
                         min="1"
                       />
                     </div>
@@ -558,8 +558,8 @@ export const AddMedication = () => {
             </div>
 
             {/* Additional Information */}
-            <div className="bg-gradient-to-br from-white to-green-50 rounded-3xl shadow-lg border border-green-100/50 p-8">
-              <div className="flex items-center space-x-4 mb-8">
+            <div className="bg-gradient-to-br from-white to-green-50 rounded-3xl shadow-lg border border-green-100/50 p-6">
+              <div className="flex items-center space-x-4 mb-6">
                 <div className="p-3 bg-gradient-to-r from-emerald-500 to-green-500 rounded-2xl shadow-lg">
                   <Sparkles className="w-6 h-6 text-white" />
                 </div>
@@ -569,7 +569,7 @@ export const AddMedication = () => {
                 </div>
               </div>
 
-              <div className="space-y-6">
+              <div className="space-y-5">
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-3">
                     {t("add_medication.sections.additional.fields.instructions.label")}
@@ -577,8 +577,8 @@ export const AddMedication = () => {
                   <textarea
                     value={formData.instructions}
                     onChange={(e) => setFormData({ ...formData, instructions: e.target.value })}
-                    className="w-full rounded-xl border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 bg-white/80 shadow-sm text-lg py-4 px-4"
-                    rows={4}
+                    className="w-full rounded-xl border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 bg-white/80 shadow-sm text-lg py-3 px-4"
+                    rows={3}
                     placeholder={t("add_medication.sections.additional.fields.instructions.placeholder")}
                   />
                 </div>
@@ -597,7 +597,7 @@ export const AddMedication = () => {
                         value={newSideEffect}
                         onChange={(e) => setNewSideEffect(e.target.value)}
                         onKeyDown={handleAddSideEffect}
-                        className="w-full pl-12 rounded-xl border-gray-300 focus:border-red-500 focus:ring-red-500 bg-white/80 shadow-sm text-lg py-4"
+                        className="w-full pl-12 rounded-xl border-gray-300 focus:border-red-500 focus:ring-red-500 bg-white/80 shadow-sm text-lg py-3"
                         placeholder={t("add_medication.sections.additional.fields.side_effects.placeholder")}
                       />
                     </div>
@@ -629,7 +629,7 @@ export const AddMedication = () => {
                     type="url"
                     value={formData.image_url}
                     onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                    className="w-full rounded-xl border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 bg-white/80 shadow-sm text-lg py-4 px-4"
+                    className="w-full rounded-xl border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 bg-white/80 shadow-sm text-lg py-3 px-4"
                     placeholder={t("add_medication.sections.additional.fields.image.placeholder")}
                   />
                 </div>
@@ -656,7 +656,7 @@ export const AddMedication = () => {
               <button
                 type="submit"
                 disabled={createMedication.isPending}
-                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white py-6 px-12 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-bold text-xl shadow-xl hover:shadow-2xl transform hover:-translate-y-1 flex items-center mx-auto"
+                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white py-4 px-10 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-bold text-xl shadow-xl hover:shadow-2xl transform hover:-translate-y-1 flex items-center mx-auto"
               >
                 <Heart className="mr-3 w-6 h-6" />
                 {createMedication.isPending ? t("add_medication.actions.adding") : t("add_medication.actions.add")}
@@ -665,7 +665,7 @@ export const AddMedication = () => {
           </form>
 
           {/* Motivational Footer */}
-          <div className="bg-gradient-to-r from-pink-400 to-rose-500 text-white p-8 text-center">
+          <div className="bg-gradient-to-r from-pink-400 to-rose-500 text-white p-6 text-center">
             <div className="text-3xl mb-3">🌟</div>
             <h3 className="text-xl font-bold mb-2">You're taking great care of yourself!</h3>
             <p className="text-pink-100">Adding medications to track is an important step in your health journey.</p>

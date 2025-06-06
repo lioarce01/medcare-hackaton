@@ -747,7 +747,8 @@
       "logout": "Logout",
       "login": "Login",
       "sign_up": "Sign Up",
-      "subscription": "Premium Features"
+      "subscription": "Get Premium",
+      "premium_feature": "Premium Feature"
     },
     "mobile": {
       "menu": {
@@ -767,7 +768,7 @@
     "upgrade": {
       "title": "Upgrade to Premium",
       "description": "Get access to advanced features to better manage your medications",
-      "button": "Upgrade Now",
+      "button": "Get Premium",
       "price": "Only $4.99/month"
     },
     "features": {

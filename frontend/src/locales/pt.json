@@ -78,7 +78,9 @@
       "profile": "Perfil",
       "logout": "Sair",
       "login": "Entrar",
-      "sign_up": "Cadastrar"
+      "sign_up": "Cadastrar",
+      "subscription": "Obter Premium",
+      "premium_feature": "Recurso Premium"
     },
     "mobile": {
       "menu": {
@@ -790,7 +792,7 @@
     "upgrade": {
       "title": "Atualizar para Premium",
       "description": "Obtenha acesso a recursos avançados para gerenciar melhor seus medicamentos",
-      "button": "Atualizar Agora",
+      "button": "Obter Premium",
       "price": "Apenas $4.99/mês"
     },
     "features": {
