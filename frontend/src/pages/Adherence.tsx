@@ -25,7 +25,7 @@ export const Adherence: React.FC = () => {
 
   const formattedDate = selectedDate.toISOString().split("T")[0]
 
-  const { data: adherenceRecords = [], isPending: isRecordsPending, refetch } = useGetAdherenceHistory(formattedDate)
+  const { data: adherenceRecords = [], refetch } = useGetAdherenceHistory(formattedDate)
   const { mutate: confirmDose } = useConfirmDose()
   const { mutate: skipDose } = useSkipDose()
 
