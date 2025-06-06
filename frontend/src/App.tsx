@@ -27,6 +27,7 @@ const Analytics = lazy(() => import('./pages/Analytics').then(module => ({ defau
 const Profile = lazy(() => import('./pages/Profile').then(module => ({ default: module.Profile })));
 const NotFound = lazy(() => import('./pages/NotFound').then(module => ({ default: module.NotFound })));
 const Subscription = lazy(() => import('./pages/Subscription').then(module => ({ default: module.Subscription })));
+const SubscriptionSuccess = lazy(() => import('./pages/SubscriptionSuccess').then(module => ({ default: module.SubscriptionSuccess })));
 
 // Loading component for suspense fallback
 const PageLoader = () => {
@@ -125,6 +126,12 @@ function App() {
                       <Route path="/subscription" element={
                         <PrivateRoute>
                           <Subscription />
+                        </PrivateRoute>
+                      } />
+                      
+                      <Route path="/subscription/success" element={
+                        <PrivateRoute>
+                          <SubscriptionSuccess />
                         </PrivateRoute>
                       } />
                       

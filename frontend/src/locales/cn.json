@@ -573,7 +573,8 @@
         "requirements": "密码长度必须至少为8个字符"
       },
       "terms": "我同意服务条款和隐私政策",
-      "terms_required": "您必须接受条款和条件"
+      "terms_required": "您必须接受条款和条件",
+      "email_invalid": "请输入有效的电子邮件地址"
     },
     "actions": {
       "register": "创建账户",
@@ -826,7 +827,17 @@
       "title": "升级至高级版",
       "description": "获取高级功能，更好地管理您的药物",
       "button": "获取高级版",
-      "price": "仅需 $4.99/月"
+      "price": "仅需 ¥29.99/月",
+      "payment_methods": {
+        "title": "选择支付方式",
+        "stripe": "信用卡 (Stripe)",
+        "mercadopago": "Mercado Pago"
+      }
+    },
+    "success": {
+      "title": "支付成功！",
+      "description": "感谢您订阅我们的高级计划。您的账户已升级。",
+      "redirecting": "正在跳转到订阅页面..."
     },
     "features": {
       "sms": {

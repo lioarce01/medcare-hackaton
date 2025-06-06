@@ -530,7 +530,8 @@
         "requirements": "A senha deve ter pelo menos 8 caracteres"
       },
       "terms": "Eu concordo com os Termos de Serviço e Política de Privacidade",
-      "terms_required": "Você deve aceitar os termos e condições"
+      "terms_required": "Você deve aceitar os termos e condições",
+      "email_invalid": "Por favor, insira um e-mail válido"
     },
     "actions": {
       "register": "Criar Conta",
@@ -793,7 +794,17 @@
       "title": "Atualizar para Premium",
       "description": "Obtenha acesso a recursos avançados para gerenciar melhor seus medicamentos",
       "button": "Obter Premium",
-      "price": "Apenas $4.99/mês"
+      "price": "Apenas R$24,90/mês",
+      "payment_methods": {
+        "title": "Selecionar Método de Pagamento",
+        "stripe": "Cartão de Crédito (Stripe)",
+        "mercadopago": "Mercado Pago"
+      }
+    },
+    "success": {
+      "title": "Pagamento Bem-sucedido!",
+      "description": "Obrigado por assinar nosso plano premium. Sua conta foi atualizada.",
+      "redirecting": "Redirecionando para a página de assinatura..."
     },
     "features": {
       "sms": {

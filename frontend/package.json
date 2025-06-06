@@ -15,6 +15,7 @@
     "format": "prettier --write \"src/**/*.{ts,tsx}\""
   },
   "dependencies": {
+    "@mercadopago/sdk-react": "^1.0.3",
     "@sentry/react": "^9.27.0",
     "@sentry/tracing": "^7.120.3",
     "@sentry/types": "^9.27.0",

@@ -16,15 +16,13 @@ export interface UserProfile {
   email_notifications_enabled?: boolean;
   created_at?: string;
   updated_at?: string;
-  subscription?: {
-    status: "free" | "premium";
-    plan: "free" | "premium";
-    expiresAt?: string;
-    features: {
-      smsReminders: boolean;
-      customSounds: boolean;
-      priorityNotifications: boolean;
-      familyNotifications: boolean;
-    };
+  subscription_status?: "free" | "premium";
+  subscription_plan?: "free" | "premium";
+  subscription_expires_at?: string;
+  subscription_features?: {
+    smsReminders: boolean;
+    customSounds: boolean;
+    priorityNotifications: boolean;
+    familyNotifications: boolean;
   };
 }

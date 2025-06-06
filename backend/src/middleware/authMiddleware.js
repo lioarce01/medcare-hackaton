@@ -7,14 +7,18 @@ export const protect = asyncHandler(async (req, res, next) => {
   if (req.headers.authorization?.startsWith('Bearer')) {
     try {
       token = req.headers.authorization.split(' ')[1];
+      console.log('Received token:', token ? 'Token present' : 'No token');
 
       // Verify token using Supabase
       const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
 
       if (error || !user) {
+        console.error('Token verification failed:', error);
         res.status(401);
         throw new Error('Not authorized, token failed');
       }
+
+      console.log('User authenticated:', { userId: user.id });
 
       // Get user profile from our users table
       const { data: profile, error: profileError } = await supabaseAdmin
@@ -24,19 +28,29 @@ export const protect = asyncHandler(async (req, res, next) => {
         .single();
 
       if (profileError || !profile) {
+        console.error('Profile fetch failed:', profileError);
         res.status(401);
         throw new Error('Not authorized, user profile not found');
       }
 
-      req.user = profile;
+      console.log('User profile found:', { userId: profile.id });
+
+      // Attach both user and profile to request
+      req.user = {
+        ...profile,
+        authId: user.id
+      };
+      
       next();
     } catch (error) {
+      console.error('Auth middleware error:', error);
       res.status(401);
       throw new Error('Not authorized, token failed');
     }
   }
 
   if (!token) {
+    console.error('No token provided');
     res.status(401);
     throw new Error('Not authorized, no token');
   }
