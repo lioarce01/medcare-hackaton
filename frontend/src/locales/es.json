@@ -814,5 +814,21 @@
         "description": "Comparte el estado de los medicamentos con un familiar"
       }
     }
+  },
+  "payment": {
+    "cardholder_name": "Nombre del titular",
+    "cardholder_email": "Email del titular",
+    "card_number": "Número de tarjeta",
+    "expiration_month": "Mes de vencimiento",
+    "expiration_year": "Año de vencimiento",
+    "security_code": "Código de seguridad",
+    "installments": "Cuotas",
+    "identification_type": "Tipo de documento",
+    "identification_number": "Número de documento",
+    "issuer": "Banco emisor",
+    "select_identification_type": "Seleccionar tipo de documento",
+    "select_issuer": "Seleccionar banco emisor",
+    "select_installments": "Seleccionar cuotas",
+    "submit": "Pagar"
   }
 }

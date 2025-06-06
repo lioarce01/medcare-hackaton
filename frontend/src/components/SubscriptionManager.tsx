@@ -39,31 +39,23 @@ export const SubscriptionManager: React.FC = () => {
   const createCheckoutSession = useCreateCheckoutSession();
 
   const isPremium = user?.subscription_status === 'premium';
-  const currentCurrency = i18n.language === 'pt' ? 'BRL' : i18n.language === 'cn' ? 'CNY' : 'USD';
+  const currentCurrency = i18n.language === 'pt' ? 'BRL' : i18n.language === 'cn' ? 'CNY' : i18n.language === "es" ? 'ARS' : 'USD';
   const { symbol, amount } = SUBSCRIPTION_CONFIG.currency[currentCurrency];
 
   const handleUpgrade = async () => {
     try {
-      console.log('Sending subscription request:', {
-        priceId: selectedPaymentMethod === 'stripe' 
-          ? SUBSCRIPTION_CONFIG.prices.stripe 
-          : SUBSCRIPTION_CONFIG.prices.mercadopago[currentCurrency],
+      const response = await createCheckoutSession.mutateAsync({
+        priceId: selectedPaymentMethod === 'mercadopago' 
+          ? SUBSCRIPTION_CONFIG.prices.mercadopago[currentCurrency]
+          : SUBSCRIPTION_CONFIG.prices.stripe,
         paymentProvider: selectedPaymentMethod,
-        currency: currentCurrency
+        currency: currentCurrency,
+        email: user?.email
       });
 
-      const response = await createCheckoutSession.mutateAsync({
-        priceId: selectedPaymentMethod === 'stripe' 
-          ? SUBSCRIPTION_CONFIG.prices.stripe 
-          : SUBSCRIPTION_CONFIG.prices.mercadopago[currentCurrency],
-        paymentProvider: selectedPaymentMethod,
-        currency: currentCurrency
-      }) as CheckoutSessionResponse;
-
-      if (selectedPaymentMethod === 'mercadopago' && response.initPoint) {
-        window.location.href = response.initPoint;
-      } else if (response.url) {
-        window.location.href = response.url;
+      const redirectUrl = response.url || response.initPoint;
+      if (redirectUrl) {
+        window.location.href = redirectUrl;
       }
     } catch (error) {
       console.error('Payment error:', error);

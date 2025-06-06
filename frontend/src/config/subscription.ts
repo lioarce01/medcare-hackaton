@@ -5,6 +5,7 @@ export const SUBSCRIPTION_CONFIG = {
       USD: 15.0,
       BRL: 75.0,
       CNY: 100.0,
+      ARS: 20000.0,
     },
   },
   currency: {
@@ -22,6 +23,11 @@ export const SUBSCRIPTION_CONFIG = {
       symbol: "¥",
       amount: 100.0,
       code: "CNY",
+    },
+    ARS: {
+      symbol: "$",
+      amount: 20000.0,
+      code: "ARS",
     },
   },
 };

@@ -5,25 +5,26 @@ interface CreateCheckoutSessionParams {
   priceId: number;
   paymentProvider: "stripe" | "mercadopago";
   currency: string;
+  cardToken?: string;
+  email?: string;
 }
 
 interface CheckoutSessionResponse {
-  url: string;
+  url?: string;
+  preferenceId?: string;
+  initPoint?: string;
+  preApprovalId?: string;
 }
-
-const createCheckoutSession = async (
-  params: CreateCheckoutSessionParams
-): Promise<CheckoutSessionResponse> => {
-  const response = await axios.post<CheckoutSessionResponse>(
-    "/api/subscriptions/create-checkout-session",
-    params
-  );
-  return response.data;
-};
 
 export const useCreateCheckoutSession = () => {
   return useMutation({
-    mutationFn: createCheckoutSession,
+    mutationFn: async (params: CreateCheckoutSessionParams) => {
+      const response = await axios.post(
+        "/api/subscriptions/create-checkout-session",
+        params
+      );
+      return response.data as CheckoutSessionResponse;
+    },
     onSuccess: (data) => {
       if (data.url) {
         window.location.href = data.url;
