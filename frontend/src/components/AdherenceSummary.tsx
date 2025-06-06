@@ -78,10 +78,10 @@ export const AdherenceSummary: React.FC<AdherenceSummaryProps> = ({
   return (
     <div className="bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 rounded-2xl shadow-xl border-0 p-8">
       {/* Header with friendly title */}
-      <div className="text-center mb-8">
+      {/* <div className="text-center mb-8">
         <h3 className="text-2xl font-bold text-gray-800 mb-2">{t('adherence.summary.title')}</h3>
         <p className="text-gray-600">{t('adherence.summary.subtitle')}</p>
-      </div>
+      </div> */}
 
       {/* Main Progress Card */}
       <div className={`${adherenceColor} text-white rounded-2xl p-6 mb-8 shadow-lg`}>

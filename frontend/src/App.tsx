@@ -64,7 +64,7 @@ function App() {
         <I18nextProvider i18n={i18n}>
           <AccessibilityProvider>
             <ToastProvider>
-              <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-100">
+              <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
                 <FloatingLogo />
                 <Header />
                 <main id="main-content" className="flex-grow container mx-auto px-4 py-8" role="main">
