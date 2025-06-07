@@ -28,6 +28,7 @@ const NotFound = lazy(() => import('./pages/NotFound').then(module => ({ default
 const Subscription = lazy(() => import('./pages/Subscription').then(module => ({ default: module.Subscription })));
 const SubscriptionSuccess = lazy(() => import('./pages/SubscriptionSuccess').then(module => ({ default: module.SubscriptionSuccess })));
 const RemindersPage = lazy(() => import('./pages/RemindersPage').then(module => ({ default: module.RemindersPage })));
+const RiskHistoryPage = lazy(() => import('./pages/RiskHistoryPage').then(module => ({ default: module.RiskHistoryPage })));
 
 // Loading component for suspense fallback
 const PageLoader = () => {
@@ -142,6 +143,12 @@ function App() {
                       <Route path="/reminders" element={
                         <PrivateRoute>
                           <RemindersPage />
+                        </PrivateRoute>
+                      } />
+
+                      <Route path="/risk-history" element={
+                        <PrivateRoute>
+                          <RiskHistoryPage />
                         </PrivateRoute>
                       } />
                       

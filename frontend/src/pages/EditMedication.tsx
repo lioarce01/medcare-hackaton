@@ -19,7 +19,7 @@ import {
 import { useUpdateMedication, useMedications } from "../hooks/useMedications"
 import { useTranslation } from "react-i18next"
 import { LoadingSpinner } from "../components/LoadingSpinner"
-import { Toast } from "../components/Toast"
+import { useToast } from "../components/Toast"
 
 interface MedicationFormData {
   name: string
@@ -53,6 +53,7 @@ export const EditMedication = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { id } = useParams()
+  const { showToast } = useToast()
   const [formData, setFormData] = useState<MedicationFormData>({
     name: "",
     dosage: {
@@ -84,10 +85,6 @@ export const EditMedication = () => {
   const { mutate: updateMedication, isPending, isError, error } = useUpdateMedication()
   const { data: medicationsData, isLoading, error: medicationsError } = useMedications()
   const medication = id && medicationsData?.byId ? medicationsData.byId[id] : undefined
-
-  const [showToast, setShowToast] = useState(false)
-  const [toastMessage, setToastMessage] = useState("")
-  const [toastType, setToastType] = useState<"success" | "error">("success")
   const [newSideEffect, setNewSideEffect] = useState("")
   const [formSubmitted, setFormSubmitted] = useState(false)
 
@@ -110,9 +107,7 @@ export const EditMedication = () => {
 
   useEffect(() => {
     if (error || medicationsError) {
-      setToastMessage(t("medications.edit.error"))
-      setToastType("error")
-      setShowToast(true)
+      showToast(t("medications.edit.error"), "error")
     }
   }, [error, medicationsError, t])
 
@@ -136,15 +131,11 @@ export const EditMedication = () => {
   
     try {
       await updateMedication({ id, medication: medicationData })
-      setToastMessage(t("medications.edit.success"))
-      setToastType("success")
-      setShowToast(true)
+      showToast(t("medications.edit.success"), "success")
       setFormSubmitted(true)
       setTimeout(() => navigate("/medications"), 1500)
     } catch (err) {
-      setToastMessage(t("medications.edit.error"))
-      setToastType("error")
-      setShowToast(true)
+      showToast(t("medications.edit.error"), "error")
     }
   }
 
@@ -652,14 +643,6 @@ export const EditMedication = () => {
           </div>
         </div>
       </div>
-
-      {showToast && (
-        <Toast
-          message={toastMessage}
-          type={toastType}
-          onClose={() => setShowToast(false)}
-        />
-      )}
     </div>
   )
 }

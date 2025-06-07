@@ -1,6 +1,6 @@
 "use client"
 import { useEffect, useState } from "react"
-import { Bell, Crown, Plus, List, Sparkles, CheckCircle, Calendar, Clock, Heart, Star, ArrowRight } from "lucide-react"
+import { Bell, Plus, List, CheckCircle, Clock } from "lucide-react"
 import { useAuth } from "../hooks/useAuth"
 import { useToast } from "../hooks/useToast"
 import { useNavigate } from "react-router-dom"

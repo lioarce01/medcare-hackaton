@@ -6,13 +6,16 @@ import { logger } from '../utils/logger.js';
  * basado en adherencia de los últimos 7 días.
  */
 export async function calculateAndStoreDailyRiskScores() {
-  const { data: users, error: usersError } = await supabaseAdmin.from('users').select('id');
+  const { data: users, error: usersError } = await supabaseAdmin.from('users').select('id, subscription_status');
+
   if (usersError) {
     logger.error('❌ Error fetching users:', usersError);
     return;
   }
 
   for (const user of users) {
+    if (user.subscription_status !== 'premium') continue;
+
     const { data: medications, error: medsError } = await supabaseAdmin
       .from('medications')
       .select('id')
@@ -33,7 +36,7 @@ export async function calculateAndStoreDailyRiskScores() {
         .select('id')
         .eq('user_id', user.id)
         .eq('medication_id', med.id)
-        .gte('taken_at', sevenDaysAgo.toISOString());
+        .gte('taken_time', sevenDaysAgo.toISOString());
 
       if (adherenceError) {
         logger.error(`❌ Error fetching adherence for user ${user.id}, med ${med.id}`, adherenceError);
@@ -63,7 +66,7 @@ export async function calculateAndStoreDailyRiskScores() {
 export async function getRiskHistoryByUserAndMedication(userId, medicationId) {
   const { data, error } = await supabaseAdmin
     .from('risk_history')
-    .select('date, risk_score')
+    .select('id, created_at, risk_score')
     .eq('user_id', userId)
     .eq('medication_id', medicationId)
     .order('date', { ascending: true });

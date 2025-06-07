@@ -1,12 +1,12 @@
 import cron from 'node-cron';
 import { findUsersByFilter } from '../models/userModel.js';
-import { findPendingReminders, updateReminder } from '../models/reminderModel.js';
 import { logger } from '../utils/logger.js';
-import { sendMedicationReminder, sendWeeklyReport } from './emailService.js';
-import { processMissedAdherenceRecords } from './adherenceService.js';
+import { sendWeeklyReport } from './emailService.js';
+import { generateAdherenceRecords, processMissedAdherenceRecords } from './adherenceService.js';
 import { generateWeeklyReport } from './reportService.js';
 import medicationModel from '../models/medicationModel.js';
 import { scheduleReminders } from './reminderService.js';
+import { calculateAndStoreDailyRiskScores } from './riskScoreService.js';
 
 // Set up cron jobs for the application
 export const setupCronJobs = () => {

@@ -52,7 +52,6 @@ export const useSignIn = () => {
 
 export const useSignOut = () => {
   const queryClient = useQueryClient();
-  const navigate = useNavigate();
 
   return useMutation({
     mutationFn: async () => {
@@ -62,7 +61,6 @@ export const useSignOut = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["session"] });
       queryClient.invalidateQueries({ queryKey: ["user"] });
-      navigate("/login");
     },
   });
 };

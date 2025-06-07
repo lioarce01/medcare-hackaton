@@ -6,7 +6,6 @@ import { useTranslation } from 'react-i18next';
 import { useSession } from '../hooks/useSession';
 import { useUser } from '../hooks/useUser';
 import { LanguageSwitcher } from './LanguageSwitcher';
-import { LoadingSpinner } from './LoadingSpinner';
 
 export const Header: React.FC = () => {
   const { mutate: logout } = useSignOut()

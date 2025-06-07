@@ -42,11 +42,21 @@ export const MedicationList: React.FC<MedicationListProps> = React.memo(({ medic
     return <EmptyMedicationList />
   }
 
+console.log("IDs:", medications.map((m) => m.id));
+
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      {medications.map((medication, index) => (
-        <MedicationCard key={medication.id} medication={medication} onDelete={handleDelete} index={index} />
-      ))}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {medications
+        .filter((med) => med.id)
+        .map((medication, index) => (
+          <MedicationCard
+            key={medication.id ?? `med-${index}`}
+            medication={medication}
+            onDelete={handleDelete}
+            index={index}
+          />
+        ))}
     </div>
   )
 })

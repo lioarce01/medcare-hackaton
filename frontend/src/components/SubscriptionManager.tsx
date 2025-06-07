@@ -4,8 +4,6 @@ import type React from "react"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import {
-  MessageSquare,
-  Bell,
   Star,
   Users,
   CreditCard,
@@ -35,12 +33,6 @@ interface FeatureCardProps {
 }
 
 type PaymentProvider = "stripe" | "mercadopago"
-
-interface CheckoutSessionResponse {
-  url?: string
-  preferenceId?: string
-  initPoint?: string
-}
 
 const FeatureCard: React.FC<FeatureCardProps> = ({ icon: Icon, title, description, included, emoji }) => (
   <div
