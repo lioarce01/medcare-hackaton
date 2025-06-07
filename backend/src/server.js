@@ -12,6 +12,7 @@ import adherenceRoutes from './routes/adherenceRoutes.js';
 import analyticsRoutes from './routes/analyticsRoutes.js';
 import testRoutes from './routes/testRoutes.js';
 import subscriptionRoutes from './routes/subscriptionRoutes.js';
+import riskHistoryRoutes from './routes/riskHistoryRoutes.js';
 import { errorHandler, notFound } from './middleware/errorMiddleware.js';
 import { setupCronJobs } from './services/schedulerService.js';
 import { logger } from './utils/logger.js';
@@ -50,6 +51,7 @@ app.use('/api/adherence', adherenceRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/test', testRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
+app.use('/api/risk-history', riskHistoryRoutes);
 
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, '../dist')));
