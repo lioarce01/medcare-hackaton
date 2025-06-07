@@ -129,17 +129,20 @@ export const Header: React.FC = () => {
                             {t('header.navigation.profile')}
                           </div>
                         </Link>
-                        <Link
-                          to="/subscription"
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                          role="menuitem"
-                          onClick={() => setIsDropdownOpen(false)}
-                        >
-                          <div className="flex items-center">
-                            <Crown className="mr-2" size={16} />
-                            {t('header.navigation.subscription')}
-                          </div>
-                        </Link>
+                        {
+                          userProfile?.subscription_status === "premium" 
+                          ? (
+                            null
+
+                          ) : (
+                            <div className="block px-3 py-2 rounded-md text-base font-medium text-gray-600 cursor-not-allowed">
+                              <div className="flex items-center">
+                                <Crown className="mr-2" size={18} />
+                                {t('header.navigation.subscription')}
+                              </div>
+                            </div>
+                          )
+                        }
                         <button
                           onClick={handleLogout}
                           className="w-full text-left block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
@@ -229,20 +232,20 @@ export const Header: React.FC = () => {
                   {t('header.navigation.profile')}
                 </div>
               </Link>
-              <Link
-                to="/subscription"
-                className={`block px-3 py-2 rounded-md text-base font-medium ${
-                  isActive('/subscription')
-                    ? 'bg-blue-100 text-blue-700'
-                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                } transition-colors`}
-                onClick={closeMenu}
-              >
-                <div className="flex items-center">
-                  <Crown className="mr-2" size={18} />
-                  {t('header.navigation.subscription')}
-                </div>
-              </Link>
+              {
+                userProfile?.subscription_status === "premium" 
+                ? (
+                  null
+
+                ) : (
+                  <div className="block px-3 py-2 rounded-md text-base font-medium text-gray-600 cursor-not-allowed">
+                    <div className="flex items-center">
+                      <Crown className="mr-2" size={18} />
+                      {t('header.navigation.subscription')}
+                    </div>
+                  </div>
+                )
+              }
               <button
                 onClick={() => {
                   handleLogout();
