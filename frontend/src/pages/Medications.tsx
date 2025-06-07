@@ -91,7 +91,7 @@ export const Medications = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="max-w-4xl mx-auto sm:px-6 lg:px-8 py-6">
         <div className="space-y-6">
           {/* Header Section */}
           <div className="text-center py-3">
@@ -100,7 +100,7 @@ export const Medications = () => {
           </div>
 
           {/* Enhanced Header */}
-          <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl shadow-lg p-5 text-white">
+          <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl shadow-lg p-5 text-white">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
               <div className="flex items-center space-x-3">
                 <div className="p-3 bg-white/20 rounded-xl">

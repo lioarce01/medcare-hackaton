@@ -1,7 +1,6 @@
 import { useUpcomingReminders } from '../../api/reminders';
 import { ReminderList } from './ReminderList';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Skeleton } from '../ui/skeleton';
 
 export const UpcomingReminders = () => {
   const { data: reminders } = useUpcomingReminders();

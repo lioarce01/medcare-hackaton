@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, User, Pill, LogOut, Home, ChevronDown, Crown } from 'lucide-react';
+import { Menu, X, User, Pill, LogOut, Home, ChevronDown, Crown, Loader2 } from 'lucide-react';
 import { useSignOut } from '../hooks/useAuth';
 import { useTranslation } from 'react-i18next';
 import { useSession } from '../hooks/useSession';
 import { useUser } from '../hooks/useUser';
 import { LanguageSwitcher } from './LanguageSwitcher';
+import { LoadingSpinner } from './LoadingSpinner';
 
 export const Header: React.FC = () => {
   const { mutate: logout } = useSignOut()
@@ -15,7 +16,7 @@ export const Header: React.FC = () => {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { t } = useTranslation();
   const { data: session } = useSession();
-  const { data: userProfile } = useUser();
+  const { data: userProfile, isPending } = useUser();
   
   const handleLogout = () => {
     logout();
@@ -92,18 +93,27 @@ export const Header: React.FC = () => {
                 
                 {/* Profile Dropdown */}
                 <div className="relative ml-3" ref={dropdownRef}>
-                  <button
-                    onClick={toggleDropdown}
-                    className="flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors"
-                  >
-                    <div className="flex items-center">
-                      <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-medium">
-                        {userProfile?.name?.charAt(0).toUpperCase() || 'U'}
-                      </div>
-                      <span className="ml-2">{userProfile?.name || 'User'}</span>
-                      <ChevronDown className="ml-1" size={16} />
-                    </div>
-                  </button>
+                  {
+                    isPending 
+                      ? (
+                        <div className="px-10 py-2">
+                          <Loader2 className="animate-spin text-indigo-600"/> 
+                        </div>
+                      ) : (
+                          <button
+                        onClick={toggleDropdown}
+                        className="flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors"
+                      >
+                        <div className="flex items-center">
+                          <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-medium">
+                            {userProfile?.name?.charAt(0).toUpperCase()}
+                          </div>
+                          <span className="ml-2">{userProfile?.name}</span>
+                          <ChevronDown className="ml-1" size={16} />
+                        </div>
+                      </button>
+                    )
+                  }
                   
                   {/* Dropdown Menu */}
                   {isDropdownOpen && (
