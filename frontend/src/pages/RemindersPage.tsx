@@ -1,5 +1,5 @@
 "use client"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Bell, Crown, Plus, List, Sparkles, CheckCircle, Calendar, Clock, Heart, Star, ArrowRight } from "lucide-react"
 import { useAuth } from "../hooks/useAuth"
 import { useToast } from "../hooks/useToast"
@@ -17,6 +17,12 @@ export const RemindersPage = () => {
   const createReminder = useCreateReminder()
   const deleteReminder = useDeleteReminder()
   const sendReminderManually = useSendReminderManually()
+
+  useEffect(() => {
+    if (user && user.subscription_status !== "premium") {
+      navigate("/subscription")
+    }
+  }, [user, navigate])
 
   const handleTabChange = (value: string) => {
     setActiveTab(value)
@@ -38,136 +44,6 @@ export const RemindersPage = () => {
     } catch (error) {
       showToast("Could not send reminder", "error")
     }
-  }
-
-  if (user?.subscription_status !== "premium") {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 py-6">
-        <div className="max-w-2xl mx-auto px-4">
-          {/* Header Section */}
-          <div className="text-center mb-6">
-            <h1 className="text-2xl font-bold text-gray-800 mb-1">Premium Reminders 👑</h1>
-            <p className="text-gray-600 text-sm">Unlock advanced reminder features with Premium</p>
-          </div>
-
-          {/* Premium Upgrade Card */}
-          <div className="bg-gradient-to-br from-white to-purple-50 rounded-2xl shadow-lg border border-purple-100/50 overflow-hidden">
-            <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white p-5">
-              <div className="flex items-center space-x-3 mb-4">
-                <div className="p-2 bg-white/20 rounded-xl">
-                  <Crown className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <h2 className="text-lg font-bold mb-1">Premium Reminders</h2>
-                  <p className="text-purple-100 text-sm">Upgrade your account to access all reminder features</p>
-                </div>
-              </div>
-
-              {/* Premium Badge */}
-              <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-3 py-1 rounded-lg text-sm">
-                <Star className="w-4 h-4 text-yellow-300" />
-                <span className="font-medium">Premium Feature</span>
-              </div>
-            </div>
-
-            <div className="p-5">
-              <div className="mb-6">
-                <h3 className="text-lg font-bold text-gray-800 mb-3 flex items-center">
-                  <Sparkles className="w-5 h-5 text-purple-500 mr-2" />
-                  What you'll get with Premium:
-                </h3>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {[
-                    {
-                      icon: Bell,
-                      title: "Unlimited Reminders",
-                      description: "Create as many reminders as you need",
-                      gradient: "from-blue-400 to-cyan-500",
-                    },
-                    {
-                      icon: CheckCircle,
-                      title: "Email Notifications",
-                      description: "Receive reminders directly in your inbox",
-                      gradient: "from-green-400 to-emerald-500",
-                    },
-                    {
-                      icon: Calendar,
-                      title: "Custom Messages",
-                      description: "Personalize your reminder messages",
-                      gradient: "from-purple-400 to-pink-500",
-                    },
-                    {
-                      icon: Clock,
-                      title: "Weekly Reports",
-                      description: "Get detailed adherence reports",
-                      gradient: "from-orange-400 to-red-500",
-                    },
-                  ].map((feature, index) => (
-                    <div
-                      key={feature.title}
-                      className="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-sm border border-gray-100 p-3 hover:shadow-md transition-all duration-300 transform hover:-translate-y-1"
-                      style={{ animationDelay: `${index * 100}ms` }}
-                    >
-                      <div className="flex items-start space-x-3">
-                        <div className={`p-2 bg-gradient-to-r ${feature.gradient} rounded-lg shadow-sm`}>
-                          <feature.icon className="w-4 h-4 text-white" />
-                        </div>
-                        <div className="flex-1">
-                          <h4 className="font-bold text-gray-800 mb-1 text-sm">{feature.title}</h4>
-                          <p className="text-xs text-gray-600">{feature.description}</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Additional Benefits */}
-              <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-4 border border-purple-200 mb-6">
-                <h4 className="font-bold text-gray-800 mb-2 flex items-center text-sm">
-                  <Heart className="w-4 h-4 text-pink-500 mr-2" />
-                  And much more...
-                </h4>
-                <ul className="space-y-1">
-                  {[
-                    "Advanced medication tracking",
-                    "Priority customer support",
-                    "Export your health data",
-                    "Family sharing features",
-                    "Medication interaction alerts",
-                  ].map((benefit, index) => (
-                    <li key={index} className="flex items-center text-xs text-gray-700">
-                      <CheckCircle className="w-3 h-3 text-green-500 mr-2 flex-shrink-0" />
-                      {benefit}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Upgrade Button */}
-              <button
-                onClick={() => navigate("/subscription")}
-                className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white py-3 px-6 rounded-xl flex items-center justify-center transition-all duration-200 transform hover:-translate-y-1 shadow-lg hover:shadow-xl font-bold"
-              >
-                <Crown className="mr-2 h-5 w-5" />
-                Upgrade to Premium
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </button>
-            </div>
-
-            {/* Motivational Footer */}
-            <div className="bg-gradient-to-r from-pink-400 to-rose-500 text-white p-4 text-center">
-              <div className="text-2xl mb-2">🌟</div>
-              <h3 className="text-lg font-bold mb-1">Invest in Your Health Journey!</h3>
-              <p className="text-pink-100 text-sm">
-                Premium reminders help you stay consistent with your medications and achieve better health outcomes.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
   }
 
   return (

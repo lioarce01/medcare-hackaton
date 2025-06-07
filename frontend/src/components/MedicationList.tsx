@@ -43,7 +43,7 @@ export const MedicationList: React.FC<MedicationListProps> = React.memo(({ medic
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {medications.map((medication, index) => (
         <MedicationCard key={medication.id} medication={medication} onDelete={handleDelete} index={index} />
       ))}

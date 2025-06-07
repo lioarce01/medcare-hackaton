@@ -771,7 +771,7 @@
       "title": "Upgrade to Premium",
       "description": "Get access to advanced features to better manage your medications",
       "button": "Get Premium",
-      "price": "Only $4.99/month",
+      "price": "Only $14.99/month",
       "payment_methods": {
         "title": "Select Payment Method",
         "stripe": "Credit Card (Stripe)",

@@ -16,7 +16,6 @@ export const Register: React.FC = () => {
   const [formData, setFormData] = useState<RegisterFormData>({
     email: '',
     password: '',
-    confirmPassword: '',
     name: '',
   });
   const [error, setError] = useState<string | null>(null);
@@ -49,6 +48,8 @@ export const Register: React.FC = () => {
         },
       }
     );
+
+    console.log("signin up with data:", formData)
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
