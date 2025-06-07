@@ -55,6 +55,7 @@ export const Header: React.FC = () => {
   const protectedNavigation = [
     { name: t('header.navigation.dashboard'), href: '/dashboard' },
     { name: t('header.navigation.medications'), href: '/medications' },
+    { name: t('header.navigation.reminders'), href: '/reminders' },
     { name: t('header.navigation.adherence'), href: '/adherence' },
     { name: t('header.navigation.analytics'), href: '/analytics' },
   ];

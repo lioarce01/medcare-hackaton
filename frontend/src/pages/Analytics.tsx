@@ -26,6 +26,7 @@ import {
 import { formatPercentage } from "../lib/formatters"
 import { useGetAdherenceHistory } from "../hooks/useAdherence"
 import { useTranslation } from "react-i18next"
+import { LoadingSpinner } from "../components/LoadingSpinner"
 
 // Register ChartJS components
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend)
@@ -363,36 +364,24 @@ export const Analytics: React.FC = () => {
     return "💙 Every step counts! You're on your health journey!"
   }
 
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 flex items-center justify-center p-4">
-        <div className="text-center p-8 bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/50 max-w-md">
-          <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-r from-red-400 to-rose-500 rounded-2xl flex items-center justify-center shadow-lg">
-            <AlertTriangle className="w-10 h-10 text-white" />
-          </div>
-          <h3 className="text-xl font-bold text-gray-800 mb-3">{t("analytics.page.error.title")}</h3>
-          <p className="text-gray-600">{error?.message || t("analytics.page.error.message")}</p>
-        </div>
-      </div>
-    )
-  }
-
+  if (isLoading) return null
+  if (error) return null
   if (!stats) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 flex items-center justify-center p-4">
-        <div className="text-center p-8 bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/50 max-w-md">
-          <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-2xl flex items-center justify-center shadow-lg">
-            <BarChart3 className="w-10 h-10 text-white" />
+        <div className="text-center p-6 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 max-w-sm">
+          <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl flex items-center justify-center shadow-md">
+            <BarChart3 className="w-8 h-8 text-white" />
           </div>
-          <div className="text-4xl mb-4">📊</div>
-          <h3 className="text-xl font-bold text-gray-800 mb-3">No Analytics Data Yet</h3>
-          <p className="text-gray-600">{t("analytics.page.no_data")}</p>
+          <h2 className="text-xl font-bold text-gray-800 mb-2">{t("analytics.page.empty.title")}</h2>
+          <p className="text-gray-600 mb-6 text-sm">{t("analytics.page.empty.message")}</p>
         </div>
       </div>
     )
   }
 
   const adherenceGrade = getAdherenceGrade(stats.overall.adherenceRate)
+  const safeStats = stats as AnalyticsStats
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
@@ -433,10 +422,10 @@ export const Analytics: React.FC = () => {
                           <span className="text-2xl">{adherenceGrade.emoji}</span>
                         </div>
                         <p className="text-blue-100">
-                          {formatPercentage(stats.overall.adherenceRate)} {t("analytics.page.overview.adherence_rate")}
+                          {formatPercentage(safeStats.overall.adherenceRate)} {t("analytics.page.overview.adherence_rate")}
                         </p>
                         <p className="text-blue-100 text-sm mt-1">
-                          {getMotivationalMessage(stats.overall.adherenceRate)}
+                          {getMotivationalMessage(safeStats.overall.adherenceRate)}
                         </p>
                       </div>
                     </div>
@@ -470,7 +459,7 @@ export const Analytics: React.FC = () => {
             {[
               {
                 title: t("analytics.page.overview.total_doses"),
-                value: stats.overall.total,
+                value: safeStats.overall.total,
                 icon: Calendar,
                 color: "from-blue-500 to-indigo-600",
                 bgColor: "from-blue-50 to-indigo-50",
@@ -478,7 +467,7 @@ export const Analytics: React.FC = () => {
               },
               {
                 title: t("analytics.page.overview.doses_taken"),
-                value: stats.overall.taken,
+                value: safeStats.overall.taken,
                 icon: Activity,
                 color: "from-emerald-500 to-green-600",
                 bgColor: "from-emerald-50 to-green-50",
@@ -486,7 +475,7 @@ export const Analytics: React.FC = () => {
               },
               {
                 title: t("analytics.page.overview.doses_skipped"),
-                value: stats.overall.skipped,
+                value: safeStats.overall.skipped,
                 icon: AlertTriangle,
                 color: "from-red-500 to-rose-600",
                 bgColor: "from-red-50 to-rose-50",
@@ -494,7 +483,7 @@ export const Analytics: React.FC = () => {
               },
               {
                 title: t("analytics.page.overview.adherence_rate"),
-                value: formatPercentage(stats.overall.adherenceRate),
+                value: formatPercentage(safeStats.overall.adherenceRate),
                 icon: Target,
                 color: "from-purple-500 to-indigo-600",
                 bgColor: "from-purple-50 to-indigo-50",
@@ -589,7 +578,7 @@ export const Analytics: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-orange-100">
-                    {stats.medicationStats.map((med, index) => (
+                    {safeStats.medicationStats.map((med, index) => (
                       <tr
                         key={med.id}
                         className="hover:bg-orange-50 transition-colors"
@@ -637,12 +626,12 @@ export const Analytics: React.FC = () => {
           <div className="bg-gradient-to-r from-pink-400 to-rose-500 text-white rounded-3xl shadow-xl p-6 text-center">
             <div className="text-3xl mb-3">{adherenceGrade.emoji}</div>
             <h3 className="text-xl font-bold mb-2">
-              {stats.overall.adherenceRate >= 80
+              {safeStats.overall.adherenceRate >= 80
                 ? "Your analytics look amazing!"
                 : "Great insights into your health journey!"}
             </h3>
             <p className="text-pink-100">
-              {stats.overall.adherenceRate >= 80
+              {safeStats.overall.adherenceRate >= 80
                 ? "Your consistent medication adherence is creating positive health outcomes. Keep up this fantastic work!"
                 : "Understanding your patterns is the first step to improvement. Every insight helps you build better habits!"}
             </p>

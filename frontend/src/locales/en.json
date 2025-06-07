@@ -742,6 +742,7 @@
     "navigation": {
       "dashboard": "Dashboard",
       "medications": "Medications",
+      "reminders": "Reminders",
       "adherence": "Adherence",
       "analytics": "Analytics",
       "profile": "Profile",
@@ -759,7 +760,7 @@
     }
   },
   "common": {
-    "loading": "Loading page..."
+    "loading": "Loading..."
   },
   "subscription": {
     "premium": {

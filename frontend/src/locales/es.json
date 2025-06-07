@@ -754,15 +754,16 @@
   "header": {
     "app_name": "MedTracker",
     "navigation": {
-      "dashboard": "Panel de Control",
+      "dashboard": "Dashboard",
       "medications": "Medicamentos",
-      "adherence": "Cumplimiento",
-      "analytics": "Análisis",
+      "reminders": "Recordatorios",
+      "adherence": "Adherencia",
+      "analytics": "Analíticas",
       "profile": "Perfil",
-      "logout": "Cerrar Sesión",
-      "login": "Iniciar Sesión",
+      "subscription": "Suscripción",
+      "logout": "Cerrar sesión",
+      "login": "Iniciar sesión",
       "sign_up": "Registrarse",
-      "subscription": "Obtener Premium",
       "premium_feature": "Característica Premium"
     },
     "mobile": {

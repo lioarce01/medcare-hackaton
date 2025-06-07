@@ -20,6 +20,7 @@ import { useUser } from "../hooks/useUser"
 import { useDeleteMedication, useMedications } from "../hooks/useMedications"
 import { useTranslation } from "react-i18next"
 import type { Medication } from "../types/medication_types"
+import { LoadingSpinner } from "../components/LoadingSpinner"
 
 type FilterType = "all" | "active" | "inactive"
 
@@ -40,12 +41,12 @@ const filterMedications = (medications: Medication[], filter: FilterType, search
 }
 
 export const Medications = () => {
-  const { data: user, isLoading: authLoading } = useUser()
+  const { data: user, isLoading: isUserLoading } = useUser()
   const [searchTerm, setSearchTerm] = useState("")
   const [filter, setFilter] = useState<FilterType>("all")
   const { t } = useTranslation()
 
-  const { data: medicationsData, isError, error, refetch, isPending: isRefreshing } = useMedications()
+  const { data: medicationsData, isError, error, refetch, isLoading } = useMedications()
   const { mutate: deleteMedication } = useDeleteMedication()
 
   const filteredMedications = useMemo(() => {
@@ -54,8 +55,8 @@ export const Medications = () => {
   }, [medicationsData?.all, filter, searchTerm])
 
   useEffect(() => {
-    if (!authLoading) refetch()
-  }, [authLoading, refetch])
+    if (!isUserLoading) refetch()
+  }, [isUserLoading, refetch])
 
   const handleDelete = (id: string) => deleteMedication(id)
 
@@ -63,7 +64,10 @@ export const Medications = () => {
     await refetch({ throwOnError: true })
   }
 
-  // Show message if not authenticated
+  if (isUserLoading || isLoading) {
+    return <LoadingSpinner />
+  }
+
   if (!user) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 flex items-center justify-center p-4">
@@ -111,15 +115,15 @@ export const Medications = () => {
               <div className="flex flex-col sm:flex-row gap-2">
                 <button
                   onClick={handleRefresh}
-                  disabled={isRefreshing}
+                  disabled={isLoading}
                   className="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg flex items-center justify-center transition-all duration-200 disabled:opacity-50 font-medium group backdrop-blur-sm text-sm"
                 >
                   <RefreshCw
                     className={`mr-2 h-4 w-4 ${
-                      isRefreshing ? "animate-spin" : "group-hover:rotate-180 transition-transform duration-500"
+                      isLoading ? "animate-spin" : "group-hover:rotate-180 transition-transform duration-500"
                     }`}
                   />
-                  {isRefreshing ? t("medications.page.actions.refreshing") : t("medications.page.actions.refresh")}
+                  {isLoading ? t("medications.page.actions.refreshing") : t("medications.page.actions.refresh")}
                 </button>
                 <Link
                   to="/medications/add"

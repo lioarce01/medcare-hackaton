@@ -1,7 +1,8 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../config/supabase";
 import { signUp } from "../api/auth";
+import { UserProfile } from "../types/user_types";
 
 export const useSignUp = () => {
   const navigate = useNavigate();
@@ -64,4 +65,42 @@ export const useSignOut = () => {
       navigate("/login");
     },
   });
+};
+
+export const useAuth = () => {
+  const { data: session } = useQuery({
+    queryKey: ["session"],
+    queryFn: async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      return session;
+    },
+  });
+
+  const { data: user } = useQuery({
+    queryKey: ["user"],
+    queryFn: async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return null;
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+
+      return profile as UserProfile;
+    },
+    enabled: !!session,
+  });
+
+  return {
+    user,
+    session,
+    isAuthenticated: !!session,
+    isPremium: user?.subscription_status === "premium",
+  };
 };

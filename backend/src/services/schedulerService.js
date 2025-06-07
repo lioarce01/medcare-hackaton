@@ -6,18 +6,19 @@ import { sendMedicationReminder, sendWeeklyReport } from './emailService.js';
 import { processMissedAdherenceRecords } from './adherenceService.js';
 import { generateWeeklyReport } from './reportService.js';
 import medicationModel from '../models/medicationModel.js';
+import { scheduleReminders } from './reminderService.js';
 
 // Set up cron jobs for the application
 export const setupCronJobs = () => {
-  // Check for reminders to send every 5 minutes
-  cron.schedule('*/5 * * * *', async () => {
+  // Reminder Job - Ejecutar cada minuto
+  setInterval(async () => {
     try {
       logger.info('Running reminder check job');
-      await processReminders();
+      await scheduleReminders();
     } catch (error) {
-      logger.error(`Error in reminder check job: ${error.message}`);
+      logger.error('Error in reminder job:', error);
     }
-  });
+  }, 60000); // 60000 ms = 1 minuto
 
   // Process missed adherence records every hour
   cron.schedule('0 * * * *', async () => {
@@ -60,8 +61,7 @@ export const setupCronJobs = () => {
     }
   });
 
-  logger.info('All scheduled jobs have been set up');
-
+  logger.info('All cron jobs have been set up successfully');
 };
 
 // Process due reminders
