@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, User, Pill, LogOut, Home, ChevronDown, Crown } from 'lucide-react';
+import { Menu, X, User, Pill, LogOut, Home, ChevronDown, Crown, Loader2 } from 'lucide-react';
 import { useSignOut } from '../hooks/useAuth';
 import { useTranslation } from 'react-i18next';
 import { useSession } from '../hooks/useSession';
@@ -15,7 +15,7 @@ export const Header: React.FC = () => {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { t } = useTranslation();
   const { data: session } = useSession();
-  const { data: userProfile } = useUser();
+  const { data: userProfile, isPending } = useUser();
   
   const handleLogout = () => {
     logout();
@@ -55,6 +55,7 @@ export const Header: React.FC = () => {
   const protectedNavigation = [
     { name: t('header.navigation.dashboard'), href: '/dashboard' },
     { name: t('header.navigation.medications'), href: '/medications' },
+    { name: t('header.navigation.reminders'), href: '/reminders' },
     { name: t('header.navigation.adherence'), href: '/adherence' },
     { name: t('header.navigation.analytics'), href: '/analytics' },
   ];
@@ -91,18 +92,27 @@ export const Header: React.FC = () => {
                 
                 {/* Profile Dropdown */}
                 <div className="relative ml-3" ref={dropdownRef}>
-                  <button
-                    onClick={toggleDropdown}
-                    className="flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors"
-                  >
-                    <div className="flex items-center">
-                      <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-medium">
-                        {userProfile?.name?.charAt(0).toUpperCase() || 'U'}
-                      </div>
-                      <span className="ml-2">{userProfile?.name || 'User'}</span>
-                      <ChevronDown className="ml-1" size={16} />
-                    </div>
-                  </button>
+                  {
+                    isPending 
+                      ? (
+                        <div className="px-10 py-2">
+                          <Loader2 className="animate-spin text-indigo-600"/> 
+                        </div>
+                      ) : (
+                          <button
+                        onClick={toggleDropdown}
+                        className="flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors"
+                      >
+                        <div className="flex items-center">
+                          <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-medium">
+                            {userProfile?.name?.charAt(0).toUpperCase()}
+                          </div>
+                          <span className="ml-2">{userProfile?.name}</span>
+                          <ChevronDown className="ml-1" size={16} />
+                        </div>
+                      </button>
+                    )
+                  }
                   
                   {/* Dropdown Menu */}
                   {isDropdownOpen && (
@@ -119,17 +129,20 @@ export const Header: React.FC = () => {
                             {t('header.navigation.profile')}
                           </div>
                         </Link>
-                        <Link
-                          to="/subscription"
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                          role="menuitem"
-                          onClick={() => setIsDropdownOpen(false)}
-                        >
-                          <div className="flex items-center">
-                            <Crown className="mr-2" size={16} />
-                            {t('header.navigation.subscription')}
-                          </div>
-                        </Link>
+                        {
+                          userProfile?.subscription_status === "premium" 
+                          ? (
+                            null
+
+                          ) : (
+                            <div className="block px-3 py-2 rounded-md text-base font-medium text-gray-600 cursor-not-allowed">
+                              <div className="flex items-center">
+                                <Crown className="mr-2" size={18} />
+                                {t('header.navigation.subscription')}
+                              </div>
+                            </div>
+                          )
+                        }
                         <button
                           onClick={handleLogout}
                           className="w-full text-left block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
@@ -219,20 +232,20 @@ export const Header: React.FC = () => {
                   {t('header.navigation.profile')}
                 </div>
               </Link>
-              <Link
-                to="/subscription"
-                className={`block px-3 py-2 rounded-md text-base font-medium ${
-                  isActive('/subscription')
-                    ? 'bg-blue-100 text-blue-700'
-                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                } transition-colors`}
-                onClick={closeMenu}
-              >
-                <div className="flex items-center">
-                  <Crown className="mr-2" size={18} />
-                  {t('header.navigation.subscription')}
-                </div>
-              </Link>
+              {
+                userProfile?.subscription_status === "premium" 
+                ? (
+                  null
+
+                ) : (
+                  <div className="block px-3 py-2 rounded-md text-base font-medium text-gray-600 cursor-not-allowed">
+                    <div className="flex items-center">
+                      <Crown className="mr-2" size={18} />
+                      {t('header.navigation.subscription')}
+                    </div>
+                  </div>
+                )
+              }
               <button
                 onClick={() => {
                   handleLogout();

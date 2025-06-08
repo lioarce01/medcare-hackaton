@@ -723,7 +723,8 @@
         "requirements": "Password must be at least 8 characters long"
       },
       "terms": "I agree to the Terms of Service and Privacy Policy",
-      "terms_required": "You must accept the terms and conditions"
+      "terms_required": "You must accept the terms and conditions",
+      "email_invalid": "Please enter a valid email address"
     },
     "actions": {
       "register": "Create Account",
@@ -741,6 +742,7 @@
     "navigation": {
       "dashboard": "Dashboard",
       "medications": "Medications",
+      "reminders": "Reminders",
       "adherence": "Adherence",
       "analytics": "Analytics",
       "profile": "Profile",
@@ -758,7 +760,7 @@
     }
   },
   "common": {
-    "loading": "Loading page..."
+    "loading": "Loading..."
   },
   "subscription": {
     "premium": {
@@ -769,7 +771,17 @@
       "title": "Upgrade to Premium",
       "description": "Get access to advanced features to better manage your medications",
       "button": "Get Premium",
-      "price": "Only $4.99/month"
+      "price": "Only $14.99/month",
+      "payment_methods": {
+        "title": "Select Payment Method",
+        "stripe": "Credit Card (Stripe)",
+        "mercadopago": "Mercado Pago"
+      }
+    },
+    "success": {
+      "title": "Payment Successful!",
+      "description": "Thank you for subscribing to our premium plan. Your account has been upgraded.",
+      "redirecting": "Redirecting to subscription page..."
     },
     "features": {
       "sms": {

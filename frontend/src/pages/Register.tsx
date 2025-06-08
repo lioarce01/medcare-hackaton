@@ -7,7 +7,6 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Checkbox } from '../components/ui/checkbox';
 import { LoadingSpinner } from '../components/LoadingSpinner';
-import { supabase } from '../lib/supabase';
 import { RegisterFormData } from '../types/auth_types';
 
 export const Register: React.FC = () => {
@@ -17,7 +16,6 @@ export const Register: React.FC = () => {
   const [formData, setFormData] = useState<RegisterFormData>({
     email: '',
     password: '',
-    confirmPassword: '',
     name: '',
   });
   const [error, setError] = useState<string | null>(null);
@@ -50,6 +48,8 @@ export const Register: React.FC = () => {
         },
       }
     );
+
+    console.log("signin up with data:", formData)
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

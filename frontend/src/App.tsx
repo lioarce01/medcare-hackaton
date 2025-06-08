@@ -7,7 +7,6 @@ import { ToastProvider } from './components/Toast';
 import { FloatingLogo } from './components/FloatingLogo';
 import { useSession } from './hooks/useSession';
 import { LoadingSpinner } from './components/LoadingSpinner';
-import { useTranslation } from 'react-i18next';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { I18nextProvider } from "react-i18next"
 import i18n from "./i18n"
@@ -27,15 +26,18 @@ const Analytics = lazy(() => import('./pages/Analytics').then(module => ({ defau
 const Profile = lazy(() => import('./pages/Profile').then(module => ({ default: module.Profile })));
 const NotFound = lazy(() => import('./pages/NotFound').then(module => ({ default: module.NotFound })));
 const Subscription = lazy(() => import('./pages/Subscription').then(module => ({ default: module.Subscription })));
+const SubscriptionSuccess = lazy(() => import('./pages/SubscriptionSuccess').then(module => ({ default: module.SubscriptionSuccess })));
+const RemindersPage = lazy(() => import('./pages/RemindersPage').then(module => ({ default: module.RemindersPage })));
+const RiskHistoryPage = lazy(() => import('./pages/RiskHistoryPage').then(module => ({ default: module.RiskHistoryPage })));
 
 // Loading component for suspense fallback
 const PageLoader = () => {
-  const { t } = useTranslation();
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center">
-      <div className="text-center">
-        <LoadingSpinner />
-        <p className="mt-4 text-gray-600">{t('common.loading')}</p>
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      <div className="flex-grow container mx-auto px-4 py-8 flex items-center justify-center">
+        <div className="text-center">
+          <LoadingSpinner />
+        </div>
       </div>
     </div>
   );
@@ -56,7 +58,11 @@ const queryClient = new QueryClient({
 })
 
 function App() {
-  const { data: session } = useSession();
+  const { data: session, isLoading } = useSession();
+
+  if (isLoading) {
+    return <PageLoader />;
+  }
 
   return (
     <SentryErrorBoundary fallback={<div>An error has occurred</div>}>
@@ -125,6 +131,24 @@ function App() {
                       <Route path="/subscription" element={
                         <PrivateRoute>
                           <Subscription />
+                        </PrivateRoute>
+                      } />
+                      
+                      <Route path="/subscription/success" element={
+                        <PrivateRoute>
+                          <SubscriptionSuccess />
+                        </PrivateRoute>
+                      } />
+                      
+                      <Route path="/reminders" element={
+                        <PrivateRoute>
+                          <RemindersPage />
+                        </PrivateRoute>
+                      } />
+
+                      <Route path="/risk-history" element={
+                        <PrivateRoute>
+                          <RiskHistoryPage />
                         </PrivateRoute>
                       } />
                       

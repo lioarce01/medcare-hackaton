@@ -1,22 +1,33 @@
 import cron from 'node-cron';
 import { findUsersByFilter } from '../models/userModel.js';
-import { findPendingReminders, updateReminder } from '../models/reminderModel.js';
 import { logger } from '../utils/logger.js';
-import { sendMedicationReminder, sendWeeklyReport } from './emailService.js';
-import { processMissedAdherenceRecords } from './adherenceService.js';
+import { sendWeeklyReport } from './emailService.js';
+import { generateAdherenceRecords, processMissedAdherenceRecords } from './adherenceService.js';
 import { generateWeeklyReport } from './reportService.js';
 import medicationModel from '../models/medicationModel.js';
+import { scheduleReminders } from './reminderService.js';
+import { calculateAndStoreDailyRiskScores } from './riskScoreService.js';
 
 // Set up cron jobs for the application
 export const setupCronJobs = () => {
-  // Check for reminders to send every 5 minutes
-  cron.schedule('*/5 * * * *', async () => {
+  // Reminder Job - Ejecutar cada minuto
+  cron.schedule('* * * * *', async () => {
     try {
       logger.info('Running reminder check job');
-      await processReminders();
+      await scheduleReminders();
     } catch (error) {
-      logger.error(`Error in reminder check job: ${error.message}`);
+      logger.error(`Error in reminder job: ${error.message}`);
     }
+  });
+
+  // Reminder job - Ejecutar cada 3 horas
+  cron.schedule('0 3 * * *', async () => {
+    try {
+      logger.info('Running daily risk_score job');
+      await calculateAndStoreDailyRiskScores();
+    } catch (error) {
+      logger.error(`Error in risk_score job: ${error.message}`);
+    }    
   });
 
   // Process missed adherence records every hour
@@ -60,78 +71,7 @@ export const setupCronJobs = () => {
     }
   });
 
-  logger.info('All scheduled jobs have been set up');
-
-};
-
-// Process due reminders
-const processReminders = async () => {
-  const now = new Date();
-  const fiveMinutesLater = new Date(now.getTime() + 5 * 60 * 1000);
-  
-  // Format current time and five minutes later for query
-  const currentTimeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
-  const fiveMinutesLaterStr = `${fiveMinutesLater.getHours().toString().padStart(2, '0')}:${fiveMinutesLater.getMinutes().toString().padStart(2, '0')}`;
-  
-  // Get today's date in YYYY-MM-DD format
-  const today = new Date().toISOString().split('T')[0];
-  
-  try {
-    // Find reminders directly filtered by time range in the database query
-    const remindersToSend = await findPendingReminders(
-      null, // userId not needed as we're getting all pending reminders
-      today,
-      currentTimeStr,
-      fiveMinutesLaterStr
-    );
-    
-    logger.info(`Found ${remindersToSend.length} reminders to send`);
-    
-    // Process each reminder
-    for (const reminder of remindersToSend) {
-      // Skip if user has disabled email notifications
-      if (!reminder.user.email_notifications_enabled) {
-        await updateReminder(reminder.id, reminder.user_id, {
-          status: 'skipped'
-        });
-        continue;
-      }
-      
-      try {
-        // Send email reminder
-        await sendMedicationReminder(reminder);
-        
-        // Update reminder status
-        await updateReminder(reminder.id, reminder.user_id, {
-          status: 'sent',
-          channels: {
-            ...reminder.channels,
-            email: {
-              sent: true,
-              enabled: true,
-              sentAt: new Date().toISOString()
-            }
-          }
-        });
-        
-        logger.info(`Sent reminder for ${reminder.medication.name} to ${reminder.user.email}`);
-      } catch (error) {
-        logger.error(`Failed to send reminder: ${error.message}`);
-        
-        // Update reminder status
-        await updateReminder(reminder.id, reminder.user_id, {
-          status: 'failed',
-          retry_count: (reminder.retry_count || 0) + 1,
-          last_retry: new Date().toISOString()
-        });
-      }
-    }
-    
-    return remindersToSend.length;
-  } catch (error) {
-    logger.error(`Error processing reminders: ${error.message}`);
-    throw error;
-  }
+  logger.info('All cron jobs have been set up successfully');
 };
 
 // Generate and send weekly reports for all users

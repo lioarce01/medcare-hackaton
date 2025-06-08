@@ -30,7 +30,7 @@ interface TodayDose {
 }
 
 export const Dashboard: React.FC = () => {
-  const { data: user } = useUser()
+  const { data: user, isLoading: isUserLoading } = useUser()
   const [processingDose, setProcessingDose] = useState<string | null>(null)
   const { t } = useTranslation()
 
@@ -48,7 +48,10 @@ export const Dashboard: React.FC = () => {
   const { data: activeMedications = [], error: medsError } = useActiveMedications()
   const { data: analyticsData = [], error: analyticsError } = useGetAnalyticsStats()
 
-  // Si no hay usuario autenticado después de la carga, mostrar mensaje
+  if (isUserLoading) {
+    return null
+  }
+
   if (!user) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 flex items-center justify-center">

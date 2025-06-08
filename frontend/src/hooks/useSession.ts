@@ -11,7 +11,9 @@ export const useSession = () => {
   return useQuery({
     queryKey: ["session"],
     queryFn: getSession,
-    staleTime: Infinity,
-    refetchOnWindowFocus: false,
+    staleTime: 0,
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
+    retry: 1,
   });
 };

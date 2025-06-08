@@ -1,7 +1,7 @@
 import type React from "react"
 import { SubscriptionManager } from "../components/SubscriptionManager"
 import { useTranslation } from "react-i18next"
-import { Crown, Sparkles } from "lucide-react"
+import { Crown } from "lucide-react"
 
 export const Subscription: React.FC = () => {
   const { t } = useTranslation()

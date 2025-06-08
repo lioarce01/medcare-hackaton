@@ -737,7 +737,8 @@
         "requirements": "La contraseña debe tener al menos 8 caracteres"
       },
       "terms": "Acepto los Términos de Servicio y la Política de Privacidad",
-      "terms_required": "Debes aceptar los términos y condiciones"
+      "terms_required": "Debes aceptar los términos y condiciones",
+      "email_invalid": "Por favor ingresa un correo electrónico válido"
     },
     "actions": {
       "register": "Crear Cuenta",
@@ -753,15 +754,16 @@
   "header": {
     "app_name": "MedTracker",
     "navigation": {
-      "dashboard": "Panel de Control",
+      "dashboard": "Dashboard",
       "medications": "Medicamentos",
-      "adherence": "Cumplimiento",
-      "analytics": "Análisis",
+      "reminders": "Recordatorios",
+      "adherence": "Adherencia",
+      "analytics": "Analíticas",
       "profile": "Perfil",
-      "logout": "Cerrar Sesión",
-      "login": "Iniciar Sesión",
+      "subscription": "Suscripción",
+      "logout": "Cerrar sesión",
+      "login": "Iniciar sesión",
       "sign_up": "Registrarse",
-      "subscription": "Obtener Premium",
       "premium_feature": "Característica Premium"
     },
     "mobile": {
@@ -781,9 +783,19 @@
     },
     "upgrade": {
       "title": "Actualizar a Premium",
-      "description": "Obtén acceso a funciones avanzadas para gestionar mejor tus medicamentos",
+      "description": "Obtén acceso a características avanzadas para gestionar mejor tus medicamentos",
       "button": "Obtener Premium",
-      "price": "Solo $4.99/mes"
+      "price": "Solo $4.99/mes",
+      "payment_methods": {
+        "title": "Seleccionar Método de Pago",
+        "stripe": "Tarjeta de Crédito (Stripe)",
+        "mercadopago": "Mercado Pago"
+      }
+    },
+    "success": {
+      "title": "¡Pago Exitoso!",
+      "description": "Gracias por suscribirte a nuestro plan premium. Tu cuenta ha sido actualizada.",
+      "redirecting": "Redirigiendo a la página de suscripción..."
     },
     "features": {
       "sms": {
@@ -803,5 +815,21 @@
         "description": "Comparte el estado de los medicamentos con un familiar"
       }
     }
+  },
+  "payment": {
+    "cardholder_name": "Nombre del titular",
+    "cardholder_email": "Email del titular",
+    "card_number": "Número de tarjeta",
+    "expiration_month": "Mes de vencimiento",
+    "expiration_year": "Año de vencimiento",
+    "security_code": "Código de seguridad",
+    "installments": "Cuotas",
+    "identification_type": "Tipo de documento",
+    "identification_number": "Número de documento",
+    "issuer": "Banco emisor",
+    "select_identification_type": "Seleccionar tipo de documento",
+    "select_issuer": "Seleccionar banco emisor",
+    "select_installments": "Seleccionar cuotas",
+    "submit": "Pagar"
   }
 }

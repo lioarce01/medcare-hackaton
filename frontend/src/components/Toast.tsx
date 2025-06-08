@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useCallback } from 'react'
 import { ToastProps, ToastContextType } from '../types/ui_types'
 import { X } from 'lucide-react'
 
-const ToastContext = createContext<ToastContextType | undefined>(undefined)
+export const ToastContext = createContext<ToastContextType | undefined>(undefined)
 
 export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [toast, setToast] = useState<ToastProps | null>(null)

@@ -1,3 +1,5 @@
+"use client"
+
 import type React from "react"
 import { useState, useMemo } from "react"
 import {
@@ -249,8 +251,8 @@ export const Analytics: React.FC = () => {
           pointBackgroundColor: "#8b5cf6",
           pointBorderColor: "#ffffff",
           pointBorderWidth: 2,
-          pointRadius: 6,
-          pointHoverRadius: 8,
+          pointRadius: 5,
+          pointHoverRadius: 7,
         },
       ],
     }
@@ -270,7 +272,7 @@ export const Analytics: React.FC = () => {
             if (stat.rate >= 70) return "#f59e0b"
             return "#ef4444"
           }),
-          borderRadius: 8,
+          borderRadius: 6,
           borderSkipped: false,
         },
       ],
@@ -291,7 +293,7 @@ export const Analytics: React.FC = () => {
           bodyColor: "#ffffff",
           borderColor: "rgba(255, 255, 255, 0.1)",
           borderWidth: 1,
-          cornerRadius: 8,
+          cornerRadius: 6,
         },
       },
       scales: {
@@ -363,80 +365,92 @@ export const Analytics: React.FC = () => {
     return "💙 Every step counts! You're on your health journey!"
   }
 
+  // Handle loading state
+  if (isLoading) {
+    return null
+  }
+
+  // Handle error state
   if (error) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 flex items-center justify-center p-4">
-        <div className="text-center p-8 bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/50 max-w-md">
-          <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-r from-red-400 to-rose-500 rounded-2xl flex items-center justify-center shadow-lg">
-            <AlertTriangle className="w-10 h-10 text-white" />
+        <div className="text-center p-5 bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-white/50 max-w-sm">
+          <div className="w-14 h-14 mx-auto mb-3 bg-gradient-to-r from-red-500 to-rose-500 rounded-lg flex items-center justify-center shadow-md">
+            <AlertTriangle className="w-7 h-7 text-white" />
           </div>
-          <h3 className="text-xl font-bold text-gray-800 mb-3">{t("analytics.page.error.title")}</h3>
-          <p className="text-gray-600">{error?.message || t("analytics.page.error.message")}</p>
+          <h2 className="text-lg font-bold text-gray-800 mb-2">Error Loading Analytics</h2>
+          <p className="text-gray-600 text-sm">We couldn't load your analytics data. Please try again later.</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Handle empty state
+  if (adherenceData !== undefined && !stats) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 flex items-center justify-center p-4">
+        <div className="text-center p-5 bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-white/50 max-w-sm">
+          <div className="w-14 h-14 mx-auto mb-3 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center shadow-md">
+            <BarChart3 className="w-7 h-7 text-white" />
+          </div>
+          <h2 className="text-lg font-bold text-gray-800 mb-2">{t("analytics.page.empty.title")}</h2>
+          <p className="text-gray-600 mb-5 text-sm">{t("analytics.page.empty.message")}</p>
         </div>
       </div>
     )
   }
 
   if (!stats) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 flex items-center justify-center p-4">
-        <div className="text-center p-8 bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/50 max-w-md">
-          <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-2xl flex items-center justify-center shadow-lg">
-            <BarChart3 className="w-10 h-10 text-white" />
-          </div>
-          <div className="text-4xl mb-4">📊</div>
-          <h3 className="text-xl font-bold text-gray-800 mb-3">No Analytics Data Yet</h3>
-          <p className="text-gray-600">{t("analytics.page.no_data")}</p>
-        </div>
-      </div>
-    )
+    return null
   }
 
   const adherenceGrade = getAdherenceGrade(stats.overall.adherenceRate)
+  const safeStats = stats as AnalyticsStats
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="space-y-6">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="space-y-5">
           {/* Header Section */}
-          <div className="text-center py-4">
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">Your Health Analytics 📊</h1>
-            <p className="text-gray-600">Insights into your medication adherence journey</p>
+          <div className="text-center py-3">
+            <h1 className="text-2xl font-bold text-gray-800 mb-1">Your Health Analytics 📊</h1>
+            <p className="text-gray-600 text-sm">Insights into your medication adherence journey</p>
           </div>
 
           {/* Header */}
-          <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-3xl shadow-xl text-white overflow-hidden">
-            <div className="p-6">
-              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
-                <div className="space-y-4">
-                  <div className="flex items-center space-x-4">
-                    <div className="p-3 bg-white/20 rounded-2xl">
-                      <BarChart3 className="w-6 h-6 text-white" />
+          <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl shadow-lg text-white overflow-hidden">
+            <div className="p-4">
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-3 lg:space-y-0">
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-3">
+                    <div className="p-2 bg-white/20 rounded-xl">
+                      <BarChart3 className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                      <h2 className="text-xl font-bold mb-1">{t("analytics.page.title")}</h2>
-                      <p className="text-blue-100">{t("analytics.page.subtitle")}</p>
+                      <h2 className="text-lg font-bold mb-1">{t("analytics.page.title")}</h2>
+                      <p className="text-blue-100 text-sm">{t("analytics.page.subtitle")}</p>
                     </div>
                   </div>
 
                   {/* Overall Grade */}
-                  <div className="bg-white/20 rounded-2xl p-4 backdrop-blur-sm">
-                    <div className="flex items-center space-x-4">
+                  <div className="bg-white/20 rounded-xl p-3 backdrop-blur-sm">
+                    <div className="flex items-center space-x-3">
                       <div
-                        className={`w-16 h-16 rounded-2xl bg-gradient-to-r ${adherenceGrade.color} flex items-center justify-center shadow-lg`}
+                        className={`w-12 h-12 rounded-xl bg-gradient-to-r ${adherenceGrade.color} flex items-center justify-center shadow-md`}
                       >
-                        <span className="text-white font-bold text-xl">{adherenceGrade.grade}</span>
+                        <span className="text-white font-bold text-lg">{adherenceGrade.grade}</span>
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center space-x-2 mb-1">
-                          <p className="font-bold text-white text-lg">{adherenceGrade.text}</p>
-                          <span className="text-2xl">{adherenceGrade.emoji}</span>
+                          <p className="font-bold text-white">{adherenceGrade.text}</p>
+                          <span className="text-xl">{adherenceGrade.emoji}</span>
                         </div>
-                        <p className="text-blue-100">
-                          {formatPercentage(stats.overall.adherenceRate)} {t("analytics.page.overview.adherence_rate")}
+                        <p className="text-blue-100 text-sm">
+                          {formatPercentage(safeStats.overall.adherenceRate)}{" "}
+                          {t("analytics.page.overview.adherence_rate")}
                         </p>
-                        <p className="text-blue-100 text-sm mt-1">
-                          {getMotivationalMessage(stats.overall.adherenceRate)}
+                        <p className="text-blue-100 text-xs mt-1">
+                          {getMotivationalMessage(safeStats.overall.adherenceRate)}
                         </p>
                       </div>
                     </div>
@@ -444,11 +458,11 @@ export const Analytics: React.FC = () => {
                 </div>
 
                 {/* Date Range Selector */}
-                <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-3">
-                  <div className="flex items-center space-x-3">
-                    <Filter className="w-5 h-5 text-white" />
+                <div className="bg-white/20 backdrop-blur-sm rounded-xl p-2">
+                  <div className="flex items-center space-x-2">
+                    <Filter className="w-4 h-4 text-white" />
                     <select
-                      className="bg-white text-blue-600 border-none focus:ring-0 font-bold pr-8 appearance-none cursor-pointer rounded-lg px-3 py-2"
+                      className="bg-white text-blue-600 border-none focus:ring-0 font-medium pr-6 appearance-none cursor-pointer rounded-lg px-2 py-1 text-sm"
                       value={dateRangeDays}
                       onChange={(e) => setDateRangeDays(Number(e.target.value))}
                     >
@@ -458,7 +472,7 @@ export const Analytics: React.FC = () => {
                         </option>
                       ))}
                     </select>
-                    <ChevronDown className="w-4 h-4 text-white pointer-events-none" />
+                    <ChevronDown className="w-3 h-3 text-white pointer-events-none" />
                   </div>
                 </div>
               </div>
@@ -466,90 +480,86 @@ export const Analytics: React.FC = () => {
           </div>
 
           {/* Overall Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
             {[
               {
                 title: t("analytics.page.overview.total_doses"),
-                value: stats.overall.total,
+                value: safeStats.overall.total,
                 icon: Calendar,
                 color: "from-blue-500 to-indigo-600",
-                bgColor: "from-blue-50 to-indigo-50",
                 emoji: "📅",
               },
               {
                 title: t("analytics.page.overview.doses_taken"),
-                value: stats.overall.taken,
+                value: safeStats.overall.taken,
                 icon: Activity,
                 color: "from-emerald-500 to-green-600",
-                bgColor: "from-emerald-50 to-green-50",
                 emoji: "✅",
               },
               {
                 title: t("analytics.page.overview.doses_skipped"),
-                value: stats.overall.skipped,
+                value: safeStats.overall.skipped,
                 icon: AlertTriangle,
                 color: "from-red-500 to-rose-600",
-                bgColor: "from-red-50 to-rose-50",
                 emoji: "⏸️",
               },
               {
                 title: t("analytics.page.overview.adherence_rate"),
-                value: formatPercentage(stats.overall.adherenceRate),
+                value: formatPercentage(safeStats.overall.adherenceRate),
                 icon: Target,
                 color: "from-purple-500 to-indigo-600",
-                bgColor: "from-purple-50 to-indigo-50",
                 emoji: "🎯",
               },
             ].map((stat) => (
               <div
                 key={stat.title}
-                className="bg-gradient-to-br from-white to-blue-50 rounded-3xl shadow-lg border border-blue-100/50 p-5 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                className="bg-gradient-to-br from-white to-blue-50 rounded-2xl shadow-md border border-blue-100/50 p-4 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
               >
-                <div className="flex items-center justify-between mb-3">
-                  <div className={`p-3 bg-gradient-to-r ${stat.color} rounded-xl shadow-lg`}>
-                    <stat.icon className="w-5 h-5 text-white" />
+                <div className="flex items-center justify-between mb-2">
+                  <div className={`p-2 bg-gradient-to-r ${stat.color} rounded-lg shadow-md`}>
+                    <stat.icon className="w-4 h-4 text-white" />
                   </div>
-                  <span className="text-2xl">{stat.emoji}</span>
+                  <span className="text-xl">{stat.emoji}</span>
                 </div>
-                <p className="text-2xl font-bold text-gray-800 mb-1">{stat.value}</p>
-                <h3 className="text-sm font-bold text-gray-600">{stat.title}</h3>
+                <p className="text-xl font-bold text-gray-800 mb-1">{stat.value}</p>
+                <h3 className="text-xs font-bold text-gray-600">{stat.title}</h3>
               </div>
             ))}
           </div>
 
           {/* Charts */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-4">
             {/* Weekly Trends Chart */}
-            <div className="bg-gradient-to-br from-white to-purple-50 rounded-3xl shadow-xl border border-purple-100/50 overflow-hidden">
-              <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white p-6">
-                <div className="flex items-center space-x-3">
-                  <TrendingUp className="w-6 h-6" />
+            <div className="bg-gradient-to-br from-white to-purple-50 rounded-2xl shadow-lg border border-purple-100/50 overflow-hidden">
+              <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white p-4">
+                <div className="flex items-center space-x-2">
+                  <TrendingUp className="w-5 h-5" />
                   <div>
-                    <h3 className="text-lg font-bold">{t("analytics.page.charts.weekly_trends.title")}</h3>
-                    <p className="text-purple-100 text-sm">{t("analytics.page.charts.weekly_trends.subtitle")}</p>
+                    <h3 className="font-bold">{t("analytics.page.charts.weekly_trends.title")}</h3>
+                    <p className="text-purple-100 text-xs">{t("analytics.page.charts.weekly_trends.subtitle")}</p>
                   </div>
                 </div>
               </div>
-              <div className="p-6">
-                <div className="h-64">
+              <div className="p-4">
+                <div className="h-48">
                   <Line data={weeklyTrendsData} options={chartOptions} />
                 </div>
               </div>
             </div>
 
             {/* Day of Week Chart */}
-            <div className="bg-gradient-to-br from-white to-green-50 rounded-3xl shadow-xl border border-green-100/50 overflow-hidden">
-              <div className="bg-gradient-to-r from-emerald-500 to-green-500 text-white p-6">
-                <div className="flex items-center space-x-3">
-                  <Calendar className="w-6 h-6" />
+            <div className="bg-gradient-to-br from-white to-green-50 rounded-2xl shadow-lg border border-green-100/50 overflow-hidden">
+              <div className="bg-gradient-to-r from-emerald-500 to-green-500 text-white p-4">
+                <div className="flex items-center space-x-2">
+                  <Calendar className="w-5 h-5" />
                   <div>
-                    <h3 className="text-lg font-bold">{t("analytics.page.charts.day_of_week.title")}</h3>
-                    <p className="text-emerald-100 text-sm">{t("analytics.page.charts.day_of_week.subtitle")}</p>
+                    <h3 className="font-bold">{t("analytics.page.charts.day_of_week.title")}</h3>
+                    <p className="text-emerald-100 text-xs">{t("analytics.page.charts.day_of_week.subtitle")}</p>
                   </div>
                 </div>
               </div>
-              <div className="p-6">
-                <div className="h-64">
+              <div className="p-4">
+                <div className="h-48">
                   <Bar data={dayOfWeekData} options={chartOptions} />
                 </div>
               </div>
@@ -557,48 +567,52 @@ export const Analytics: React.FC = () => {
           </div>
 
           {/* Medication Performance Table */}
-          <div className="bg-gradient-to-br from-white to-orange-50 rounded-3xl shadow-xl border border-orange-100/50 overflow-hidden">
-            <div className="bg-gradient-to-r from-amber-500 to-orange-500 text-white p-6">
-              <div className="flex items-center space-x-3">
-                <Award className="w-6 h-6" />
+          <div className="bg-gradient-to-br from-white to-orange-50 rounded-2xl shadow-lg border border-orange-100/50 overflow-hidden">
+            <div className="bg-gradient-to-r from-amber-500 to-orange-500 text-white p-4">
+              <div className="flex items-center space-x-2">
+                <Award className="w-5 h-5" />
                 <div>
-                  <h3 className="text-lg font-bold">{t("analytics.page.medications.title")}</h3>
-                  <p className="text-amber-100 text-sm">{t("analytics.page.medications.subtitle")}</p>
+                  <h3 className="font-bold">{t("analytics.page.medications.title")}</h3>
+                  <p className="text-amber-100 text-xs">{t("analytics.page.medications.subtitle")}</p>
                 </div>
               </div>
             </div>
-            <div className="p-6">
+            <div className="p-4">
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="text-left border-b-2 border-orange-200">
-                      <th className="pb-3 font-bold text-gray-700">
+                    <tr className="text-left border-b border-orange-200">
+                      <th className="pb-2 font-bold text-gray-700 text-sm">
                         {t("analytics.page.medications.table.medication")}
                       </th>
-                      <th className="pb-3 font-bold text-gray-700">
+                      <th className="pb-2 font-bold text-gray-700 text-sm">
                         {t("analytics.page.medications.table.adherence")}
                       </th>
-                      <th className="pb-3 font-bold text-gray-700">
+                      <th className="pb-2 font-bold text-gray-700 text-sm">
                         {t("analytics.page.medications.table.risk_score")}
                       </th>
-                      <th className="pb-3 font-bold text-gray-700">
+                      <th className="pb-2 font-bold text-gray-700 text-sm">
                         {t("analytics.page.medications.table.total_doses")}
                       </th>
-                      <th className="pb-3 font-bold text-gray-700">{t("analytics.page.medications.table.taken")}</th>
-                      <th className="pb-3 font-bold text-gray-700">{t("analytics.page.medications.table.skipped")}</th>
+                      <th className="pb-2 font-bold text-gray-700 text-sm">
+                        {t("analytics.page.medications.table.taken")}
+                      </th>
+                      <th className="pb-2 font-bold text-gray-700 text-sm">
+                        {t("analytics.page.medications.table.skipped")}
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-orange-100">
-                    {stats.medicationStats.map((med, index) => (
+                    {safeStats.medicationStats.map((med, index) => (
                       <tr
                         key={med.id}
                         className="hover:bg-orange-50 transition-colors"
                         style={{ animationDelay: `${index * 100}ms` }}
                       >
-                        <td className="py-4 font-bold text-gray-900">{med.name}</td>
-                        <td className="py-4">
+                        <td className="py-3 font-bold text-gray-900 text-sm">{med.name}</td>
+                        <td className="py-3">
                           <span
-                            className={`inline-flex items-center px-3 py-1 rounded-xl text-sm font-bold ${
+                            className={`inline-flex items-center px-2 py-1 rounded-lg text-xs font-bold ${
                               med.adherenceRate >= 90
                                 ? "bg-green-100 text-green-800"
                                 : med.adherenceRate >= 70
@@ -609,9 +623,9 @@ export const Analytics: React.FC = () => {
                             {formatPercentage(med.adherenceRate)}
                           </span>
                         </td>
-                        <td className="py-4">
+                        <td className="py-3">
                           <span
-                            className={`inline-flex items-center px-3 py-1 rounded-xl text-sm font-bold ${
+                            className={`inline-flex items-center px-2 py-1 rounded-lg text-xs font-bold ${
                               med.riskScore <= 10
                                 ? "bg-green-100 text-green-800"
                                 : med.riskScore <= 30
@@ -622,9 +636,9 @@ export const Analytics: React.FC = () => {
                             {med.riskScore}%
                           </span>
                         </td>
-                        <td className="py-4 font-medium text-gray-700">{med.total}</td>
-                        <td className="py-4 font-medium text-green-600">{med.taken}</td>
-                        <td className="py-4 font-medium text-red-600">{med.skipped}</td>
+                        <td className="py-3 font-medium text-gray-700 text-sm">{med.total}</td>
+                        <td className="py-3 font-medium text-green-600 text-sm">{med.taken}</td>
+                        <td className="py-3 font-medium text-red-600 text-sm">{med.skipped}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -634,15 +648,15 @@ export const Analytics: React.FC = () => {
           </div>
 
           {/* Motivational Footer */}
-          <div className="bg-gradient-to-r from-pink-400 to-rose-500 text-white rounded-3xl shadow-xl p-6 text-center">
-            <div className="text-3xl mb-3">{adherenceGrade.emoji}</div>
-            <h3 className="text-xl font-bold mb-2">
-              {stats.overall.adherenceRate >= 80
+          <div className="bg-gradient-to-r from-pink-400 to-rose-500 text-white rounded-2xl shadow-lg p-4 text-center">
+            <div className="text-2xl mb-2">{adherenceGrade.emoji}</div>
+            <h3 className="text-lg font-bold mb-1">
+              {safeStats.overall.adherenceRate >= 80
                 ? "Your analytics look amazing!"
                 : "Great insights into your health journey!"}
             </h3>
-            <p className="text-pink-100">
-              {stats.overall.adherenceRate >= 80
+            <p className="text-pink-100 text-sm">
+              {safeStats.overall.adherenceRate >= 80
                 ? "Your consistent medication adherence is creating positive health outcomes. Keep up this fantastic work!"
                 : "Understanding your patterns is the first step to improvement. Every insight helps you build better habits!"}
             </p>

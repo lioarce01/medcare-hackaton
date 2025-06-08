@@ -5,7 +5,6 @@ export interface FormData {
 }
 
 export interface RegisterFormData extends FormData {
-  confirmPassword: string;
   name: string;
   agreeToTerms?: boolean;
 }
