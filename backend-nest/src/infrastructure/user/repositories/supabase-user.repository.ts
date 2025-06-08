@@ -9,21 +9,17 @@ import { PrismaService } from 'src/infrastructure/prisma/prisma.service';
 @Injectable()
 export class SupabaseUserRepository implements UserRepository {
   constructor(private readonly prisma: PrismaService) {}
-  async findById(id: string): Promise<UserAggregate | null> {
+
+  async getMyProfile(id: string): Promise<UserAggregate | null> {
     const prismaUser = await this.prisma.user.findUnique({ where: { id } });
     if (!prismaUser) return null;
-
-    const authUser = await this.prisma.$queryRawUnsafe(
-      `SELECT id FROM auth.users WHERE email = $1 LIMIT 1`,
-      prismaUser.email,
-    );
-    const authUserId = authUser?.[0]?.id ?? '';
 
     const prismaSettings = await this.prisma.user_settings.findUnique({
       where: { user_id: id },
     });
 
-    return UserMapper.toDomain(prismaUser, authUserId, prismaSettings);
+    // Como ahora `id` es el authUserId (del token), lo usamos directamente
+    return UserMapper.toDomain(prismaUser, id, prismaSettings);
   }
 
   async update(userAggregate: UserAggregate): Promise<UserAggregate> {

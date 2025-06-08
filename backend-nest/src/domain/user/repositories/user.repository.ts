@@ -3,7 +3,7 @@ import { UserSettings } from '../entities/user-settings.entity';
 
 export interface UserRepository {
   // Obtiene el aggregate completo (User + Settings)
-  findById(id: string): Promise<UserAggregate | null>;
+  getMyProfile(id: string): Promise<UserAggregate | null>;
 
   // Actualiza el aggregate completo
   update(userAggregate: UserAggregate): Promise<UserAggregate>;
