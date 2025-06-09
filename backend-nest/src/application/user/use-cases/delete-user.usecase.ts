@@ -8,7 +8,7 @@ export class DeleteUserUseCase {
   ) {}
 
   async execute(id: string): Promise<void> {
-    const userAggregate = await this.userRepository.findById(id);
+    const userAggregate = await this.userRepository.getMyProfile(id);
     if (!userAggregate) {
       throw new NotFoundException(`User with id ${id} not found`);
     }

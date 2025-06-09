@@ -10,7 +10,9 @@ export class UpdateUserUseCase {
 
   async execute(userAggregate: UserAggregate): Promise<UserAggregate> {
     // Validar que exista el usuario (opcional)
-    const existingUser = await this.userRepository.findById(userAggregate.id);
+    const existingUser = await this.userRepository.getMyProfile(
+      userAggregate.id,
+    );
     if (!existingUser) {
       throw new NotFoundException(`User with id ${userAggregate.id} not found`);
     }

@@ -13,7 +13,7 @@ export class UpdateUserSettingsUseCase {
     settingsUpdate: Partial<UserSettings>,
   ): Promise<UserSettings> {
     // Buscar el user con settings
-    const userAggregate = await this.userRepository.findById(userId);
+    const userAggregate = await this.userRepository.getMyProfile(userId);
     if (!userAggregate) {
       throw new NotFoundException(`User with id ${userId} not found`);
     }
