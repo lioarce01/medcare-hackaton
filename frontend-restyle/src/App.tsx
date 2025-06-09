@@ -13,6 +13,8 @@ import { DashboardPage } from '@/pages/dashboard';
 import { MedicationsPage } from '@/pages/medications';
 import { AdherencePage } from '@/pages/adherence';
 import { AnalyticsPage } from '@/pages/analytics';
+import { RemindersPage } from '@/pages/reminders';
+import { ProfilePage } from '@/pages/profile';
 
 import './App.css';
 
@@ -58,23 +60,13 @@ function App() {
               
               <Route path="/reminders" element={
                 <ProtectedRoute>
-                  <div className="flex items-center justify-center min-h-[400px]">
-                    <div className="text-center">
-                      <h2 className="text-2xl font-bold mb-2">Reminders Page</h2>
-                      <p className="text-muted-foreground">Coming soon...</p>
-                    </div>
-                  </div>
+                  <RemindersPage />
                 </ProtectedRoute>
               } />
-              
+
               <Route path="/profile" element={
                 <ProtectedRoute>
-                  <div className="flex items-center justify-center min-h-[400px]">
-                    <div className="text-center">
-                      <h2 className="text-2xl font-bold mb-2">Profile Page</h2>
-                      <p className="text-muted-foreground">Coming soon...</p>
-                    </div>
-                  </div>
+                  <ProfilePage />
                 </ProtectedRoute>
               } />
               

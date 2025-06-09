@@ -68,7 +68,7 @@ export function Header() {
     <>
       <ProgressBar isLoading={isLoading} />
       <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center justify-between px-4">
+        <div className="container flex h-16 items-center justify-between mx-2">
           <div className="flex items-center space-x-4">
             <Link 
               to="/dashboard" 
@@ -82,11 +82,12 @@ export function Header() {
               <span className="font-bold text-lg">MediTrack</span>
             </Link>
             
-            <nav className="hidden md:flex items-center space-x-1">
+            <nav className="hidden md:flex items-center space-x-2">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => handleNavigation('/dashboard')}
+                className="text-gray-700 dark:text-gray-200 hover:bg-gray-800 hover:text-white dark:hover:bg-gray-700 dark:hover:text-white px-4 py-2"
               >
                 Dashboard
               </Button>
@@ -94,6 +95,7 @@ export function Header() {
                 variant="ghost"
                 size="sm"
                 onClick={() => handleNavigation('/medications')}
+                className="text-gray-700 dark:text-gray-200 hover:bg-gray-800 hover:text-white dark:hover:bg-gray-700 dark:hover:text-white px-4 py-2"
               >
                 Medications
               </Button>
@@ -101,6 +103,7 @@ export function Header() {
                 variant="ghost"
                 size="sm"
                 onClick={() => handleNavigation('/adherence')}
+                className="text-gray-700 dark:text-gray-200 hover:bg-gray-800 hover:text-white dark:hover:bg-gray-700 dark:hover:text-white px-4 py-2"
               >
                 Adherence
               </Button>
@@ -108,6 +111,7 @@ export function Header() {
                 variant="ghost"
                 size="sm"
                 onClick={() => handleNavigation('/analytics')}
+                className="text-gray-700 dark:text-gray-200 hover:bg-gray-800 hover:text-white dark:hover:bg-gray-700 dark:hover:text-white px-4 py-2"
               >
                 Analytics
               </Button>
@@ -115,21 +119,22 @@ export function Header() {
                 variant="ghost"
                 size="sm"
                 onClick={() => handleNavigation('/reminders')}
+                className="text-gray-700 dark:text-gray-200 hover:bg-gray-800 hover:text-white dark:hover:bg-gray-700 dark:hover:text-white px-4 py-2"
               >
                 Reminders
               </Button>
             </nav>
           </div>
 
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-6">
             {/* Language Selector */}
             <Select value={language} onValueChange={setLanguage}>
-              <SelectTrigger className="w-32">
+              <SelectTrigger className="w-32 text-foreground">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 {Object.entries(languages).map(([code, name]) => (
-                  <SelectItem key={code} value={code}>
+                  <SelectItem key={code} value={code} className="text-foreground">
                     {name}
                   </SelectItem>
                 ))}
@@ -144,19 +149,34 @@ export function Header() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem onClick={() => handleNavigation('/dashboard')}>
+                <DropdownMenuItem
+                  onClick={() => handleNavigation('/dashboard')}
+                  className="text-gray-700 dark:text-gray-200 hover:bg-gray-800 hover:text-white dark:hover:bg-gray-700 dark:hover:text-white"
+                >
                   Dashboard
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleNavigation('/medications')}>
+                <DropdownMenuItem
+                  onClick={() => handleNavigation('/medications')}
+                  className="text-gray-700 dark:text-gray-200 hover:bg-gray-800 hover:text-white dark:hover:bg-gray-700 dark:hover:text-white"
+                >
                   Medications
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleNavigation('/adherence')}>
+                <DropdownMenuItem
+                  onClick={() => handleNavigation('/adherence')}
+                  className="text-gray-700 dark:text-gray-200 hover:bg-gray-800 hover:text-white dark:hover:bg-gray-700 dark:hover:text-white"
+                >
                   Adherence
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleNavigation('/analytics')}>
+                <DropdownMenuItem
+                  onClick={() => handleNavigation('/analytics')}
+                  className="text-gray-700 dark:text-gray-200 hover:bg-gray-800 hover:text-white dark:hover:bg-gray-700 dark:hover:text-white"
+                >
                   Analytics
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleNavigation('/reminders')}>
+                <DropdownMenuItem
+                  onClick={() => handleNavigation('/reminders')}
+                  className="text-gray-700 dark:text-gray-200 hover:bg-gray-800 hover:text-white dark:hover:bg-gray-700 dark:hover:text-white"
+                >
                   Reminders
                 </DropdownMenuItem>
               </DropdownMenuContent>

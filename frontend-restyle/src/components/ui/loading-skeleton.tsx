@@ -69,3 +69,30 @@ export function DashboardSkeleton() {
     </div>
   );
 }
+
+export function LoadingSkeleton() {
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="space-y-2">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-4 w-96" />
+        </div>
+        <Skeleton className="h-10 w-32" />
+      </div>
+
+      {/* Tabs */}
+      <div className="space-y-6">
+        <Skeleton className="h-10 w-full" />
+
+        {/* Content */}
+        <div className="space-y-4">
+          <CardSkeleton />
+          <CardSkeleton />
+          <CardSkeleton />
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -375,7 +375,7 @@ export function MedicationsPage() {
                         </div>
                         <div className="flex flex-wrap gap-1">
                           {medication.side_effects_to_watch.map((effect, index) => (
-                            <Badge key={index} variant="outline" className="text-xs bg-yellow-50 text-yellow-700">
+                            <Badge key={index} variant="outline" className="text-xs bg-warning-light border">
                               {effect}
                             </Badge>
                           ))}

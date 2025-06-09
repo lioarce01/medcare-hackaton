@@ -174,7 +174,7 @@ export function DashboardPage() {
                 </div>
                 <div className="flex items-center space-x-2">
                   {item.status === 'taken' ? (
-                    <Badge variant="default\" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100">
+                    <Badge variant="default" className="bg-success-light border">
                       <CheckCircle2 className="h-3 w-3 mr-1" />
                       Taken
                     </Badge>
@@ -188,7 +188,7 @@ export function DashboardPage() {
                       <Button
                         size="sm"
                         onClick={() => handleMedicationAction(item.id, 'take')}
-                        className="bg-green-600 hover:bg-green-700"
+                        className="bg-green-600 hover:bg-green-700 text-white"
                       >
                         Take
                       </Button>
@@ -219,38 +219,38 @@ export function DashboardPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="p-4 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800">
+            <div className="p-4 rounded-lg bg-warning-light border">
               <div className="flex items-center space-x-2">
-                <AlertTriangle className="h-4 w-4 text-yellow-600" />
-                <span className="font-medium text-yellow-800 dark:text-yellow-200">
+                <AlertTriangle className="h-4 w-4" />
+                <span className="font-medium">
                   Refill Reminder
                 </span>
               </div>
-              <p className="text-sm text-yellow-700 dark:text-yellow-300 mt-1">
+              <p className="text-sm mt-1 opacity-90">
                 Lisinopril refill needed in 3 days
               </p>
             </div>
 
-            <div className="p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+            <div className="p-4 rounded-lg bg-info-light border">
               <div className="flex items-center space-x-2">
-                <Clock className="h-4 w-4 text-blue-600" />
-                <span className="font-medium text-blue-800 dark:text-blue-200">
+                <Clock className="h-4 w-4" />
+                <span className="font-medium">
                   Upcoming Dose
                 </span>
               </div>
-              <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
+              <p className="text-sm mt-1 opacity-90">
                 Metformin at 8:00 PM
               </p>
             </div>
 
-            <div className="p-4 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
+            <div className="p-4 rounded-lg bg-success-light border">
               <div className="flex items-center space-x-2">
-                <CheckCircle2 className="h-4 w-4 text-green-600" />
-                <span className="font-medium text-green-800 dark:text-green-200">
+                <CheckCircle2 className="h-4 w-4" />
+                <span className="font-medium">
                   Great Progress!
                 </span>
               </div>
-              <p className="text-sm text-green-700 dark:text-green-300 mt-1">
+              <p className="text-sm mt-1 opacity-90">
                 7-day streak of perfect adherence
               </p>
             </div>

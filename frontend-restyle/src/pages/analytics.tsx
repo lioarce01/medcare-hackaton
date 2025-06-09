@@ -591,7 +591,16 @@ export function AnalyticsPage() {
                         {med.medication.dosage.amount}{med.medication.dosage.unit} {med.medication.dosage.form}
                       </CardDescription>
                     </div>
-                    <Badge variant={med.adherenceRate >= 90 ? 'default' : med.adherenceRate >= 70 ? 'secondary' : 'destructive'}>
+                    <Badge
+                      variant={med.adherenceRate >= 90 ? 'default' : med.adherenceRate >= 70 ? 'secondary' : 'destructive'}
+                      className={
+                        med.adherenceRate >= 90
+                          ? 'bg-green-600 text-white hover:bg-green-700'
+                          : med.adherenceRate >= 70
+                          ? 'bg-yellow-600 text-white hover:bg-yellow-700'
+                          : 'bg-red-600 text-white hover:bg-red-700'
+                      }
+                    >
                       {med.adherenceRate}%
                     </Badge>
                   </div>

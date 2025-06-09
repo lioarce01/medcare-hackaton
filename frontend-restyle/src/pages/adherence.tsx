@@ -136,10 +136,10 @@ export function AdherencePage() {
     if (!dayData || dayData.adherenceData.total === 0) return '';
 
     const percentage = dayData.adherenceData.percentage;
-    if (percentage >= 90) return 'bg-green-100 text-green-800 hover:bg-green-200';
-    if (percentage >= 70) return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200';
-    if (percentage >= 50) return 'bg-orange-100 text-orange-800 hover:bg-orange-200';
-    return 'bg-red-100 text-red-800 hover:bg-red-200';
+    if (percentage >= 90) return 'bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900 dark:text-green-100 dark:hover:bg-green-800';
+    if (percentage >= 70) return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200 dark:bg-yellow-900 dark:text-yellow-100 dark:hover:bg-yellow-800';
+    if (percentage >= 50) return 'bg-orange-100 text-orange-800 hover:bg-orange-200 dark:bg-orange-900 dark:text-orange-100 dark:hover:bg-orange-800';
+    return 'bg-red-100 text-red-800 hover:bg-red-200 dark:bg-red-900 dark:text-red-100 dark:hover:bg-red-800';
   };
 
   const filteredMedications = (medications: any[]) => {
@@ -166,13 +166,13 @@ export function AdherencePage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'taken':
-        return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Taken</Badge>;
+        return <Badge className="bg-green-600 text-white hover:bg-green-700 dark:bg-green-600 dark:text-white dark:hover:bg-green-700">Taken</Badge>;
       case 'skipped':
-        return <Badge variant="secondary" className="bg-orange-100 text-orange-800">Skipped</Badge>;
+        return <Badge className="bg-orange-600 text-white hover:bg-orange-700 dark:bg-orange-600 dark:text-white dark:hover:bg-orange-700">Skipped</Badge>;
       case 'missed':
-        return <Badge variant="destructive">Missed</Badge>;
+        return <Badge className="bg-red-600 text-white hover:bg-red-700 dark:bg-red-600 dark:text-white dark:hover:bg-red-700">Missed</Badge>;
       default:
-        return <Badge variant="outline">Pending</Badge>;
+        return <Badge className="bg-gray-600 text-white hover:bg-gray-700 dark:bg-gray-600 dark:text-white dark:hover:bg-gray-700">Pending</Badge>;
     }
   };
 
@@ -208,7 +208,7 @@ export function AdherencePage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Badge variant="outline" className="text-sm">
+          <Badge className="text-sm bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-600 dark:text-white dark:hover:bg-blue-700">
             {format(selectedMonth, 'MMMM yyyy')}
           </Badge>
         </div>
@@ -290,45 +290,72 @@ export function AdherencePage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Calendar
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={(date) => date && setSelectedDate(date)}
-                  month={selectedMonth}
-                  onMonthChange={setSelectedMonth}
-                  className="rounded-md border"
-                  modifiers={{
-                    adherence: (date) => {
-                      const dayData = adherenceData.find(day => isSameDay(day.date, date));
-                      return dayData && dayData.adherenceData.total > 0;
-                    }
-                  }}
-                  modifiersClassNames={{
-                    adherence: 'font-bold'
-                  }}
-                  components={{
-                    Day: ({ date, ...props }) => {
-                      const dayData = adherenceData.find(day => isSameDay(day.date, date));
-                      const className = getCalendarDayClassName(date);
-                      
-                      return (
-                        <div className={`relative ${className} rounded-md`} {...props}>
-                          {format(date, 'd')}
-                          {dayData && dayData.adherenceData.total > 0 && (
-                            <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2">
-                              <div className={`w-2 h-2 rounded-full ${
-                                dayData.adherenceData.percentage >= 90 ? 'bg-green-600' :
-                                dayData.adherenceData.percentage >= 70 ? 'bg-yellow-600' :
-                                dayData.adherenceData.percentage >= 50 ? 'bg-orange-600' :
-                                'bg-red-600'
-                              }`} />
-                            </div>
-                          )}
-                        </div>
-                      );
-                    }
-                  }}
-                />
+                <div className="w-full max-w-md mx-auto">
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={(date) => date && setSelectedDate(date)}
+                    month={selectedMonth}
+                    onMonthChange={setSelectedMonth}
+                    className="rounded-md border-0 w-full"
+                    classNames={{
+                      months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
+                      month: "space-y-4 w-full",
+                      caption: "flex justify-center pt-1 relative items-center",
+                      caption_label: "text-sm font-medium",
+                      nav: "space-x-1 flex items-center",
+                      nav_button: "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100",
+                      nav_button_previous: "absolute left-1",
+                      nav_button_next: "absolute right-1",
+                      table: "w-full border-collapse space-y-1",
+                      head_row: "flex w-full",
+                      head_cell: "text-muted-foreground rounded-md w-8 font-normal text-[0.8rem] flex-1 text-center",
+                      row: "flex w-full mt-2",
+                      cell: "relative p-0 text-center text-sm focus-within:relative focus-within:z-20 flex-1",
+                      day: "h-8 w-8 p-0 font-normal aria-selected:opacity-100 hover:bg-accent hover:text-accent-foreground rounded-md mx-auto flex items-center justify-center",
+                      day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
+                      day_today: "bg-accent text-accent-foreground",
+                      day_outside: "text-muted-foreground opacity-50",
+                      day_disabled: "text-muted-foreground opacity-50",
+                      day_range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground",
+                      day_hidden: "invisible",
+                    }}
+                    components={{
+                      Day: ({ date, ...props }) => {
+                        const dayData = adherenceData.find(day => isSameDay(day.date, date));
+                        const className = getCalendarDayClassName(date);
+                        const isToday = isSameDay(date, new Date());
+                        const isSelected = selectedDate && isSameDay(date, selectedDate);
+
+                        return (
+                          <div
+                            className={`
+                              relative h-8 w-8 p-0 font-normal rounded-md mx-auto flex items-center justify-center cursor-pointer
+                              ${isSelected ? 'bg-primary text-primary-foreground' : ''}
+                              ${isToday && !isSelected ? 'bg-accent text-accent-foreground' : ''}
+                              ${className && !isSelected && !isToday ? className : ''}
+                              hover:bg-accent hover:text-accent-foreground
+                            `}
+                            onClick={() => setSelectedDate(date)}
+                            {...props}
+                          >
+                            <span className="text-sm">{format(date, 'd')}</span>
+                            {dayData && dayData.adherenceData.total > 0 && (
+                              <div className="absolute -bottom-0.5 left-1/2 transform -translate-x-1/2">
+                                <div className={`w-1.5 h-1.5 rounded-full ${
+                                  dayData.adherenceData.percentage >= 90 ? 'bg-green-600' :
+                                  dayData.adherenceData.percentage >= 70 ? 'bg-yellow-600' :
+                                  dayData.adherenceData.percentage >= 50 ? 'bg-orange-600' :
+                                  'bg-red-600'
+                                }`} />
+                              </div>
+                            )}
+                          </div>
+                        );
+                      }
+                    }}
+                  />
+                </div>
                 
                 {/* Legend */}
                 <div className="mt-4 space-y-2">
@@ -495,7 +522,7 @@ export function AdherencePage() {
                         <h4 className="font-medium">
                           {format(dayData.date, 'EEEE, MMM d, yyyy')}
                         </h4>
-                        <Badge variant="outline">
+                        <Badge className="bg-purple-600 text-white hover:bg-purple-700 dark:bg-purple-600 dark:text-white dark:hover:bg-purple-700">
                           {dayData.adherenceData.percentage}% adherence
                         </Badge>
                       </div>
