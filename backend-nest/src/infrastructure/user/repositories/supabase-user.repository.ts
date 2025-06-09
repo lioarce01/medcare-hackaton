@@ -124,4 +124,84 @@ export class SupabaseUserRepository implements UserRepository {
       updated.updated_at || undefined,
     );
   }
+
+  // Methods for cron jobs
+  async findAll(): Promise<User[]> {
+    try {
+      const users = await this.prisma.users.findMany({
+        orderBy: { created_at: 'desc' },
+      });
+
+      return users.map(
+        (user) =>
+          new User(
+            user.id,
+            user.id, // Using id as auth_user_id since auth_user_id doesn't exist in schema
+            user.name,
+            user.email,
+            user.password,
+            user.date_of_birth,
+            user.gender,
+            user.allergies,
+            user.conditions,
+            user.is_admin || false,
+            user.phone_number,
+            user.emergency_contact as any,
+            user.created_at || undefined,
+            user.updated_at || undefined,
+            user.subscription_status,
+            user.subscription_plan,
+            user.subscription_expires_at,
+            user.subscription_features as any,
+          ),
+      );
+    } catch (error) {
+      console.error('Error finding all users:', error);
+      throw error;
+    }
+  }
+
+  async findUsersWithEmailNotifications(): Promise<User[]> {
+    try {
+      // Get users with email notifications enabled in their settings
+      const usersWithSettings = await this.prisma.users.findMany({
+        include: {
+          settings: true,
+        },
+        where: {
+          settings: {
+            email_enabled: true,
+          },
+        },
+        orderBy: { created_at: 'desc' },
+      });
+
+      return usersWithSettings.map(
+        (user) =>
+          new User(
+            user.id,
+            user.id, // Using id as auth_user_id since auth_user_id doesn't exist in schema
+            user.name,
+            user.email,
+            user.password,
+            user.date_of_birth,
+            user.gender,
+            user.allergies,
+            user.conditions,
+            user.is_admin || false,
+            user.phone_number,
+            user.emergency_contact as any,
+            user.created_at || undefined,
+            user.updated_at || undefined,
+            user.subscription_status,
+            user.subscription_plan,
+            user.subscription_expires_at,
+            user.subscription_features as any,
+          ),
+      );
+    } catch (error) {
+      console.error('Error finding users with email notifications:', error);
+      throw error;
+    }
+  }
 }

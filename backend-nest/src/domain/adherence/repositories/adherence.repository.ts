@@ -18,4 +18,17 @@ export interface AdherenceRepository {
     startDate?: string,
     endDate?: string,
   ): Promise<AdherenceStatsRaw[]>;
+
+  // Methods for cron jobs
+  findPendingForMissedProcessing(
+    todayStr: string,
+    cutoffTime: Date,
+  ): Promise<Adherence[]>;
+  findByUserMedicationDateRange(
+    userId: string,
+    medicationId: string,
+    startDate: string,
+    endDate: string,
+  ): Promise<Adherence[]>;
+  updateStatus(adherenceId: string, status: string): Promise<void>;
 }

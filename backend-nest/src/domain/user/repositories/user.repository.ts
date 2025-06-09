@@ -20,4 +20,8 @@ export interface UserRepository {
     userId: string,
     settings: Partial<UserSettings>,
   ): Promise<UserSettings>;
+
+  // Methods for cron jobs
+  findAll(): Promise<User[]>;
+  findUsersWithEmailNotifications(): Promise<User[]>;
 }

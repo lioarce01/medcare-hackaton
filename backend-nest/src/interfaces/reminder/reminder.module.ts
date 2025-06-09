@@ -15,9 +15,10 @@ import { GetUserSettingsUseCase } from '../../application/reminder/use-cases/get
 import { ScheduleRemindersUseCase } from '../../application/reminder/use-cases/schedule-reminders.usecase';
 import { PrismaService } from '../../infrastructure/prisma/prisma.service';
 import { SupabaseUserRepository } from '../../infrastructure/user/repositories/supabase-user.repository';
+import { SubscriptionModule } from '../subscription/subscription.module';
 
 @Module({
-  imports: [ScheduleModule.forRoot()],
+  imports: [ScheduleModule.forRoot(), SubscriptionModule],
   controllers: [ReminderController],
   providers: [
     PrismaService,

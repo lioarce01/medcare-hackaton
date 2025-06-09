@@ -5,6 +5,7 @@ import { SkipDoseUseCase } from 'src/application/adherence/use-cases/skip-dose.u
 import { GetAdherenceStatsUseCase } from 'src/application/adherence/use-cases/get-adherence-stats.usecase';
 import { GetUserId } from 'src/auth/get-user-id.decorator';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { SubscriptionGuard } from '../../subscription/http/guards/subscription.guard';
 import { AdherencePresenter } from 'src/domain/adherence/presenters/adherence.presenter';
 import { ConfirmDoseDto } from 'src/infrastructure/adherence/dtos/confirm-dose.dto';
 import { GetAdherenceHistoryDto } from 'src/infrastructure/adherence/dtos/get-adherence-history.dto';
@@ -54,7 +55,7 @@ export class AdherenceController {
   }
 
   @Get('stats')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, SubscriptionGuard)
   async getStats(
     @Query() query: GetAdherenceStatsDto,
     @GetUserId() userId: string,

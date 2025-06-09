@@ -86,4 +86,9 @@ export class SupabaseMedicationRepository implements MedicationRepository {
     });
     return found.map((med: any) => MedicationMapper.toDomain(med));
   }
+
+  // Alias for cron jobs compatibility
+  async findActiveMedicationsByUser(userId: string): Promise<Medication[]> {
+    return this.findActiveByUser(userId);
+  }
 }

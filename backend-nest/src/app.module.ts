@@ -5,7 +5,8 @@ import { MedicationModule } from './interfaces/medication/medication.module';
 import { AdherenceModule } from './interfaces/adherence/adherence.module';
 import { UserModule } from './interfaces/user/user.module';
 import { ReminderModule } from './interfaces/reminder/reminder.module';
-import { PrismaService } from './infrastructure/prisma/prisma.service';
+import { SubscriptionModule } from './interfaces/subscription/subscription.module';
+import { SchedulerModule } from './interfaces/scheduler/scheduler.module';
 
 @Module({
   imports: [
@@ -17,6 +18,8 @@ import { PrismaService } from './infrastructure/prisma/prisma.service';
     MedicationModule,
     AdherenceModule,
     ReminderModule,
+    SubscriptionModule,
+    SchedulerModule,
   ],
 })
 export class AppModule {}

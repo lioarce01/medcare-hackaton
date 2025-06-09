@@ -12,6 +12,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { SubscriptionGuard } from '../../../subscription/http/guards/subscription.guard';
 import { GetUserId } from 'src/auth/get-user-id.decorator';
 import { CreateReminderUseCase } from 'src/application/reminder/use-cases/create-reminder.usecase';
 import { GetUpcomingRemindersUseCase } from 'src/application/reminder/use-cases/get-upcoming-reminders.usecase';
@@ -43,23 +44,30 @@ export class ReminderController {
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
   ) {
-    const reminders = await this.getAllRemindersUseCase.execute(userId, startDate, endDate);
+    const reminders = await this.getAllRemindersUseCase.execute(
+      userId,
+      startDate,
+      endDate,
+    );
     return ReminderPresenter.toHttpList(reminders);
   }
 
   @Get('upcoming')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, SubscriptionGuard)
   async getUpcomingReminders(
     @GetUserId() userId: string,
     @Query('limit') limit?: string,
   ) {
     const limitNumber = limit ? parseInt(limit, 10) : 10;
-    const reminders = await this.getUpcomingRemindersUseCase.execute(userId, limitNumber);
+    const reminders = await this.getUpcomingRemindersUseCase.execute(
+      userId,
+      limitNumber,
+    );
     return ReminderPresenter.toHttpList(reminders);
   }
 
   @Post()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, SubscriptionGuard)
   async createReminder(
     @Body() reminder: CreateReminderDto,
     @GetUserId() userId: string,
@@ -72,7 +80,7 @@ export class ReminderController {
   }
 
   @Post(':id/send')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, SubscriptionGuard)
   @HttpCode(HttpStatus.OK)
   async sendReminderManually(
     @Param('id') id: string,
@@ -83,10 +91,7 @@ export class ReminderController {
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
-  async deleteReminder(
-    @Param('id') id: string,
-    @GetUserId() userId: string,
-  ) {
+  async deleteReminder(@Param('id') id: string, @GetUserId() userId: string) {
     return this.deleteReminderUseCase.execute(id, userId);
   }
 

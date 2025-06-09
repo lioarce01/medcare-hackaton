@@ -6,6 +6,7 @@ import { GetAdherenceStatsUseCase } from '../../application/adherence/use-cases/
 import { AdherenceStatsService } from '../../domain/adherence/services/adherence-stats.service';
 import { PrismaService } from '../../infrastructure/prisma/prisma.service';
 import { SupabaseAdherenceRepository } from '../../infrastructure/adherence/repositories/supabase-adherence.repository';
+import { SupabaseSubscriptionRepository } from '../../infrastructure/subscription/repositories/supabase-subscription.repository';
 import { AdherenceController } from './http/controllers/adherence.controller';
 
 @Module({
@@ -20,6 +21,10 @@ import { AdherenceController } from './http/controllers/adherence.controller';
     {
       provide: 'AdherenceRepository',
       useClass: SupabaseAdherenceRepository,
+    },
+    {
+      provide: 'SubscriptionRepository',
+      useClass: SupabaseSubscriptionRepository,
     },
   ],
 })
