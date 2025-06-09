@@ -100,4 +100,8 @@ export class CreateMedicationDto {
   @IsOptional()
   @IsString()
   image_url?: string | null;
+
+  @IsOptional()
+  @IsString()
+  user_timezone?: string;
 }

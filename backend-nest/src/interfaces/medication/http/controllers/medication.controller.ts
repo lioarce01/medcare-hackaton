@@ -11,6 +11,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { CreateMedicationUseCase } from 'src/application/medication/use-cases/create-medication.usecase';
+import { CreateMedicationWithAdherenceUseCase } from 'src/application/medication/use-cases/create-medication-with-adherence.usecase';
 import { DeleteMedicationUseCase } from 'src/application/medication/use-cases/delete-medication.usecase';
 import { FindActiveMedicationByUserUseCase } from 'src/application/medication/use-cases/find-active-medication-by-user.usecase';
 import { FindMedicationByIdUseCase } from 'src/application/medication/use-cases/find-medication-by-id.usecase';
@@ -25,19 +26,20 @@ import { UpdateMedicationDto } from 'src/infrastructure/medication/dtos/update-m
 @Controller('medications')
 export class MedicationController {
   constructor(
-    readonly createMedicationUseCase: CreateMedicationUseCase,
-    readonly updateMedicationUseCase: UpdateMedicationUseCase,
-    readonly deleteMedicationUseCase: DeleteMedicationUseCase,
-    readonly getMedicationByIdUseCase: FindMedicationByIdUseCase,
-    readonly getMedicationsByUserUseCase: FindMedicationByUserUseCase,
-    readonly getActiveMedicationsByUserUseCase: FindActiveMedicationByUserUseCase,
+    private readonly createMedicationUseCase: CreateMedicationUseCase,
+    private readonly createMedicationWithAdherenceUseCase: CreateMedicationWithAdherenceUseCase,
+    private readonly updateMedicationUseCase: UpdateMedicationUseCase,
+    private readonly deleteMedicationUseCase: DeleteMedicationUseCase,
+    private readonly getMedicationByIdUseCase: FindMedicationByIdUseCase,
+    private readonly getMedicationsByUserUseCase: FindMedicationByUserUseCase,
+    private readonly getActiveMedicationsByUserUseCase: FindActiveMedicationByUserUseCase,
   ) {}
 
   @Get()
   @UseGuards(JwtAuthGuard)
   async getAll(@GetUserId() userId: string) {
     const medications = await this.getMedicationsByUserUseCase.execute(userId);
-    return medications.map((med) => MedicationPresenter.toHttp(med));
+    return MedicationPresenter.toHttpList(medications);
   }
 
   @Get('active')
@@ -45,7 +47,7 @@ export class MedicationController {
   async getActive(@GetUserId() userId: string) {
     const medications =
       await this.getActiveMedicationsByUserUseCase.execute(userId);
-    return medications.map((med) => MedicationPresenter.toHttp(med));
+    return MedicationPresenter.toHttpList(medications);
   }
 
   @Get(':id')
@@ -58,6 +60,19 @@ export class MedicationController {
   @Post()
   @UseGuards(JwtAuthGuard)
   async create(
+    @Body() medication: CreateMedicationDto,
+    @GetUserId() userId: string,
+  ) {
+    const created = await this.createMedicationWithAdherenceUseCase.execute({
+      ...medication,
+      user_id: userId,
+    });
+    return MedicationPresenter.toHttp(created);
+  }
+
+  @Post('simple')
+  @UseGuards(JwtAuthGuard)
+  async createSimple(
     @Body() medication: CreateMedicationDto,
     @GetUserId() userId: string,
   ) {

@@ -31,7 +31,6 @@ export class UserController {
 
   @Get('me')
   @UseGuards(JwtAuthGuard)
-  @UseGuards(JwtAuthGuard)
   async getMyProfile(@GetUserId() userId: string) {
     const userAggregate = await this.getMeUseCase.execute(userId);
     return UserPresenter.toHttp(userAggregate);

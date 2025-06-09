@@ -24,4 +24,8 @@ export class MedicationPresenter {
       user: medication.user,
     };
   }
+
+  static toHttpList(medications: Medication[]) {
+    return medications.map((medication) => this.toHttp(medication));
+  }
 }
