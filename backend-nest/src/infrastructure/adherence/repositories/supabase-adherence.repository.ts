@@ -21,7 +21,7 @@ export class SupabaseAdherenceRepository implements AdherenceRepository {
       notes: adherence.notes,
       reminder_sent: adherence.reminder_sent,
       side_effects_reported: adherence.side_effects_reported,
-      dosage_taken: adherence.dosage_taken,
+      dosage_taken: adherence.dosage_taken as any,
       created_at: adherence.created_at,
       updated_at: adherence.updated_at,
     };
@@ -49,7 +49,7 @@ export class SupabaseAdherenceRepository implements AdherenceRepository {
       notes: adherence.notes,
       reminder_sent: adherence.reminder_sent,
       side_effects_reported: adherence.side_effects_reported,
-      dosage_taken: adherence.dosage_taken,
+      dosage_taken: adherence.dosage_taken as any,
       updated_at: new Date(),
     };
 

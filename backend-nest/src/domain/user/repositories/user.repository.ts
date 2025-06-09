@@ -1,9 +1,13 @@
 import { UserAggregate } from '../entities/user-aggregate.entity';
 import { UserSettings } from '../entities/user-settings.entity';
+import { User } from '../entities/user.entity';
 
 export interface UserRepository {
   // Obtiene el aggregate completo (User + Settings)
   getMyProfile(id: string): Promise<UserAggregate | null>;
+
+  // Obtiene solo la información básica del usuario (para reminders, etc.)
+  findById(id: string): Promise<User | null>;
 
   // Actualiza el aggregate completo
   update(userAggregate: UserAggregate): Promise<UserAggregate>;

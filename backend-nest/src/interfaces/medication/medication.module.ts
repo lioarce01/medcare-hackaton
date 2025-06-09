@@ -12,6 +12,9 @@ import { PrismaService } from '../../infrastructure/prisma/prisma.service';
 import { SupabaseAdherenceRepository } from '../../infrastructure/adherence/repositories/supabase-adherence.repository';
 import { AdherenceGenerationService } from '../../domain/adherence/services/adherence-generation.service';
 import { DateCalculationService } from '../../domain/adherence/services/date-calculation.service';
+import { CreateRemindersForMedicationUseCase } from '../../application/reminder/use-cases/create-reminders-for-medication.usecase';
+import { SupabaseReminderRepository } from '../../infrastructure/reminder/repositories/supabase-reminder.repository';
+import { ReminderGenerationService } from '../../domain/reminder/services/reminder-generation.service';
 
 @Module({
   controllers: [MedicationController],
@@ -26,6 +29,8 @@ import { DateCalculationService } from '../../domain/adherence/services/date-cal
     FindActiveMedicationByUserUseCase,
     AdherenceGenerationService,
     DateCalculationService,
+    CreateRemindersForMedicationUseCase,
+    ReminderGenerationService,
     {
       provide: 'MedicationRepository',
       useClass: SupabaseMedicationRepository,
@@ -33,6 +38,10 @@ import { DateCalculationService } from '../../domain/adherence/services/date-cal
     {
       provide: 'AdherenceRepository',
       useClass: SupabaseAdherenceRepository,
+    },
+    {
+      provide: 'ReminderRepository',
+      useClass: SupabaseReminderRepository,
     },
   ],
 })

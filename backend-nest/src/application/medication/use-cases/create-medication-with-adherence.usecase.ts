@@ -4,6 +4,7 @@ import { MedicationRepository } from 'src/domain/medication/repositories/medicat
 import { AdherenceRepository } from 'src/domain/adherence/repositories/adherence.repository';
 import { AdherenceGenerationService } from 'src/domain/adherence/services/adherence-generation.service';
 import { CreateMedicationDto } from 'src/infrastructure/medication/dtos/create-medication.dto';
+import { CreateRemindersForMedicationUseCase } from 'src/application/reminder/use-cases/create-reminders-for-medication.usecase';
 
 @Injectable()
 export class CreateMedicationWithAdherenceUseCase {
@@ -13,6 +14,7 @@ export class CreateMedicationWithAdherenceUseCase {
     @Inject('AdherenceRepository')
     private readonly adherenceRepository: AdherenceRepository,
     private readonly adherenceGenerationService: AdherenceGenerationService,
+    private readonly createRemindersForMedicationUseCase: CreateRemindersForMedicationUseCase,
   ) {}
 
   async execute(medicationData: CreateMedicationDto): Promise<Medication> {
@@ -21,10 +23,11 @@ export class CreateMedicationWithAdherenceUseCase {
 
     // 2. Generate adherence records based on the medication schedule
     const userTimezone = medicationData.user_timezone || 'UTC';
-    const adherenceRecords = this.adherenceGenerationService.generateAdherenceRecords(
-      medication,
-      userTimezone,
-    );
+    const adherenceRecords =
+      this.adherenceGenerationService.generateAdherenceRecords(
+        medication,
+        userTimezone,
+      );
 
     // 3. Save all adherence records
     if (adherenceRecords.length > 0) {
@@ -33,7 +36,13 @@ export class CreateMedicationWithAdherenceUseCase {
       }
     }
 
-    // 4. Return the created medication
+    // 4. Generate and save reminders for the medication
+    await this.createRemindersForMedicationUseCase.execute(
+      medication,
+      userTimezone,
+    );
+
+    // 5. Return the created medication
     return medication;
   }
 }

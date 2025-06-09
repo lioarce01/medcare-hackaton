@@ -11,12 +11,12 @@ export class SupabaseMedicationRepository implements MedicationRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(medication: CreateMedicationDto): Promise<Medication> {
-    const created = await this.prisma.medication.create({
+    const created = await this.prisma.medications.create({
       data: {
         name: medication.name,
         user_id: (medication as any).user_id, // user_id should be provided by service/controller
-        dosage: medication.dosage,
-        frequency: medication.frequency,
+        dosage: medication.dosage as any,
+        frequency: medication.frequency as any,
         scheduled_times: medication.scheduled_times,
         instructions: medication.instructions,
         start_date: medication.start_date
@@ -25,7 +25,7 @@ export class SupabaseMedicationRepository implements MedicationRepository {
         end_date: medication.end_date
           ? new Date(medication.end_date)
           : undefined,
-        refill_reminder: medication.refill_reminder,
+        refill_reminder: medication.refill_reminder as any,
         side_effects_to_watch: medication.side_effects_to_watch,
         active: medication.active,
         medication_type: medication.medication_type,
@@ -36,8 +36,14 @@ export class SupabaseMedicationRepository implements MedicationRepository {
   }
 
   async update(medication: UpdateMedicationDto): Promise<Medication> {
-    const updateData = medication;
-    const updated = await this.prisma.medication.update({
+    const updateData: any = { ...medication };
+    if (updateData.dosage) updateData.dosage = updateData.dosage as any;
+    if (updateData.frequency)
+      updateData.frequency = updateData.frequency as any;
+    if (updateData.refill_reminder)
+      updateData.refill_reminder = updateData.refill_reminder as any;
+
+    const updated = await this.prisma.medications.update({
       where: { id: medication.id },
       data: {
         ...updateData,
@@ -53,14 +59,14 @@ export class SupabaseMedicationRepository implements MedicationRepository {
   }
 
   async delete(id: string): Promise<{ message: string }> {
-    await this.prisma.medication.delete({
+    await this.prisma.medications.delete({
       where: { id },
     });
     return { message: 'Medication deleted successfully' };
   }
 
   async findById(id: string): Promise<Medication | null> {
-    const found = await this.prisma.medication.findUnique({
+    const found = await this.prisma.medications.findUnique({
       where: { id },
     });
     if (!found) return null;
@@ -68,16 +74,16 @@ export class SupabaseMedicationRepository implements MedicationRepository {
   }
 
   async findByUser(userId: string): Promise<Medication[]> {
-    const found = await this.prisma.medication.findMany({
+    const found = await this.prisma.medications.findMany({
       where: { user_id: userId },
     });
-    return found.map((med: Medication) => MedicationMapper.toDomain(med));
+    return found.map((med: any) => MedicationMapper.toDomain(med));
   }
 
   async findActiveByUser(userId: string): Promise<Medication[]> {
-    const found = await this.prisma.medication.findMany({
+    const found = await this.prisma.medications.findMany({
       where: { user_id: userId, active: true },
     });
-    return found.map((med: Medication) => MedicationMapper.toDomain(med));
+    return found.map((med: any) => MedicationMapper.toDomain(med));
   }
 }

@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
-import { PrismaService } from './infrastructure/prisma/prisma.service';
-import { PrismaUserRepository } from './infrastructure/prisma/prisma-user.repository';
-import { UserController } from './interfaces/user/http/controllers/user.controller';
-import { GetMeUseCase } from './application/user/use-cases/get-me.usecase';
-import { UpdateUserUseCase } from './application/user/use-cases/update-user.usecase';
-import { DeleteUserUseCase } from './application/user/use-cases/delete-user.usecase';
-import { UpdateUserSettingsUseCase } from './application/user/use-cases/update-user-settings.usecase';
+import { UserController } from './http/controllers/user.controller';
+import { SupabaseUserRepository } from '../../infrastructure/user/repositories/supabase-user.repository';
+import { GetMeUseCase } from '../../application/user/use-cases/get-me.usecase';
+import { UpdateUserUseCase } from '../../application/user/use-cases/update-user.usecase';
+import { DeleteUserUseCase } from '../../application/user/use-cases/delete-user.usecase';
+import { UpdateUserSettingsUseCase } from '../../application/user/use-cases/update-user-settings.usecase';
+import { PrismaService } from '../../infrastructure/prisma/prisma.service';
 
 @Module({
   controllers: [UserController],
@@ -17,7 +17,7 @@ import { UpdateUserSettingsUseCase } from './application/user/use-cases/update-u
     UpdateUserSettingsUseCase,
     {
       provide: 'UserRepository',
-      useClass: PrismaUserRepository,
+      useClass: SupabaseUserRepository,
     },
   ],
 })
