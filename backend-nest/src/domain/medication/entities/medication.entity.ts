@@ -14,6 +14,7 @@ export class Medication {
       specific_days: string[];
     },
     public scheduled_times: string[],
+    public userTimezone: string,
     public instructions?: string | null,
     public start_date?: Date | null,
     public end_date?: Date | null,

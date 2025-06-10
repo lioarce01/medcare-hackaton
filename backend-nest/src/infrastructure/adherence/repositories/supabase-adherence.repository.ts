@@ -126,7 +126,16 @@ export class SupabaseAdherenceRepository implements AdherenceRepository {
     };
 
     if (date) {
-      whereClause.scheduled_date = new Date(date);
+      const start = new Date(date);
+      start.setHours(0, 0, 0, 0);
+
+      const end = new Date(date);
+      end.setHours(23, 59, 59, 999);
+
+      whereClause.scheduled_date = {
+        gte: start,
+        lte: end,
+      };
     }
 
     const adherences = await this.prisma.adherence.findMany({
@@ -337,6 +346,29 @@ export class SupabaseAdherenceRepository implements AdherenceRepository {
       });
     } catch (error) {
       console.error('Error updating adherence status:', error);
+      throw error;
+    }
+  }
+
+  async exists(
+    userId: string,
+    medicationId: string,
+    scheduledDate: Date,
+    scheduledTime: string,
+  ): Promise<boolean> {
+    try {
+      const adherence = await this.prisma.adherence.findFirst({
+        where: {
+          user_id: userId,
+          medication_id: medicationId,
+          scheduled_date: scheduledDate,
+          scheduled_time: scheduledTime,
+        },
+      });
+
+      return !!adherence;
+    } catch (error) {
+      console.error('Error checking adherence existence:', error);
       throw error;
     }
   }

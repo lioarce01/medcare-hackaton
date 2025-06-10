@@ -31,4 +31,10 @@ export interface AdherenceRepository {
     endDate: string,
   ): Promise<Adherence[]>;
   updateStatus(adherenceId: string, status: string): Promise<void>;
+  exists(
+    userId: string,
+    medicationId: string,
+    scheduledDate: Date,
+    scheduledTime: string,
+  ): Promise<boolean>;
 }

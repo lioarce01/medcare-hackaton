@@ -110,4 +110,30 @@ export class SupabaseMedicationRepository implements MedicationRepository {
     });
     return found.map((med: any) => MedicationMapper.toDomain(med));
   }
+
+  async findActiveDailyMedications(): Promise<Medication[]> {
+    const result = await this.prisma.$queryRawUnsafe<any[]>(`
+    SELECT 
+      m.*, 
+      us.timezone AS user_timezone
+    FROM "Medication" m
+    JOIN "UserSettings" us ON m.user_id = us.user_id
+    WHERE m.active = true
+    AND (
+      m.frequency->'specific_days' IS NULL
+      OR jsonb_array_length(m.frequency->'specific_days') = 0
+    )
+  `);
+
+    return result.map((med) =>
+      MedicationMapper.toDomain({
+        ...med,
+        frequency:
+          typeof med.frequency === 'string'
+            ? JSON.parse(med.frequency)
+            : med.frequency,
+        userTimezone: med.user_timezone || 'UTC',
+      }),
+    );
+  }
 }

@@ -3,6 +3,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { ProcessMissedAdherenceUseCase } from '../../../application/adherence/use-cases/process-missed-adherence.usecase';
 import { CalculateDailyRiskScoresUseCase } from '../../../application/analytics/use-cases/calculate-daily-risk-scores.usecase';
 import { GenerateWeeklyReportsUseCase } from '../../../application/reports/use-cases/generate-weekly-reports.usecase';
+import { GenerateDailyAdherenceUseCase } from 'src/application/scheduler/generate-daily-adherence.usecase';
 
 @Injectable()
 export class AppSchedulerService implements OnModuleInit {
@@ -12,10 +13,13 @@ export class AppSchedulerService implements OnModuleInit {
     private readonly processMissedAdherenceUseCase: ProcessMissedAdherenceUseCase,
     private readonly calculateDailyRiskScoresUseCase: CalculateDailyRiskScoresUseCase,
     private readonly generateWeeklyReportsUseCase: GenerateWeeklyReportsUseCase,
+    private readonly generateDailyAdherenceUseCase: GenerateDailyAdherenceUseCase,
   ) {}
 
   onModuleInit() {
-    this.logger.log('App Scheduler Service initialized - All cron jobs are set up');
+    this.logger.log(
+      'App Scheduler Service initialized - All cron jobs are set up',
+    );
   }
 
   /**
@@ -30,9 +34,14 @@ export class AppSchedulerService implements OnModuleInit {
     try {
       this.logger.log('Running missed adherence processing job');
       const result = await this.processMissedAdherenceUseCase.execute();
-      this.logger.log(`Missed adherence job completed: ${JSON.stringify(result)}`);
+      this.logger.log(
+        `Missed adherence job completed: ${JSON.stringify(result)}`,
+      );
     } catch (error) {
-      this.logger.error(`Error in missed adherence job: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error in missed adherence job: ${error.message}`,
+        error.stack,
+      );
     }
   }
 
@@ -48,9 +57,14 @@ export class AppSchedulerService implements OnModuleInit {
     try {
       this.logger.log('Running daily risk score calculation job');
       const result = await this.calculateDailyRiskScoresUseCase.execute();
-      this.logger.log(`Daily risk score job completed: ${JSON.stringify(result)}`);
+      this.logger.log(
+        `Daily risk score job completed: ${JSON.stringify(result)}`,
+      );
     } catch (error) {
-      this.logger.error(`Error in daily risk score job: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error in daily risk score job: ${error.message}`,
+        error.stack,
+      );
     }
   }
 
@@ -68,7 +82,33 @@ export class AppSchedulerService implements OnModuleInit {
       const result = await this.generateWeeklyReportsUseCase.execute();
       this.logger.log(`Weekly report job completed: ${JSON.stringify(result)}`);
     } catch (error) {
-      this.logger.error(`Error in weekly report job: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error in weekly report job: ${error.message}`,
+        error.stack,
+      );
+    }
+  }
+
+  /**
+   * Generate adherence records for the next day at midnight UTC
+   * Generates adherence records for all users and medications for the next day
+   */
+  @Cron('0 0 * * *', {
+    name: 'generate-daily-adherence',
+    timeZone: 'UTC',
+  })
+  async handleGenerateDailyAdherence() {
+    try {
+      this.logger.log('Running daily adherence generation job');
+      const result = await this.generateDailyAdherenceUseCase.execute();
+      this.logger.log(
+        `Daily adherence generation job completed: ${JSON.stringify(result)}`,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Error in daily adherence generation job: ${error.message}`,
+        error.stack,
+      );
     }
   }
 

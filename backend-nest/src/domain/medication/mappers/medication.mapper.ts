@@ -2,7 +2,7 @@ import { Medication } from '../entities/medication.entity';
 
 export class MedicationMapper {
   static toDomain(prismaMedication: any): Medication {
-    return new Medication(
+    const medication = new Medication(
       prismaMedication.id,
       prismaMedication.user_id,
       prismaMedication.name,
@@ -23,5 +23,10 @@ export class MedicationMapper {
       prismaMedication.reminders,
       prismaMedication.user,
     );
+
+    medication.userTimezone =
+      prismaMedication.user?.settings?.timezone || 'UTC';
+
+    return medication;
   }
 }

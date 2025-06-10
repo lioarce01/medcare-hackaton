@@ -27,10 +27,15 @@ export class AdherenceController {
     @Query() query: GetAdherenceHistoryDto,
     @GetUserId() userId: string,
   ) {
+    console.log('UserId:', userId);
+    console.log('Query date:', query.date);
+
     const adherences = await this.getAdherenceHistoryUseCase.execute(
       userId,
       query.date,
     );
+    console.log('Adherences found:', adherences.length);
+
     return AdherencePresenter.toHttpList(adherences);
   }
 

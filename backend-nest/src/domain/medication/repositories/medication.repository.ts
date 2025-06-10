@@ -9,4 +9,5 @@ export interface MedicationRepository {
   findById(id: string): Promise<Medication | null>;
   findByUser(userId: string): Promise<Medication[]>;
   findActiveByUser(userId: string): Promise<Medication[]>;
+  findActiveDailyMedications(): Promise<Medication[]>;
 }

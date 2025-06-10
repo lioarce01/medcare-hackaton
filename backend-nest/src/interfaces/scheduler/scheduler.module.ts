@@ -11,6 +11,9 @@ import { SupabaseRiskHistoryRepository } from '../../infrastructure/analytics/re
 import { SupabaseSubscriptionRepository } from '../../infrastructure/subscription/repositories/supabase-subscription.repository';
 import { SendGridNotificationService } from '../../infrastructure/reminder/services/sendgrid-notification.service';
 import { PrismaService } from '../../infrastructure/prisma/prisma.service';
+import { GenerateDailyAdherenceUseCase } from 'src/application/scheduler/generate-daily-adherence.usecase';
+import { AdherenceGenerationService } from 'src/domain/adherence/services/adherence-generation.service';
+import { DateCalculationService } from 'src/domain/adherence/services/date-calculation.service';
 
 @Module({
   imports: [ScheduleModule.forRoot()],
@@ -20,6 +23,8 @@ import { PrismaService } from '../../infrastructure/prisma/prisma.service';
     ProcessMissedAdherenceUseCase,
     CalculateDailyRiskScoresUseCase,
     GenerateWeeklyReportsUseCase,
+    GenerateDailyAdherenceUseCase,
+    DateCalculationService,
     {
       provide: 'AdherenceRepository',
       useClass: SupabaseAdherenceRepository,
@@ -43,6 +48,10 @@ import { PrismaService } from '../../infrastructure/prisma/prisma.service';
     {
       provide: 'NotificationService',
       useClass: SendGridNotificationService,
+    },
+    {
+      provide: 'AdherenceGenerationService',
+      useClass: AdherenceGenerationService,
     },
   ],
   exports: [AppSchedulerService],
