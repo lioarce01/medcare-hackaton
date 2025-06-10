@@ -37,6 +37,8 @@ export class AdherenceController {
   @Post('confirm')
   @UseGuards(JwtAuthGuard)
   async confirmDose(@Body() body: ConfirmDoseDto, @GetUserId() userId: string) {
+    console.log('confirmDose body:', body);
+
     const adherence = await this.confirmDoseUseCase.execute(
       body.adherenceId,
       userId,
@@ -60,10 +62,6 @@ export class AdherenceController {
     @Query() query: GetAdherenceStatsDto,
     @GetUserId() userId: string,
   ) {
-    return await this.getAdherenceStatsUseCase.execute(
-      userId,
-      query.startDate,
-      query.endDate,
-    );
+    return await this.getAdherenceStatsUseCase.execute(userId);
   }
 }

@@ -24,11 +24,11 @@ export class AdherenceValidationService {
       throw new UnauthorizedAccessException('adherence record');
     }
 
-    if (adherence.status !== 'pending') {
+    if (adherence.status !== 'pending' && adherence.status !== 'missed') {
       throw new InvalidEntityStateException(
         'Adherence record',
         adherence.status || 'unknown',
-        'pending',
+        'pending or missed',
       );
     }
   }

@@ -15,6 +15,11 @@ export interface AdherenceStats {
   skipped: number;
   pending: number;
   adherenceRate: number;
+  ranking?: {
+    grade: string;
+    color: string;
+    text: string;
+  };
   byMedication: Record<string, MedicationStats>;
 }
 

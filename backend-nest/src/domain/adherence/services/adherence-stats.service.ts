@@ -19,6 +19,11 @@ export class AdherenceStatsService {
       pending: 0,
       adherenceRate: 0,
       byMedication: {},
+      ranking: {
+        grade: 'E',
+        color: 'from-red-500 to-orange-600',
+        text: 'Needs Improvement',
+      },
     };
 
     // Count overall stats
@@ -48,7 +53,7 @@ export class AdherenceStatsService {
     // Process medication-specific stats
     rawData.forEach((record) => {
       const medId = record.medication.id;
-      
+
       if (!stats.byMedication[medId]) {
         stats.byMedication[medId] = {
           id: medId,
@@ -60,6 +65,8 @@ export class AdherenceStatsService {
           pending: 0,
         };
       }
+
+      stats.ranking = this.getRanking(stats.adherenceRate);
 
       const medStats = stats.byMedication[medId];
       medStats.total++;
@@ -95,6 +102,49 @@ export class AdherenceStatsService {
     return {
       startDate: startDate.toISOString().split('T')[0],
       endDate: endDate.toISOString().split('T')[0],
+    };
+  }
+
+  getRanking(adherenceRate: number): AdherenceStats['ranking'] {
+    if (adherenceRate >= 90) {
+      return {
+        grade: 'A+',
+        color: 'green-600',
+        text: 'Excellent',
+      };
+    }
+    if (adherenceRate >= 80) {
+      return {
+        grade: 'A',
+        color: 'emerald-600',
+        text: 'Great',
+      };
+    }
+    if (adherenceRate >= 70) {
+      return {
+        grade: 'B',
+        color: 'indigo-600',
+        text: 'Good',
+      };
+    }
+    if (adherenceRate >= 60) {
+      return {
+        grade: 'C',
+        color: 'orange-600',
+        text: 'Fair',
+      };
+    }
+    if (adherenceRate >= 50) {
+      return {
+        grade: 'D',
+        color: 'rose-600',
+        text: 'Needs Improvement',
+      };
+    }
+    return {
+      grade: 'E',
+      color: 'red-500',
+      text: 'Poor',
     };
   }
 }

@@ -11,9 +11,26 @@ export class SupabaseMedicationRepository implements MedicationRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(medication: CreateMedicationDto): Promise<Medication> {
-    if (!medication.user_id) {
-      throw new Error('user_id is required to create a medication.');
-    }
+    const refillReminderDefault = {
+      enabled: false,
+      threshold: 7,
+      last_refill: null,
+      next_refill: null,
+      supply_amount: 0,
+      supply_unit: '',
+    };
+
+    const rr = medication.refill_reminder;
+    const refillReminder = rr
+      ? {
+          enabled: rr.enabled ?? false,
+          threshold: rr.threshold ?? rr.days_before ?? 7,
+          last_refill: rr.last_refill ?? null,
+          next_refill: rr.next_refill ?? null,
+          supply_amount: rr.supply_amount ?? 0,
+          supply_unit: rr.supply_unit ?? '',
+        }
+      : null;
 
     const created = await this.prisma.medications.create({
       data: {
@@ -28,7 +45,7 @@ export class SupabaseMedicationRepository implements MedicationRepository {
         end_date: medication.end_date
           ? new Date(medication.end_date)
           : undefined,
-        refill_reminder: medication.refill_reminder as any,
+        refill_reminder: refillReminder as any,
         side_effects_to_watch: medication.side_effects_to_watch,
         active: medication.active,
         medication_type: medication.medication_type,
@@ -38,6 +55,7 @@ export class SupabaseMedicationRepository implements MedicationRepository {
         },
       },
     });
+
     return MedicationMapper.toDomain(created);
   }
 

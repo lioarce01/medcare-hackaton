@@ -33,6 +33,9 @@ class RefillReminderDto {
   @IsNumber()
   threshold: number;
 
+  @IsNumber()
+  days_before: number;
+
   @IsOptional()
   @IsDateString()
   last_refill?: string | null;
