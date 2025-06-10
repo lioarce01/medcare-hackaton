@@ -11,10 +11,13 @@ export class SupabaseMedicationRepository implements MedicationRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(medication: CreateMedicationDto): Promise<Medication> {
+    if (!medication.user_id) {
+      throw new Error('user_id is required to create a medication.');
+    }
+
     const created = await this.prisma.medications.create({
       data: {
         name: medication.name,
-        user_id: (medication as any).user_id, // user_id should be provided by service/controller
         dosage: medication.dosage as any,
         frequency: medication.frequency as any,
         scheduled_times: medication.scheduled_times,
@@ -30,6 +33,9 @@ export class SupabaseMedicationRepository implements MedicationRepository {
         active: medication.active,
         medication_type: medication.medication_type,
         image_url: medication.image_url,
+        user: {
+          connect: { id: medication.user_id },
+        },
       },
     });
     return MedicationMapper.toDomain(created);

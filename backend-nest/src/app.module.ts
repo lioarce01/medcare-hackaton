@@ -7,6 +7,7 @@ import { UserModule } from './interfaces/user/user.module';
 import { ReminderModule } from './interfaces/reminder/reminder.module';
 import { SubscriptionModule } from './interfaces/subscription/subscription.module';
 import { SchedulerModule } from './interfaces/scheduler/scheduler.module';
+import { AuthModule } from './infrastructure/auth/auth.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { SchedulerModule } from './interfaces/scheduler/scheduler.module';
       isGlobal: true,
       load: [configuration],
     }),
+    AuthModule,
     UserModule,
     MedicationModule,
     AdherenceModule,

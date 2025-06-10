@@ -18,6 +18,8 @@ export class CreateMedicationWithAdherenceUseCase {
   ) {}
 
   async execute(medicationData: CreateMedicationDto): Promise<Medication> {
+    console.log('Creating medication for user_id:', medicationData.user_id);
+
     // 1. Create the medication first
     const medication = await this.medicationRepository.create(medicationData);
 

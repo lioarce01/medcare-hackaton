@@ -53,7 +53,7 @@ export class ReminderController {
   }
 
   @Get('upcoming')
-  @UseGuards(JwtAuthGuard, SubscriptionGuard)
+  @UseGuards(JwtAuthGuard) //todo: add subscription guard
   async getUpcomingReminders(
     @GetUserId() userId: string,
     @Query('limit') limit?: string,
@@ -67,7 +67,7 @@ export class ReminderController {
   }
 
   @Post()
-  @UseGuards(JwtAuthGuard, SubscriptionGuard)
+  @UseGuards(JwtAuthGuard) //todo: add subscription guard
   async createReminder(
     @Body() reminder: CreateReminderDto,
     @GetUserId() userId: string,
@@ -80,7 +80,7 @@ export class ReminderController {
   }
 
   @Post(':id/send')
-  @UseGuards(JwtAuthGuard, SubscriptionGuard)
+  @UseGuards(JwtAuthGuard) //todo: add subscription guard
   @HttpCode(HttpStatus.OK)
   async sendReminderManually(
     @Param('id') id: string,

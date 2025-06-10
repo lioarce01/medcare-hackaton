@@ -55,7 +55,7 @@ export class AdherenceController {
   }
 
   @Get('stats')
-  @UseGuards(JwtAuthGuard, SubscriptionGuard)
+  @UseGuards(JwtAuthGuard) // todo: addcheck subscription guard
   async getStats(
     @Query() query: GetAdherenceStatsDto,
     @GetUserId() userId: string,
