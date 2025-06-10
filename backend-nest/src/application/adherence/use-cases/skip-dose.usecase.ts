@@ -1,12 +1,14 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { AdherenceRepository } from '../../../domain/adherence/repositories/adherence.repository';
 import { Adherence } from '../../../domain/adherence/entities/adherence.entity';
+import { AdherenceValidationService } from '../../../domain/adherence/services/adherence-validation.service';
 
 @Injectable()
 export class SkipDoseUseCase {
   constructor(
     @Inject('AdherenceRepository')
     private readonly adherenceRepository: AdherenceRepository,
+    private readonly adherenceValidationService: AdherenceValidationService,
   ) {}
 
   async execute(adherenceId: string, userId: string): Promise<Adherence> {
@@ -14,17 +16,11 @@ export class SkipDoseUseCase {
     const existingAdherence =
       await this.adherenceRepository.findById(adherenceId);
 
-    if (!existingAdherence) {
-      throw new Error('Adherence record not found');
-    }
-
-    if (existingAdherence.user_id !== userId) {
-      throw new Error('Unauthorized access to adherence record');
-    }
-
-    if (existingAdherence.status !== 'pending') {
-      throw new Error('Adherence record is not in pending status');
-    }
+    this.adherenceValidationService.validateAdherenceForStatusChange(
+      existingAdherence,
+      adherenceId,
+      userId,
+    );
 
     return await this.adherenceRepository.skipDose(adherenceId, userId);
   }

@@ -40,7 +40,7 @@ export class SupabaseSubscriptionRepository implements SubscriptionRepository {
     plan: string,
     expiresAt: Date | null,
     features: Record<string, boolean>,
-    paymentProviderId?: string
+    paymentProviderId?: string,
   ): Promise<void> {
     try {
       await this.prisma.users.update({
@@ -68,7 +68,7 @@ export class SupabaseSubscriptionRepository implements SubscriptionRepository {
         subscription.plan,
         subscription.expiresAt,
         subscription.features.toJson(),
-        subscription.paymentProviderId
+        subscription.paymentProviderId ?? undefined,
       );
 
       return subscription;
@@ -86,7 +86,7 @@ export class SupabaseSubscriptionRepository implements SubscriptionRepository {
         subscription.plan,
         subscription.expiresAt,
         subscription.features.toJson(),
-        subscription.paymentProviderId
+        subscription.paymentProviderId ?? undefined,
       );
 
       return subscription;

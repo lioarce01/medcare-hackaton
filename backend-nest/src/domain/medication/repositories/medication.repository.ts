@@ -1,6 +1,6 @@
-import { UpdateMedicationDto } from 'src/infrastructure/medication/dtos/update-medication.dto';
+import { UpdateMedicationDto } from 'src/interfaces/medication/dtos/update-medication.dto';
 import { Medication } from '../entities/medication.entity';
-import { CreateMedicationDto } from 'src/infrastructure/medication/dtos/create-medication.dto';
+import { CreateMedicationDto } from 'src/interfaces/medication/dtos/create-medication.dto';
 
 export interface MedicationRepository {
   create(medication: CreateMedicationDto): Promise<Medication>;
@@ -9,7 +9,4 @@ export interface MedicationRepository {
   findById(id: string): Promise<Medication | null>;
   findByUser(userId: string): Promise<Medication[]>;
   findActiveByUser(userId: string): Promise<Medication[]>;
-
-  // Alias for cron jobs compatibility
-  findActiveMedicationsByUser(userId: string): Promise<Medication[]>;
 }

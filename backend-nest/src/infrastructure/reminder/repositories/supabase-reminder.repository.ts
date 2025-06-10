@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { Reminder } from 'src/domain/reminder/entities/reminder.entity';
 import { ReminderRepository } from 'src/domain/reminder/repositories/reminder.repository';
 import { PrismaService } from 'src/infrastructure/prisma/prisma.service';
-import { CreateReminderDto } from '../dtos/create-reminder.dto';
-import { UpdateReminderDto } from '../dtos/update-reminder.dto';
+import { CreateReminderDto } from '../../../interfaces/reminder/dtos/create-reminder.dto';
+import { UpdateReminderDto } from '../../../interfaces/reminder/dtos/update-reminder.dto';
 import { ReminderMapper } from 'src/domain/reminder/mappers/reminder.mapper';
 
 @Injectable()

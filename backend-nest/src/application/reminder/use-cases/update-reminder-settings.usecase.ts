@@ -1,12 +1,15 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/infrastructure/prisma/prisma.service';
-import { UpdateReminderSettingsDto } from 'src/infrastructure/reminder/dtos/update-reminder-settings.dto';
+import { UpdateReminderSettingsDto } from 'src/interfaces/reminder/dtos/update-reminder-settings.dto';
 
 @Injectable()
 export class UpdateReminderSettingsUseCase {
   constructor(private readonly prisma: PrismaService) {}
 
-  async execute(userId: string, settings: UpdateReminderSettingsDto): Promise<{
+  async execute(
+    userId: string,
+    settings: UpdateReminderSettingsDto,
+  ): Promise<{
     success: boolean;
     message: string;
     data: {

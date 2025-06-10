@@ -1,18 +1,18 @@
-import { 
-  Controller, 
-  Post, 
-  Get, 
-  Body, 
-  UseGuards, 
-  Req, 
-  Res, 
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  UseGuards,
+  Req,
+  Res,
   Query,
   RawBody,
-  Headers
+  Headers,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { JwtAuthGuard } from '../../../../auth/jwt-auth.guard';
-import { GetUserId } from '../../../../auth/get-user-id.decorator';
+import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
+import { GetUserId } from '../../../common/decorators/get-user-id.decorator';
 import { CreateCheckoutSessionDto } from '../dtos/create-checkout-session.dto';
 import { SubscriptionStatusDto } from '../dtos/subscription-status.dto';
 import { CreateCheckoutSessionUseCase } from '../../../../application/subscription/use-cases/create-checkout-session.usecase';
@@ -63,13 +63,10 @@ export class SubscriptionController {
   }
 
   @Post('mercadopago/webhook')
-  async handleMercadoPagoWebhook(
-    @Body() body: any,
-    @Query() query: any,
-  ) {
+  async handleMercadoPagoWebhook(@Body() body: any, @Query() query: any) {
     // Combine query and body data as in the original implementation
     const payload = { ...query, ...body };
-    
+
     return await this.handleWebhookUseCase.execute({
       paymentProvider: PaymentProviderType.MERCADOPAGO,
       payload,
@@ -77,10 +74,7 @@ export class SubscriptionController {
   }
 
   @Get('success')
-  async handleSuccess(
-    @Query() query: any,
-    @Res() res: Response,
-  ) {
+  async handleSuccess(@Query() query: any, @Res() res: Response) {
     const result = await this.handleSuccessRedirectUseCase.execute({
       collectionStatus: query.collection_status,
       status: query.status,
@@ -98,7 +92,9 @@ export class SubscriptionController {
     @Res() res: Response,
   ) {
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-    res.redirect(`${frontendUrl}/subscription/failure?userId=${externalReference}`);
+    res.redirect(
+      `${frontendUrl}/subscription/failure?userId=${externalReference}`,
+    );
   }
 
   @Get('pending')
@@ -107,6 +103,8 @@ export class SubscriptionController {
     @Res() res: Response,
   ) {
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-    res.redirect(`${frontendUrl}/subscription/pending?userId=${externalReference}`);
+    res.redirect(
+      `${frontendUrl}/subscription/pending?userId=${externalReference}`,
+    );
   }
 }

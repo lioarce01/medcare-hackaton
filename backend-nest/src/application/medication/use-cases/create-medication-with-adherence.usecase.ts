@@ -3,7 +3,7 @@ import { Medication } from 'src/domain/medication/entities/medication.entity';
 import { MedicationRepository } from 'src/domain/medication/repositories/medication.repository';
 import { AdherenceRepository } from 'src/domain/adherence/repositories/adherence.repository';
 import { AdherenceGenerationService } from 'src/domain/adherence/services/adherence-generation.service';
-import { CreateMedicationDto } from 'src/infrastructure/medication/dtos/create-medication.dto';
+import { CreateMedicationDto } from 'src/interfaces/medication/dtos/create-medication.dto';
 import { CreateRemindersForMedicationUseCase } from 'src/application/reminder/use-cases/create-reminders-for-medication.usecase';
 
 @Injectable()

@@ -1,6 +1,6 @@
-import { UpdateReminderDto } from 'src/infrastructure/reminder/dtos/update-reminder.dto';
+import { UpdateReminderDto } from 'src/interfaces/reminder/dtos/update-reminder.dto';
 import { Reminder } from '../entities/reminder.entity';
-import { CreateReminderDto } from 'src/infrastructure/reminder/dtos/create-reminder.dto';
+import { CreateReminderDto } from 'src/interfaces/reminder/dtos/create-reminder.dto';
 
 export interface ReminderRepository {
   create(reminder: CreateReminderDto): Promise<Reminder>;

@@ -11,9 +11,8 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-import { SubscriptionGuard } from '../../../subscription/http/guards/subscription.guard';
-import { GetUserId } from 'src/auth/get-user-id.decorator';
+import { JwtAuthGuard } from 'src/interfaces/common/guards/jwt-auth.guard';
+import { GetUserId } from 'src/interfaces/common/decorators/get-user-id.decorator';
 import { CreateReminderUseCase } from 'src/application/reminder/use-cases/create-reminder.usecase';
 import { GetUpcomingRemindersUseCase } from 'src/application/reminder/use-cases/get-upcoming-reminders.usecase';
 import { GetAllRemindersUseCase } from 'src/application/reminder/use-cases/get-all-reminders.usecase';
@@ -21,9 +20,10 @@ import { SendReminderManuallyUseCase } from 'src/application/reminder/use-cases/
 import { DeleteReminderUseCase } from 'src/application/reminder/use-cases/delete-reminder.usecase';
 import { UpdateReminderSettingsUseCase } from 'src/application/reminder/use-cases/update-reminder-settings.usecase';
 import { GetUserSettingsUseCase } from 'src/application/reminder/use-cases/get-user-settings.usecase';
-import { CreateReminderDto } from 'src/infrastructure/reminder/dtos/create-reminder.dto';
-import { UpdateReminderSettingsDto } from 'src/infrastructure/reminder/dtos/update-reminder-settings.dto';
+import { CreateReminderDto } from 'src/interfaces/reminder/dtos/create-reminder.dto';
+import { UpdateReminderSettingsDto } from 'src/interfaces/reminder/dtos/update-reminder-settings.dto';
 import { ReminderPresenter } from 'src/domain/reminder/presenters/reminder.presenter';
+import { SubscriptionGuard } from 'src/interfaces/common/guards/subscription.guard';
 
 @Controller('reminders')
 export class ReminderController {

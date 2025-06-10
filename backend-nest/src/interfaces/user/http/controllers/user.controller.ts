@@ -13,12 +13,12 @@ import { DeleteUserUseCase } from 'src/application/user/use-cases/delete-user.us
 import { GetMeUseCase } from 'src/application/user/use-cases/get-me.usecase';
 import { UpdateUserSettingsUseCase } from 'src/application/user/use-cases/update-user-settings.usecase';
 import { UpdateUserUseCase } from 'src/application/user/use-cases/update-user.usecase';
-import { GetUserId } from 'src/auth/get-user-id.decorator';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { GetUserId } from 'src/interfaces/common/decorators/get-user-id.decorator';
+import { JwtAuthGuard } from 'src/interfaces/common/guards/jwt-auth.guard';
 import { UserMapper } from 'src/domain/user/mappers/user.mapper';
 import { UserPresenter } from 'src/domain/user/presenters/user.presenter';
-import { UpdateUserSettingsDto } from 'src/infrastructure/user/dtos/update-user-settings.dto';
-import { UpdateUserDto } from 'src/infrastructure/user/dtos/update-user.dto';
+import { UpdateUserSettingsDto } from 'src/interfaces/user/dtos/update-user-settings.dto';
+import { UpdateUserDto } from 'src/interfaces/user/dtos/update-user.dto';
 
 @Controller('users')
 export class UserController {

@@ -1,10 +1,17 @@
-import { Injectable, CanActivate, ExecutionContext, ForbiddenException, Inject } from '@nestjs/common';
-import { SubscriptionRepository } from '../../../../domain/subscription/repositories/subscription.repository';
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  ForbiddenException,
+  Inject,
+} from '@nestjs/common';
+import { SubscriptionRepository } from 'src/domain/subscription/repositories/subscription.repository';
 
 @Injectable()
 export class SubscriptionGuard implements CanActivate {
   constructor(
-    @Inject('SubscriptionRepository') private readonly subscriptionRepository: SubscriptionRepository,
+    @Inject('SubscriptionRepository')
+    private readonly subscriptionRepository: SubscriptionRepository,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -16,22 +23,23 @@ export class SubscriptionGuard implements CanActivate {
     }
 
     try {
-      const subscription = await this.subscriptionRepository.findByUserId(userId);
-      
+      const subscription =
+        await this.subscriptionRepository.findByUserId(userId);
+
       if (!subscription) {
         throw new ForbiddenException('No subscription found');
       }
 
       // Check if user has an active premium subscription
       const isPremium = subscription.isPremium();
-      
+
       if (!isPremium) {
         throw new ForbiddenException('Premium subscription required');
       }
 
       // Add subscription info to request for use in controllers
       request.subscription = subscription;
-      
+
       return true;
     } catch (error) {
       if (error instanceof ForbiddenException) {

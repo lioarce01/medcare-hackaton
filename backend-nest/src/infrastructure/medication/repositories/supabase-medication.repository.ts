@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { Medication } from 'src/domain/medication/entities/medication.entity';
 import { MedicationRepository } from 'src/domain/medication/repositories/medication.repository';
 import { PrismaService } from 'src/infrastructure/prisma/prisma.service';
-import { CreateMedicationDto } from '../dtos/create-medication.dto';
-import { UpdateMedicationDto } from '../dtos/update-medication.dto';
+import { CreateMedicationDto } from '../../../interfaces/medication/dtos/create-medication.dto';
+import { UpdateMedicationDto } from '../../../interfaces/medication/dtos/update-medication.dto';
 import { MedicationMapper } from 'src/domain/medication/mappers/medication.mapper';
 
 @Injectable()
@@ -85,10 +85,5 @@ export class SupabaseMedicationRepository implements MedicationRepository {
       where: { user_id: userId, active: true },
     });
     return found.map((med: any) => MedicationMapper.toDomain(med));
-  }
-
-  // Alias for cron jobs compatibility
-  async findActiveMedicationsByUser(userId: string): Promise<Medication[]> {
-    return this.findActiveByUser(userId);
   }
 }

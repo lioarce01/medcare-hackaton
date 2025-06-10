@@ -3,14 +3,14 @@ import { ConfirmDoseUseCase } from 'src/application/adherence/use-cases/confirm-
 import { GetAdherenceHistoryUseCase } from 'src/application/adherence/use-cases/get-adherence-history.usecase';
 import { SkipDoseUseCase } from 'src/application/adherence/use-cases/skip-dose.usecase';
 import { GetAdherenceStatsUseCase } from 'src/application/adherence/use-cases/get-adherence-stats.usecase';
-import { GetUserId } from 'src/auth/get-user-id.decorator';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-import { SubscriptionGuard } from '../../subscription/http/guards/subscription.guard';
+import { GetUserId } from 'src/interfaces/common/decorators/get-user-id.decorator';
+import { JwtAuthGuard } from 'src/interfaces/common/guards/jwt-auth.guard';
 import { AdherencePresenter } from 'src/domain/adherence/presenters/adherence.presenter';
-import { ConfirmDoseDto } from 'src/infrastructure/adherence/dtos/confirm-dose.dto';
-import { GetAdherenceHistoryDto } from 'src/infrastructure/adherence/dtos/get-adherence-history.dto';
-import { SkipDoseDto } from 'src/infrastructure/adherence/dtos/skip-dose.dto';
-import { GetAdherenceStatsDto } from 'src/infrastructure/adherence/dtos/get-adherence-stats.dto';
+import { ConfirmDoseDto } from 'src/interfaces/adherence/dtos/confirm-dose.dto';
+import { GetAdherenceHistoryDto } from 'src/interfaces/adherence/dtos/get-adherence-history.dto';
+import { SkipDoseDto } from 'src/interfaces/adherence/dtos/skip-dose.dto';
+import { GetAdherenceStatsDto } from 'src/interfaces/adherence/dtos/get-adherence-stats.dto';
+import { SubscriptionGuard } from 'src/interfaces/common/guards/subscription.guard';
 
 @Controller('adherence')
 export class AdherenceController {

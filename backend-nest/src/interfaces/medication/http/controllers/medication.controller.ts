@@ -17,11 +17,11 @@ import { FindActiveMedicationByUserUseCase } from 'src/application/medication/us
 import { FindMedicationByIdUseCase } from 'src/application/medication/use-cases/find-medication-by-id.usecase';
 import { FindMedicationByUserUseCase } from 'src/application/medication/use-cases/find-medication-by-user.usecase';
 import { UpdateMedicationUseCase } from 'src/application/medication/use-cases/update-medication.usecase';
-import { GetUserId } from 'src/auth/get-user-id.decorator';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { GetUserId } from 'src/interfaces/common/decorators/get-user-id.decorator';
+import { JwtAuthGuard } from 'src/interfaces/common/guards/jwt-auth.guard';
 import { MedicationPresenter } from 'src/domain/medication/presenters/medication.presenter';
-import { CreateMedicationDto } from 'src/infrastructure/medication/dtos/create-medication.dto';
-import { UpdateMedicationDto } from 'src/infrastructure/medication/dtos/update-medication.dto';
+import { CreateMedicationDto } from 'src/interfaces/medication/dtos/create-medication.dto';
+import { UpdateMedicationDto } from 'src/interfaces/medication/dtos/update-medication.dto';
 
 @Controller('medications')
 export class MedicationController {
