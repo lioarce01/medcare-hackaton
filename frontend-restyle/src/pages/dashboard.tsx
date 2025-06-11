@@ -1,10 +1,9 @@
-import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { DashboardSkeleton } from '@/components/ui/loading-skeleton';
-import { 
+import {
   Calendar,
   Clock,
   TrendingUp,
@@ -15,61 +14,36 @@ import {
   Activity,
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { mockMedications, mockAdherence, mockAdherenceStats } from '@/lib/mock-data';
-import { useAuth } from '@/contexts/auth-context';
+import { TrialBanner } from '@/components/premium/trial-banner';
+import { useTodaySchedule, useDashboardStats, useDashboardAlerts, useDashboardActions } from '@/hooks/useDashboard';
+import { useAuth } from '@/hooks/useAuth';
 
 export function DashboardPage() {
   const { user } = useAuth();
-  const [isLoading, setIsLoading] = useState(true);
-  const [todayAdherence, setTodayAdherence] = useState<any[]>([]);
 
-  useEffect(() => {
-    // Simulate loading
-    const timer = setTimeout(() => {
-      // Generate today's schedule
-      const today = format(new Date(), 'yyyy-MM-dd');
-      const todaySchedule = mockMedications.flatMap(med => 
-        med.scheduled_times.map(time => ({
-          id: `${med.id}-${time}`,
-          medication: med,
-          scheduled_time: time,
-          scheduled_date: today,
-          status: Math.random() > 0.3 ? 'taken' : 'pending',
-          taken_time: Math.random() > 0.3 ? new Date().toISOString() : null,
-        }))
-      );
-      setTodayAdherence(todaySchedule);
-      setIsLoading(false);
-    }, 1000);
+  // Fetch real data using custom hooks
+  const { data: todaySchedule, isLoading: scheduleLoading } = useTodaySchedule();
+  const { data: stats, isLoading: statsLoading } = useDashboardStats();
+  const { data: alerts, isLoading: alertsLoading } = useDashboardAlerts();
+  const { handleMedicationAction, isLoading: actionLoading } = useDashboardActions();
 
-    return () => clearTimeout(timer);
-  }, []);
+  console.log("today schedule:", todaySchedule)
 
-  const handleMedicationAction = (id: string, action: 'take' | 'skip') => {
-    setTodayAdherence(prev => 
-      prev.map(item => 
-        item.id === id 
-          ? { 
-              ...item, 
-              status: action === 'take' ? 'taken' : 'skipped',
-              taken_time: action === 'take' ? new Date().toISOString() : null 
-            }
-          : item
-      )
-    );
-  };
+  const isLoading = scheduleLoading || statsLoading || alertsLoading;
 
   if (isLoading) {
     return <DashboardSkeleton />;
   }
 
-  const stats = mockAdherenceStats;
-  const completedToday = todayAdherence.filter(item => item.status === 'taken').length;
-  const totalToday = todayAdherence.length;
-  const pendingToday = todayAdherence.filter(item => item.status === 'pending');
+  if (!stats || !todaySchedule) {
+    return <div>No data available</div>;
+  }
 
   return (
     <div className="space-y-6">
+      {/* Trial Banner */}
+      <TrialBanner />
+
       {/* Welcome Section */}
       <div className="flex items-center justify-between">
         <div>
@@ -80,7 +54,7 @@ export function DashboardPage() {
         </div>
         <div className="text-right">
           <div className="text-2xl font-bold text-primary">
-            {Math.round((completedToday / totalToday) * 100) || 0}%
+            {(stats.today.adherenceRate).toFixed() || 0}%
           </div>
           <div className="text-sm text-muted-foreground">Today's Adherence</div>
         </div>
@@ -94,10 +68,10 @@ export function DashboardPage() {
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{completedToday}/{totalToday}</div>
-            <Progress value={(completedToday / totalToday) * 100} className="mt-2" />
+            <div className="text-2xl font-bold">{stats.today.completed}/{stats.today.total}</div>
+            <Progress value={stats.today.adherenceRate} className="mt-2" />
             <p className="text-xs text-muted-foreground mt-2">
-              {pendingToday.length} doses remaining
+              {stats.today.pending} doses remaining
             </p>
           </CardContent>
         </Card>
@@ -108,7 +82,7 @@ export function DashboardPage() {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.week.percentage}%</div>
+            <div className="text-2xl font-bold">{(stats.week.adherenceRate).toFixed()}%</div>
             <p className="text-xs text-muted-foreground">
               {stats.week.taken} of {stats.week.total} doses taken
             </p>
@@ -121,7 +95,7 @@ export function DashboardPage() {
             <Pill className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{mockMedications.length}</div>
+            <div className="text-2xl font-bold">{stats.activeMedications}</div>
             <p className="text-xs text-muted-foreground">
               Currently prescribed
             </p>
@@ -130,13 +104,13 @@ export function DashboardPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Performance Rank</CardTitle>
+            <CardTitle className="text-sm font-medium">Overall Performance</CardTitle>{' '}
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">{stats.ranking}</div>
+            <div className={`text-2xl font-bold text-${stats.ranking.color}`}>{stats.ranking.grade}</div>
             <p className="text-xs text-muted-foreground">
-              Excellent adherence
+              {stats.ranking.text}
             </p>
           </CardContent>
         </Card>
@@ -156,7 +130,7 @@ export function DashboardPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {todayAdherence.map((item) => (
+            {todaySchedule.map((item) => (
               <div
                 key={item.id}
                 className="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
@@ -173,33 +147,39 @@ export function DashboardPage() {
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
-                  {item.status === 'taken' ? (
-                    <Badge variant="default" className="bg-success-light border">
-                      <CheckCircle2 className="h-3 w-3 mr-1" />
-                      Taken
-                    </Badge>
-                  ) : item.status === 'skipped' ? (
-                    <Badge variant="destructive">
-                      <XCircle className="h-3 w-3 mr-1" />
-                      Skipped
-                    </Badge>
+                  {item.adherenceId ? (
+                    item.status === 'taken' ? (
+                      <Badge variant="default" className="bg-success-light border">
+                        <CheckCircle2 className="h-3 w-3 mr-1" />
+                        Taken
+                      </Badge>
+                    ) : item.status === 'skipped' ? (
+                      <Badge variant="destructive">
+                        <XCircle className="h-3 w-3 mr-1" />
+                        Skipped
+                      </Badge>
+                    ) : (
+                      <div className="space-x-2">
+                        <Button
+                          size="sm"
+                          onClick={() => handleMedicationAction(item.adherenceId!, 'take')}
+                          className="bg-green-600 hover:bg-green-700 text-white"
+                          disabled={actionLoading}
+                        >
+                          Take
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleMedicationAction(item.adherenceId!, 'skip')}
+                          disabled={actionLoading}
+                        >
+                          Skip
+                        </Button>
+                      </div>
+                    )
                   ) : (
-                    <div className="space-x-2">
-                      <Button
-                        size="sm"
-                        onClick={() => handleMedicationAction(item.id, 'take')}
-                        className="bg-green-600 hover:bg-green-700 text-white"
-                      >
-                        Take
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleMedicationAction(item.id, 'skip')}
-                      >
-                        Skip
-                      </Button>
-                    </div>
+                    <Badge variant="secondary">No adherence</Badge>
                   )}
                 </div>
               </div>
@@ -219,41 +199,38 @@ export function DashboardPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="p-4 rounded-lg bg-warning-light border">
-              <div className="flex items-center space-x-2">
-                <AlertTriangle className="h-4 w-4" />
-                <span className="font-medium">
-                  Refill Reminder
-                </span>
+            {alerts && alerts.length > 0 ? (
+              alerts.map((alert) => (
+                <div
+                  key={alert.id}
+                  className={`p-4 rounded-lg border ${
+                    alert.priority === 'warning' ? 'bg-warning-light' :
+                    alert.priority === 'info' ? 'bg-info-light' :
+                    alert.priority === 'success' ? 'bg-success-light' :
+                    'bg-muted'
+                  }`}
+                >
+                  <div className="flex items-center space-x-2">
+                    {alert.type === 'refill' && <AlertTriangle className="h-4 w-4" />}
+                    {alert.type === 'upcoming' && <Clock className="h-4 w-4" />}
+                    {alert.type === 'achievement' && <CheckCircle2 className="h-4 w-4" />}
+                    {alert.type === 'missed' && <XCircle className="h-4 w-4" />}
+                    <span className="font-medium">
+                      {alert.title}
+                    </span>
+                  </div>
+                  <p className="text-sm mt-1 opacity-90">
+                    {alert.message}
+                  </p>
+                </div>
+              ))
+            ) : (
+              <div className="p-4 rounded-lg bg-muted border text-center">
+                <p className="text-sm text-muted-foreground">
+                  No alerts at this time
+                </p>
               </div>
-              <p className="text-sm mt-1 opacity-90">
-                Lisinopril refill needed in 3 days
-              </p>
-            </div>
-
-            <div className="p-4 rounded-lg bg-info-light border">
-              <div className="flex items-center space-x-2">
-                <Clock className="h-4 w-4" />
-                <span className="font-medium">
-                  Upcoming Dose
-                </span>
-              </div>
-              <p className="text-sm mt-1 opacity-90">
-                Metformin at 8:00 PM
-              </p>
-            </div>
-
-            <div className="p-4 rounded-lg bg-success-light border">
-              <div className="flex items-center space-x-2">
-                <CheckCircle2 className="h-4 w-4" />
-                <span className="font-medium">
-                  Great Progress!
-                </span>
-              </div>
-              <p className="text-sm mt-1 opacity-90">
-                7-day streak of perfect adherence
-              </p>
-            </div>
+            )}
 
             <Button className="w-full mt-4" variant="outline">
               View All Notifications

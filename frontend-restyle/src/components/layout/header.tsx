@@ -20,6 +20,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { ProgressBar } from '@/components/ui/progress-bar';
 import { useAuth } from '@/contexts/auth-context';
 import { useTheme } from '@/contexts/theme-context';
+import { TrialBannerCompact } from '@/components/premium/trial-banner';
 import {
   User,
   Settings,
@@ -67,6 +68,7 @@ export function Header() {
   return (
     <>
       <ProgressBar isLoading={isLoading} />
+      <TrialBannerCompact />
       <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between mx-2">
           <div className="flex items-center space-x-4">

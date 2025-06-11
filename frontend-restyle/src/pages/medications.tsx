@@ -12,8 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { DashboardSkeleton } from '@/components/ui/loading-skeleton';
 import { toast } from 'sonner';
 import {
@@ -30,8 +29,11 @@ import {
   Info,
   X,
 } from 'lucide-react';
-import { mockMedications } from '@/lib/mock-data';
 import { Medication } from '@/types';
+import { useMedicationLimits } from '@/hooks/useSubscription';
+import { LimitGuard } from '@/components/premium/premium-guard';
+import { useMedicationsWithFilters, useCreateMedication, useUpdateMedication, useDeleteMedication } from '@/hooks/useMedications';
+import { useAuth } from '@/hooks/useAuth';
 
 const medicationSchema = z.object({
   name: z.string().min(1, 'Medication name is required'),
@@ -41,6 +43,7 @@ const medicationSchema = z.object({
   frequency_type: z.enum(['daily', 'weekly', 'as_needed']),
   frequency_interval: z.number().min(1, 'Frequency interval must be at least 1'),
   times_per_day: z.number().min(1, 'Times per day must be at least 1').optional(),
+  specific_days: z.array(z.string()).optional(), // ✅ AÑADIR ESTO
   scheduled_times: z.array(z.string()).min(1, 'At least one scheduled time is required'),
   instructions: z.string().optional(),
   start_date: z.string().min(1, 'Start date is required'),
@@ -54,14 +57,22 @@ const medicationSchema = z.object({
 type MedicationFormData = z.infer<typeof medicationSchema>;
 
 export function MedicationsPage() {
-  const [isLoading, setIsLoading] = useState(true);
-  const [medications, setMedications] = useState<Medication[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<string>('all');
   const [editingMedication, setEditingMedication] = useState<Medication | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [medicationToDelete, setMedicationToDelete] = useState<Medication | null>(null);
   const [activeTab, setActiveTab] = useState('list');
+
+  // Use real data hooks
+  const { data: filteredMedications = [], isLoading, originalData } = useMedicationsWithFilters(searchTerm, filterType);
+  const createMedicationMutation = useCreateMedication();
+  const updateMedicationMutation = useUpdateMedication();
+  const deleteMedicationMutation = useDeleteMedication();
+
+  const { canAdd, isAtLimit, maxMedications, currentCount } = useMedicationLimits(originalData?.length || 0);
+
+  const { user } = useAuth();
 
   const {
     register,
@@ -88,27 +99,14 @@ export function MedicationsPage() {
   const timesPerDay = watch('times_per_day') || 1;
   const refillReminderEnabled = watch('refill_reminder_enabled');
 
-  useEffect(() => {
-    // Simulate loading
-    const timer = setTimeout(() => {
-      setMedications(mockMedications);
-      setIsLoading(false);
-    }, 1000);
+  console.log("filteredMedications:", filteredMedications, Array.isArray(filteredMedications));
 
-    return () => clearTimeout(timer);
-  }, []);
-
-  const filteredMedications = medications.filter(med => {
-    const matchesSearch = med.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter = filterType === 'all' || med.medication_type === filterType;
-    return matchesSearch && matchesFilter && med.active;
-  });
 
   const onSubmit = async (data: MedicationFormData) => {
     try {
       const newMedication: Medication = {
         id: editingMedication?.id || `med-${Date.now()}`,
-        user_id: 'user-1',
+        user_id: '',
         name: data.name,
         dosage: {
           amount: data.dosage_amount,
@@ -119,6 +117,7 @@ export function MedicationsPage() {
           type: data.frequency_type,
           interval: data.frequency_interval,
           times_per_day: data.times_per_day,
+          specific_days: data.specific_days || [],
         },
         scheduled_times: data.scheduled_times,
         instructions: data.instructions || '',
@@ -126,7 +125,11 @@ export function MedicationsPage() {
         end_date: data.end_date ? new Date(data.end_date).toISOString() : undefined,
         refill_reminder: {
           enabled: data.refill_reminder_enabled,
-          days_before: data.refill_reminder_days || 7,
+          threshold: data.refill_reminder_days || 7,
+          last_refill: null,
+          next_refill: null,
+          supply_amount: 0,
+          supply_unit: 'days',
         },
         side_effects_to_watch: data.side_effects_to_watch || [],
         active: true,
@@ -135,13 +138,59 @@ export function MedicationsPage() {
         updated_at: new Date().toISOString(),
       };
 
+      if (!newMedication.refill_reminder) {
+          throw new Error("Refill reminder is missing");
+        }
+
       if (editingMedication) {
-        setMedications(prev => prev.map(med => med.id === editingMedication.id ? newMedication : med));
-        toast.success('Medication updated successfully');
+        await updateMedicationMutation.mutateAsync({
+          id: editingMedication.id,
+          medication: {
+            name: newMedication.name,
+            dosage: newMedication.dosage,
+            frequency: newMedication.frequency,
+            scheduled_times: newMedication.scheduled_times,
+            instructions: newMedication.instructions,
+            start_date: newMedication.start_date,
+            end_date: newMedication.end_date,
+            refill_reminder: {
+              enabled: newMedication.refill_reminder?.enabled || false,
+              days_before: newMedication.refill_reminder?.threshold || 7, 
+              threshold: newMedication.refill_reminder?.threshold || 7,
+              last_refill: newMedication.refill_reminder?.last_refill || null,
+              next_refill: newMedication.refill_reminder?.next_refill || null,
+              supply_amount: newMedication.refill_reminder?.supply_amount || 0,
+              supply_unit: newMedication.refill_reminder?.supply_unit || 'days',
+            },
+            side_effects_to_watch: newMedication.side_effects_to_watch,
+            medication_type: newMedication.medication_type,
+          },
+        });
         setEditingMedication(null);
       } else {
-        setMedications(prev => [...prev, newMedication]);
-        toast.success('Medication added successfully');
+        await createMedicationMutation.mutateAsync({
+          user_id: user?.id ?? '',
+          name: newMedication.name,
+          dosage: newMedication.dosage,
+          frequency: newMedication.frequency,
+          scheduled_times: newMedication.scheduled_times,
+          instructions: newMedication.instructions,
+          start_date: newMedication.start_date,
+          end_date: newMedication.end_date,
+          refill_reminder: newMedication.refill_reminder?.enabled
+            ? {
+                enabled: newMedication.refill_reminder.enabled,
+                threshold: newMedication.refill_reminder.threshold,
+                days_before: newMedication.refill_reminder.threshold,
+                last_refill: newMedication.refill_reminder.last_refill,
+                next_refill: newMedication.refill_reminder.next_refill,
+                supply_amount: newMedication.refill_reminder.supply_amount,
+                supply_unit: newMedication.refill_reminder.supply_unit,
+              }
+            : undefined,
+          side_effects_to_watch: newMedication.side_effects_to_watch,
+          medication_type: newMedication.medication_type,
+        });
       }
 
       reset();
@@ -159,31 +208,34 @@ export function MedicationsPage() {
     setValue('dosage_form', medication.dosage.form);
     setValue('frequency_type', medication.frequency.type);
     setValue('frequency_interval', medication.frequency.interval);
-    setValue('times_per_day', medication.frequency.times_per_day || 1);
+    setValue('times_per_day', medication.frequency.times_per_day ?? 1);
+    setValue('specific_days', medication.frequency.specific_days ?? []); // aquí el cambio
     setValue('scheduled_times', medication.scheduled_times);
     setValue('instructions', medication.instructions || '');
     setValue('start_date', medication.start_date.split('T')[0]);
     setValue('end_date', medication.end_date ? medication.end_date.split('T')[0] : '');
     setValue('medication_type', medication.medication_type || 'prescription');
-    setValue('side_effects_to_watch', medication.side_effects_to_watch);
-    setValue('refill_reminder_enabled', medication.refill_reminder?.enabled || false);
-    setValue('refill_reminder_days', medication.refill_reminder?.days_before || 7);
+    setValue('side_effects_to_watch', medication.side_effects_to_watch ?? []);
+    setValue('refill_reminder_enabled', medication.refill_reminder?.enabled ?? false);
+    setValue('refill_reminder_days', medication.refill_reminder?.threshold ?? 7); // asumiendo que usas 'days_before'
     setActiveTab('create');
   };
+
 
   const handleDelete = (medication: Medication) => {
     setMedicationToDelete(medication);
     setIsDeleteDialogOpen(true);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (medicationToDelete) {
-      setMedications(prev => prev.map(med => 
-        med.id === medicationToDelete.id ? { ...med, active: false } : med
-      ));
-      toast.success('Medication deleted successfully');
-      setIsDeleteDialogOpen(false);
-      setMedicationToDelete(null);
+      try {
+        await deleteMedicationMutation.mutateAsync(medicationToDelete.id);
+        setIsDeleteDialogOpen(false);
+        setMedicationToDelete(null);
+      } catch (error) {
+        console.error('Failed to delete medication:', error);
+      }
     }
   };
 
@@ -220,10 +272,23 @@ export function MedicationsPage() {
             Manage your medication schedule and track your prescriptions
           </p>
         </div>
-        <Button onClick={() => setActiveTab('create')} className="flex items-center gap-2">
-          <Plus className="h-4 w-4" />
-          Add Medication
-        </Button>
+        {canAdd ? (
+          <Button onClick={() => setActiveTab('create')} className="flex items-center gap-2">
+            <Plus className="h-4 w-4" />
+            Add Medication
+          </Button>
+        ) : (
+          <LimitGuard
+            currentCount={currentCount}
+            maxCount={maxMedications}
+            itemName="medication"
+          >
+            <Button disabled className="flex items-center gap-2">
+              <Plus className="h-4 w-4" />
+              Add Medication
+            </Button>
+          </LimitGuard>
+        )}
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
@@ -293,7 +358,7 @@ export function MedicationsPage() {
                 </CardContent>
               </Card>
             ) : (
-              filteredMedications.map((medication) => (
+              filteredMedications?.map((medication) => (
                 <Card key={medication.id} className="hover:shadow-md transition-shadow">
                   <CardHeader>
                     <div className="flex items-start justify-between">
@@ -386,7 +451,7 @@ export function MedicationsPage() {
                     {medication.refill_reminder?.enabled && (
                       <div className="flex items-center gap-2 text-sm text-blue-600">
                         <CheckCircle2 className="h-4 w-4" />
-                        <span>Refill reminder enabled ({medication.refill_reminder.days_before} days before)</span>
+                        <span>Refill reminder enabled ({medication.refill_reminder.threshold} days before)</span>
                       </div>
                     )}
                   </CardContent>

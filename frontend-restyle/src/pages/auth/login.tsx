@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -8,9 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/auth-context';
-import { Pill, AlertCircle, Loader2 } from 'lucide-react';
+import { Pill, Loader2 } from 'lucide-react';
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -24,7 +22,6 @@ export function LoginPage() {
   const { login, isLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [error, setError] = useState<string | null>(null);
 
   const from = location.state?.from?.pathname || '/dashboard';
 
@@ -42,17 +39,16 @@ export function LoginPage() {
 
   const onSubmit = async (data: LoginFormData) => {
     try {
-      setError(null);
-      await login(data.email, data.password);
+      await login(data.email, data.password, from);
       navigate(from, { replace: true });
     } catch (err) {
-      setError('Invalid email or password. Please try again.');
+      console.error('Login error:', err);
+
     }
   };
 
-  const handleGoogleLogin = () => {
-    // Simulate Google OAuth
-    setError('Google OAuth integration would be implemented here');
+  const handleGoogleLogin = async () => {
+    return;
   };
 
   return (
@@ -69,12 +65,12 @@ export function LoginPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {error && (
+          {/* {error && (
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>{error}</AlertDescription>
             </Alert>
-          )}
+          )} */}
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-2">

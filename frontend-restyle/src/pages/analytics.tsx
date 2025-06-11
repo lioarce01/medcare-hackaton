@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -36,9 +36,12 @@ import {
   Trophy,
   Medal,
   Crown,
+  AlertTriangle,
 } from 'lucide-react';
-import { format, subDays, startOfWeek, endOfWeek, eachDayOfInterval } from 'date-fns';
-import { mockMedications, generateAdherenceData } from '@/lib/mock-data';
+import { format } from 'date-fns';
+import { PremiumGuard } from '@/components/premium/premium-guard';
+import { useAnalyticsOverview, useAnalyticsInsights } from '@/hooks/useAnalyticsData';
+import { useActiveMedications } from '@/hooks/useMedications';
 
 // Register Chart.js components
 ChartJS.register(
@@ -54,137 +57,20 @@ ChartJS.register(
   TimeScale
 );
 
-interface AnalyticsData {
-  dailyAdherence: any[];
-  weeklyAdherence: any[];
-  monthlyAdherence: any[];
-  medicationBreakdown: any[];
-  performanceRanking: 'S' | 'A' | 'B' | 'C' | 'D' | 'E';
-  streakData: {
-    current: number;
-    longest: number;
-    thisMonth: number;
-  };
-  insights: Array<{
-    type: 'positive' | 'warning' | 'info';
-    title: string;
-    description: string;
-    icon: React.ReactNode;
-  }>;
-}
-
 export function AnalyticsPage() {
-  const [isLoading, setIsLoading] = useState(true);
-  const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
   const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d'>('30d');
   const [selectedMedication, setSelectedMedication] = useState<string>('all');
 
-  useEffect(() => {
-    // Simulate loading and generate analytics data
-    const timer = setTimeout(() => {
-      generateAnalyticsData();
-      setIsLoading(false);
-    }, 1000);
+  // Use real data hooks
+  const { data: analyticsData, isLoading } = useAnalyticsOverview(timeRange);
+  const { data: insights } = useAnalyticsInsights();
+  const { data: medications } = useActiveMedications();
 
-    return () => clearTimeout(timer);
-  }, [timeRange, selectedMedication]);
-
-  const generateAnalyticsData = () => {
-    const days = timeRange === '7d' ? 7 : timeRange === '30d' ? 30 : 90;
-    const adherenceData = generateAdherenceData(days);
-
-    // Generate daily adherence chart data
-    const dailyAdherence = {
-      labels: adherenceData.map(d => format(new Date(d.date), 'MMM d')),
-      datasets: [
-        {
-          label: 'Adherence %',
-          data: adherenceData.map(d => d.percentage),
-          backgroundColor: adherenceData.map(d => 
-            d.percentage >= 90 ? 'rgba(34, 197, 94, 0.8)' :
-            d.percentage >= 70 ? 'rgba(234, 179, 8, 0.8)' :
-            d.percentage >= 50 ? 'rgba(249, 115, 22, 0.8)' :
-            'rgba(239, 68, 68, 0.8)'
-          ),
-          borderColor: adherenceData.map(d => 
-            d.percentage >= 90 ? 'rgb(34, 197, 94)' :
-            d.percentage >= 70 ? 'rgb(234, 179, 8)' :
-            d.percentage >= 50 ? 'rgb(249, 115, 22)' :
-            'rgb(239, 68, 68)'
-          ),
-          borderWidth: 2,
-          borderRadius: 4,
-        }
-      ]
-    };
-
-    // Generate medication-specific progress
-    const medicationProgress = mockMedications.map(med => {
-      const adherenceRate = 75 + Math.random() * 20; // 75-95% range
-      return {
-        medication: med,
-        adherenceRate: Math.round(adherenceRate),
-        totalDoses: days * (med.frequency.times_per_day || 1),
-        takenDoses: Math.round((days * (med.frequency.times_per_day || 1)) * (adherenceRate / 100)),
-      };
-    });
-
-    // Generate weekly trends
-    const weeklyData = [];
-    for (let i = 0; i < Math.floor(days / 7); i++) {
-      const weekStart = subDays(new Date(), (i + 1) * 7);
-      const weekAdherence = 70 + Math.random() * 25; // 70-95% range
-      weeklyData.unshift({
-        week: format(weekStart, 'MMM d'),
-        adherence: Math.round(weekAdherence),
-      });
-    }
-
-    // Calculate performance ranking
-    const overallAdherence = adherenceData.reduce((sum, d) => sum + d.percentage, 0) / adherenceData.length;
-    const ranking = 
-      overallAdherence >= 95 ? 'S' :
-      overallAdherence >= 90 ? 'A' :
-      overallAdherence >= 80 ? 'B' :
-      overallAdherence >= 70 ? 'C' :
-      overallAdherence >= 60 ? 'D' : 'E';
-
-    // Generate insights
-    const insights = [
-      {
-        type: 'positive' as const,
-        title: 'Excellent Morning Adherence',
-        description: 'You have a 95% adherence rate for morning medications',
-        icon: <TrendingUp className="h-4 w-4" />,
-      },
-      {
-        type: 'warning' as const,
-        title: 'Evening Doses Need Attention',
-        description: 'Evening medication adherence is 15% lower than morning',
-        icon: <Clock className="h-4 w-4" />,
-      },
-      {
-        type: 'info' as const,
-        title: 'Consistent Weekly Pattern',
-        description: 'Your adherence is most consistent on weekdays',
-        icon: <Calendar className="h-4 w-4" />,
-      },
-    ];
-
-    setAnalyticsData({
-      dailyAdherence,
-      weeklyAdherence: weeklyData,
-      monthlyAdherence: adherenceData,
-      medicationBreakdown: medicationProgress,
-      performanceRanking: ranking,
-      streakData: {
-        current: 12,
-        longest: 28,
-        thisMonth: 25,
-      },
-      insights,
-    });
-  };
+  // Combine insights with analytics data
+  const combinedAnalyticsData = analyticsData ? {
+    ...analyticsData,
+    insights: insights || [],
+  } : null;
 
   const getRankingColor = (rank: string) => {
     switch (rank) {
@@ -253,8 +139,18 @@ export function AnalyticsPage() {
     return <DashboardSkeleton />;
   }
 
-  if (!analyticsData) {
-    return <div>Error loading analytics data</div>;
+  if (!combinedAnalyticsData) {
+    return (
+      <div className="space-y-6">
+        <div className="text-center py-12">
+          <BarChart3 className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+          <h3 className="text-lg font-semibold mb-2">No Analytics Data Available</h3>
+          <p className="text-muted-foreground">
+            Start taking your medications to see analytics and insights.
+          </p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -283,9 +179,9 @@ export function AnalyticsPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Medications</SelectItem>
-              {mockMedications.map(med => (
+              {medications?.map(med => (
                 <SelectItem key={med.id} value={med.id}>{med.name}</SelectItem>
-              ))}
+              )) || []}
             </SelectContent>
           </Select>
         </div>
@@ -296,18 +192,18 @@ export function AnalyticsPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Performance Rank</CardTitle>
-            {getRankingIcon(analyticsData.performanceRanking)}
+            {getRankingIcon(combinedAnalyticsData.performanceRanking)}
           </CardHeader>
           <CardContent>
-            <div className={`text-4xl font-bold ${getRankingColor(analyticsData.performanceRanking)} w-16 h-16 rounded-full flex items-center justify-center mb-2`}>
-              {analyticsData.performanceRanking}
+            <div className={`text-4xl font-bold ${getRankingColor(combinedAnalyticsData.performanceRanking)} w-16 h-16 rounded-full flex items-center justify-center mb-2`}>
+              {combinedAnalyticsData.performanceRanking}
             </div>
             <p className="text-xs text-muted-foreground">
-              {analyticsData.performanceRanking === 'S' ? 'Perfect' :
-               analyticsData.performanceRanking === 'A' ? 'Excellent' :
-               analyticsData.performanceRanking === 'B' ? 'Good' :
-               analyticsData.performanceRanking === 'C' ? 'Fair' :
-               analyticsData.performanceRanking === 'D' ? 'Needs Improvement' :
+              {combinedAnalyticsData.performanceRanking === 'S' ? 'Perfect' :
+               combinedAnalyticsData.performanceRanking === 'A' ? 'Excellent' :
+               combinedAnalyticsData.performanceRanking === 'B' ? 'Good' :
+               combinedAnalyticsData.performanceRanking === 'C' ? 'Fair' :
+               combinedAnalyticsData.performanceRanking === 'D' ? 'Needs Improvement' :
                'Poor'} adherence
             </p>
           </CardContent>
@@ -319,7 +215,7 @@ export function AnalyticsPage() {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">{analyticsData.streakData.current}</div>
+            <div className="text-2xl font-bold text-green-600">{combinedAnalyticsData.streakData.current}</div>
             <p className="text-xs text-muted-foreground">
               days of perfect adherence
             </p>
@@ -332,7 +228,7 @@ export function AnalyticsPage() {
             <Trophy className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{analyticsData.streakData.longest}</div>
+            <div className="text-2xl font-bold text-blue-600">{combinedAnalyticsData.streakData.longest}</div>
             <p className="text-xs text-muted-foreground">
               personal best record
             </p>
@@ -345,7 +241,7 @@ export function AnalyticsPage() {
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-purple-600">{analyticsData.streakData.thisMonth}</div>
+            <div className="text-2xl font-bold text-purple-600">{combinedAnalyticsData.streakData.thisMonth}</div>
             <p className="text-xs text-muted-foreground">
               days with perfect adherence
             </p>
@@ -376,7 +272,7 @@ export function AnalyticsPage() {
               </CardHeader>
               <CardContent>
                 <div className="h-80">
-                  <Bar data={analyticsData.dailyAdherence} options={chartOptions} />
+                  <Bar data={combinedAnalyticsData.dailyAdherence} options={chartOptions} />
                 </div>
               </CardContent>
             </Card>
@@ -394,19 +290,19 @@ export function AnalyticsPage() {
               </CardHeader>
               <CardContent>
                 <div className="h-80">
-                  <Line 
+                  <Line
                     data={{
-                      labels: analyticsData.weeklyAdherence.map(w => w.week),
+                      labels: combinedAnalyticsData.weeklyAdherence.map(w => w.week),
                       datasets: [{
                         label: 'Weekly Adherence %',
-                        data: analyticsData.weeklyAdherence.map(w => w.adherence),
+                        data: combinedAnalyticsData.weeklyAdherence.map(w => w.adherence),
                         borderColor: 'rgb(59, 130, 246)',
                         backgroundColor: 'rgba(59, 130, 246, 0.1)',
                         fill: true,
                         tension: 0.4,
                       }]
-                    }} 
-                    options={lineChartOptions} 
+                    }}
+                    options={lineChartOptions}
                   />
                 </div>
               </CardContent>
@@ -450,8 +346,9 @@ export function AnalyticsPage() {
         </TabsContent>
 
         <TabsContent value="trends" className="space-y-6">
-          {/* Time-based Analysis */}
-          <div className="grid gap-6 lg:grid-cols-2">
+          <PremiumGuard feature="advancedAnalytics">
+            {/* Time-based Analysis */}
+            <div className="grid gap-6 lg:grid-cols-2">
             <Card>
               <CardHeader>
                 <CardTitle>Time of Day Analysis</CardTitle>
@@ -542,11 +439,11 @@ export function AnalyticsPage() {
               <div className="h-96">
                 <Line 
                   data={{
-                    labels: analyticsData.monthlyAdherence.map(d => format(new Date(d.date), 'MMM d')),
+                    labels: combinedAnalyticsData.monthlyAdherence.map(d => format(new Date(d.date), 'MMM d')),
                     datasets: [
                       {
                         label: 'Daily Adherence %',
-                        data: analyticsData.monthlyAdherence.map(d => d.percentage),
+                        data: combinedAnalyticsData.monthlyAdherence.map(d => d.percentage),
                         borderColor: 'rgb(59, 130, 246)',
                         backgroundColor: 'rgba(59, 130, 246, 0.1)',
                         fill: true,
@@ -554,10 +451,10 @@ export function AnalyticsPage() {
                       },
                       {
                         label: '7-Day Moving Average',
-                        data: analyticsData.monthlyAdherence.map((d, i) => {
+                        data: combinedAnalyticsData.monthlyAdherence.map((d, i) => {
                           const start = Math.max(0, i - 3);
-                          const end = Math.min(analyticsData.monthlyAdherence.length, i + 4);
-                          const slice = analyticsData.monthlyAdherence.slice(start, end);
+                          const end = Math.min(combinedAnalyticsData.monthlyAdherence.length, i + 4);
+                          const slice = combinedAnalyticsData.monthlyAdherence.slice(start, end);
                           return slice.reduce((sum, item) => sum + item.percentage, 0) / slice.length;
                         }),
                         borderColor: 'rgb(239, 68, 68)',
@@ -573,12 +470,13 @@ export function AnalyticsPage() {
               </div>
             </CardContent>
           </Card>
+          </PremiumGuard>
         </TabsContent>
 
         <TabsContent value="medications" className="space-y-6">
           {/* Medication-Specific Progress */}
           <div className="grid gap-4">
-            {analyticsData.medicationBreakdown.map((med, index) => (
+            {combinedAnalyticsData.medicationBreakdown.map((med, index) => (
               <Card key={index}>
                 <CardHeader>
                   <div className="flex items-center justify-between">
@@ -637,9 +535,10 @@ export function AnalyticsPage() {
         </TabsContent>
 
         <TabsContent value="insights" className="space-y-6">
-          {/* AI-Generated Insights */}
-          <div className="grid gap-4">
-            {analyticsData.insights.map((insight, index) => (
+          <PremiumGuard feature="riskPredictions">
+            {/* AI-Generated Insights */}
+            <div className="grid gap-4">
+            {combinedAnalyticsData.insights.map((insight, index) => (
               <Card key={index} className={
                 insight.type === 'positive' ? 'border-green-200 bg-green-50 dark:bg-green-950' :
                 insight.type === 'warning' ? 'border-yellow-200 bg-yellow-50 dark:bg-yellow-950' :
@@ -651,7 +550,13 @@ export function AnalyticsPage() {
                     insight.type === 'warning' ? 'text-yellow-800 dark:text-yellow-200' :
                     'text-blue-800 dark:text-blue-200'
                   }`}>
-                    {insight.icon}
+                    {typeof insight.icon === 'string' ? (
+                      insight.icon === 'Clock' ? <Clock className="h-4 w-4" /> :
+                      insight.icon === 'TrendingUp' ? <TrendingUp className="h-4 w-4" /> :
+                      insight.icon === 'Calendar' ? <Calendar className="h-4 w-4" /> :
+                      insight.icon === 'AlertTriangle' ? <AlertTriangle className="h-4 w-4" /> :
+                      <Activity className="h-4 w-4" />
+                    ) : insight.icon}
                     {insight.title}
                   </CardTitle>
                 </CardHeader>
@@ -762,6 +667,7 @@ export function AnalyticsPage() {
               </div>
             </CardContent>
           </Card>
+          </PremiumGuard>
         </TabsContent>
       </Tabs>
     </div>

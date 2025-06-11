@@ -76,8 +76,14 @@ export function RegisterPage() {
     }
   };
 
-  const handleGoogleRegister = () => {
-    setError('Google OAuth integration would be implemented here');
+  const handleGoogleRegister = async () => {
+    try {
+      setError(null);
+      // TODO: Implement Google OAuth with Supabase
+      setError('Google OAuth integration coming soon');
+    } catch (err) {
+      setError('Failed to sign up with Google');
+    }
   };
 
   const passwordChecks = [
@@ -179,6 +185,20 @@ export function RegisterPage() {
               )}
               {errors.password && (
                 <p className="text-sm text-destructive">{errors.password.message}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                placeholder="Confirm your password"
+                {...register('confirmPassword')}
+                aria-invalid={errors.confirmPassword ? 'true' : 'false'}
+              />
+              {errors.confirmPassword && (
+                <p className="text-sm text-destructive">{errors.confirmPassword.message}</p>
               )}
             </div>
 

@@ -4,6 +4,7 @@ import { Toaster } from '@/components/ui/sonner';
 import { AuthProvider } from '@/contexts/auth-context';
 import { ThemeProvider } from '@/contexts/theme-context';
 import { ProtectedRoute } from '@/components/auth/protected-route';
+import { useRealtimeSubscriptions } from '@/hooks/useRealtime';
 
 // Pages
 import { LandingPage } from '@/pages/landing';
@@ -18,65 +19,95 @@ import { ProfilePage } from '@/pages/profile';
 
 import './App.css';
 
-const queryClient = new QueryClient();
+export const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      gcTime: 1000 * 60 * 30, // 30 minutes
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
+
+// Component to handle real-time subscriptions
+function RealtimeProvider({ children }: { children: React.ReactNode }) {
+  useRealtimeSubscriptions();
+  return <>{children}</>;
+}
+
+// Component to handle auth redirects for public routes
+function PublicRoute({ children }: { children: React.ReactNode }) {
+  // Este componente podría redirigir usuarios autenticados lejos de login/register
+  return <>{children}</>;
+}
 
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <AuthProvider>
-          <Router>
-            <Routes>
-              {/* Public Routes */}
-              <Route path="/" element={<LandingPage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/register" element={<RegisterPage />} />
-              
-              {/* Protected Routes */}
-              <Route path="/dashboard" element={
-                <ProtectedRoute>
-                  <DashboardPage />
-                </ProtectedRoute>
-              } />
-              
-              <Route path="/medications" element={
-                <ProtectedRoute>
-                  <MedicationsPage />
-                </ProtectedRoute>
-              } />
-              
-              <Route path="/adherence" element={
-                <ProtectedRoute>
-                  <AdherencePage />
-                </ProtectedRoute>
-              } />
-              
-              {/* Placeholder routes for future implementation */}
-              <Route path="/analytics" element={
-                <ProtectedRoute>
-                  <AnalyticsPage />
-                </ProtectedRoute>
-              } />
-              
-              <Route path="/reminders" element={
-                <ProtectedRoute>
-                  <RemindersPage />
-                </ProtectedRoute>
-              } />
+      <Router>
+        <ThemeProvider>
+          <AuthProvider>
+            <RealtimeProvider>
+              <Routes>
+                {/* Public Routes */}
+                <Route path="/" element={<LandingPage />} />
+                <Route path="/login" element={
+                  <PublicRoute>
+                    <LoginPage />
+                  </PublicRoute>
+                } />
+                <Route path="/register" element={
+                  <PublicRoute>
+                    <RegisterPage />
+                  </PublicRoute>
+                } />
+                
+                {/* Protected Routes */}
+                <Route path="/dashboard" element={
+                  <ProtectedRoute>
+                    <DashboardPage />
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/medications" element={
+                  <ProtectedRoute>
+                    <MedicationsPage />
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/adherence" element={
+                  <ProtectedRoute>
+                    <AdherencePage />
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/analytics" element={
+                  <ProtectedRoute>
+                    <AnalyticsPage />
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/reminders" element={
+                  <ProtectedRoute>
+                    <RemindersPage />
+                  </ProtectedRoute>
+                } />
 
-              <Route path="/profile" element={
-                <ProtectedRoute>
-                  <ProfilePage />
-                </ProtectedRoute>
-              } />
-              
-              {/* Redirect unknown routes */}
-              <Route path="*" element={<Navigate to="/\" replace />} />
-            </Routes>
-          </Router>
-          <Toaster />
-        </AuthProvider>
-      </ThemeProvider>
+                <Route path="/profile" element={
+                  <ProtectedRoute>
+                    <ProfilePage />
+                  </ProtectedRoute>
+                } />
+                
+                {/* Redirect unknown routes */}
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+              <Toaster />
+            </RealtimeProvider>
+          </AuthProvider>
+        </ThemeProvider>
+      </Router>
     </QueryClientProvider>
   );
 }
