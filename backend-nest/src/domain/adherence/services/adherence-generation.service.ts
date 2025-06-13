@@ -5,6 +5,7 @@ import { DateCalculationService } from './date-calculation.service';
 import { v4 as uuidv4 } from 'uuid';
 
 export interface AdherenceGenerationData {
+  id?: string;
   user_id: string;
   medication_id: string;
   scheduled_time: string;
@@ -15,7 +16,9 @@ export interface AdherenceGenerationData {
 
 @Injectable()
 export class AdherenceGenerationService {
-  constructor(private readonly dateCalculationService: DateCalculationService) {}
+  constructor(
+    private readonly dateCalculationService: DateCalculationService,
+  ) {}
 
   /**
    * Generate adherence records for a newly created medication
@@ -85,7 +88,9 @@ export class AdherenceGenerationService {
               status: 'pending',
             };
 
-            adherenceRecords.push(this.createAdherenceEntity(todayAdherenceData));
+            adherenceRecords.push(
+              this.createAdherenceEntity(todayAdherenceData),
+            );
           }
         }
       }
@@ -94,9 +99,8 @@ export class AdherenceGenerationService {
       for (let i = 0; i < localScheduledTimes.length; i++) {
         const localTime = localScheduledTimes[i];
         const utcTime = utcScheduledTimes[i];
-        const nextDate = this.dateCalculationService.getNextDailyOccurrence(
-          localTime,
-        );
+        const nextDate =
+          this.dateCalculationService.getNextDailyOccurrence(localTime);
 
         // Create adherence record with the properly converted UTC time
         const adherenceData: AdherenceGenerationData = {
@@ -119,8 +123,10 @@ export class AdherenceGenerationService {
    * Create an Adherence entity from generation data
    */
   private createAdherenceEntity(data: AdherenceGenerationData): Adherence {
+    const id = data.id || uuidv4();
+
     return new Adherence(
-      uuidv4(), // Generate new UUID
+      id,
       data.user_id,
       data.medication_id,
       data.scheduled_time,

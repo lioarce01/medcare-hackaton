@@ -14,9 +14,11 @@ import { PrismaService } from '../../infrastructure/prisma/prisma.service';
 import { GenerateDailyAdherenceUseCase } from 'src/application/scheduler/generate-daily-adherence.usecase';
 import { AdherenceGenerationService } from 'src/domain/adherence/services/adherence-generation.service';
 import { DateCalculationService } from 'src/domain/adherence/services/date-calculation.service';
+import { SchedulerController } from './http/controllers/scheduler.controller';
 
 @Module({
   imports: [ScheduleModule.forRoot()],
+  controllers: [SchedulerController],
   providers: [
     PrismaService,
     AppSchedulerService,

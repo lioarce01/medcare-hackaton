@@ -35,7 +35,9 @@ export class SupabaseAdherenceRepository implements AdherenceRepository {
       },
     });
 
-    return AdherenceMapper.toDomain(created);
+    const domainEntity = AdherenceMapper.toDomain(created);
+
+    return domainEntity;
   }
 
   async update(adherence: Adherence): Promise<Adherence> {
