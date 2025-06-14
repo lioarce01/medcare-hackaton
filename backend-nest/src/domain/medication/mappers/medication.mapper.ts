@@ -2,6 +2,42 @@ import { Medication } from '../entities/medication.entity';
 
 export class MedicationMapper {
   static toDomain(prismaMedication: any): Medication {
+    // Asegurar que refill_reminder es un objeto o null
+    let refillReminder = null;
+    if (
+      prismaMedication.refill_reminder &&
+      typeof prismaMedication.refill_reminder === 'object' &&
+      !Array.isArray(prismaMedication.refill_reminder)
+    ) {
+      refillReminder = prismaMedication.refill_reminder;
+    }
+
+    // Asegurar que side_effects_to_watch es un array
+    const sideEffects = Array.isArray(prismaMedication.side_effects_to_watch)
+      ? prismaMedication.side_effects_to_watch
+      : [];
+
+    // Convertir fechas Date a ISO string
+    const startDate =
+      prismaMedication.start_date instanceof Date
+        ? prismaMedication.start_date.toISOString()
+        : prismaMedication.start_date;
+
+    const endDate =
+      prismaMedication.end_date instanceof Date
+        ? prismaMedication.end_date.toISOString()
+        : prismaMedication.end_date;
+
+    const createdAt =
+      prismaMedication.created_at instanceof Date
+        ? prismaMedication.created_at.toISOString()
+        : prismaMedication.created_at;
+
+    const updatedAt =
+      prismaMedication.updated_at instanceof Date
+        ? prismaMedication.updated_at.toISOString()
+        : prismaMedication.updated_at;
+
     const medication = new Medication(
       prismaMedication.id,
       prismaMedication.user_id,
@@ -9,6 +45,7 @@ export class MedicationMapper {
       prismaMedication.dosage,
       prismaMedication.frequency,
       prismaMedication.scheduled_times,
+      prismaMedication.user?.settings?.timezone || 'UTC', // PASÁ userTimezone acá
       prismaMedication.instructions,
       prismaMedication.start_date,
       prismaMedication.end_date,

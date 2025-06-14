@@ -36,7 +36,7 @@ export class MedicationController {
   ) {}
 
   @Get()
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   async getAll(@GetUserId() userId: string) {
     const medications = await this.getMedicationsByUserUseCase.execute(userId);
     return MedicationPresenter.toHttpList(medications);
