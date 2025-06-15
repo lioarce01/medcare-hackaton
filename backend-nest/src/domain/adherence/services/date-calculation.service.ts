@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { DateTime } from 'luxon';
 
 @Injectable()
 export class DateCalculationService {
@@ -89,10 +90,26 @@ export class DateCalculationService {
    * Convert local time to UTC (simplified version)
    * In a real implementation, you'd use a proper timezone library like date-fns-tz
    */
-  convertLocalTimeToUTC(localTime: string, timezone: string): string {
-    // For now, return the local time as is
-    // In production, implement proper timezone conversion
-    return localTime;
+
+  convertLocalTimeToUTC(
+    localTime: string,
+    timezone: string,
+    localDate: Date,
+  ): Date {
+    const [hours, minutes] = localTime.split(':').map(Number);
+
+    // Construir DateTime con la fecha y hora local en la zona horaria del usuario
+    const localDateTime = DateTime.fromJSDate(localDate, {
+      zone: timezone,
+    }).set({
+      hour: hours,
+      minute: minutes,
+      second: 0,
+      millisecond: 0,
+    });
+
+    // Convertir a UTC y devolver como objeto Date
+    return localDateTime.toUTC().toJSDate();
   }
 
   /**

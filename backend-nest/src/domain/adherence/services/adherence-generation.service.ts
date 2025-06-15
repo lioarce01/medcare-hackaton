@@ -8,8 +8,8 @@ export interface AdherenceGenerationData {
   id?: string;
   user_id: string;
   medication_id: string;
-  scheduled_time: string;
-  scheduled_date: Date;
+  scheduled_time: string; // Hora UTC en formato HH:mm
+  scheduled_date: Date; // Fecha y hora UTC completa
   user_timezone?: string;
   status: string;
 }
@@ -20,9 +20,6 @@ export class AdherenceGenerationService {
     private readonly dateCalculationService: DateCalculationService,
   ) {}
 
-  /**
-   * Generate adherence records for a newly created medication
-   */
   generateAdherenceRecords(
     medication: Medication,
     userTimezone: string = 'UTC',
@@ -32,96 +29,73 @@ export class AdherenceGenerationService {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    // Ensure scheduled times are in 24-hour format
+    // Aseguramos horario 24h para todos los scheduled_times
     const localScheduledTimes = medication.scheduled_times.map((time) =>
       this.dateCalculationService.ensure24HourFormat(time),
     );
 
-    // Convert local times to UTC for storage
-    const utcScheduledTimes = localScheduledTimes.map((time: string) =>
-      this.dateCalculationService.convertLocalTimeToUTC(time, userTimezone),
-    );
+    const pushAdherence = (localTime: string, scheduledDateLocal: Date) => {
+      const utcDateTime: Date =
+        this.dateCalculationService.convertLocalTimeToUTC(
+          localTime,
+          userTimezone,
+          scheduledDateLocal,
+        );
 
-    // If medication has specific days (e.g., "every Thursday")
+      // Extraemos hora en formato HH:mm desde Date UTC
+      const utcTimeStr = new Date(utcDateTime).toISOString().slice(11, 16); // HH:mm
+
+      adherenceRecords.push(
+        this.createAdherenceEntity({
+          user_id: medication.user_id,
+          medication_id: medication.id,
+          scheduled_time: utcTimeStr,
+          scheduled_date: utcDateTime,
+          user_timezone: userTimezone,
+          status: 'pending',
+        }),
+      );
+    };
+
     if (
       medication.frequency.specific_days &&
       medication.frequency.specific_days.length > 0
     ) {
-      // For each specific day, create an adherence record starting from the next occurrence
       for (const day of medication.frequency.specific_days) {
-        for (let i = 0; i < localScheduledTimes.length; i++) {
-          const localTime = localScheduledTimes[i];
-          const utcTime = utcScheduledTimes[i];
+        for (const localTime of localScheduledTimes) {
           const nextDate = this.dateCalculationService.getNextOccurrence(
             day,
             localTime,
           );
 
-          // Create adherence record with the properly converted UTC time
-          const adherenceData: AdherenceGenerationData = {
-            user_id: medication.user_id,
-            medication_id: medication.id,
-            scheduled_time: utcTime, // This now contains the correct UTC time
-            scheduled_date: nextDate,
-            user_timezone: userTimezone,
-            status: 'pending',
-          };
+          pushAdherence(localTime, nextDate);
 
-          adherenceRecords.push(this.createAdherenceEntity(adherenceData));
-
-          // If the next occurrence is today and different from the calculated next date
+          // Verificar si la dosis de hoy no está creada y es válida
           const todayOccurrence = new Date(today);
           const [hours, minutes] = localTime.split(':').map(Number);
           todayOccurrence.setHours(hours, minutes, 0, 0);
 
           if (
-            nextDate.toDateString() !== today.toDateString() &&
-            todayOccurrence > now &&
-            todayOccurrence.getDay() === today.getDay()
+            nextDate.toDateString() !== today.toDateString() && // nextDate no es hoy
+            todayOccurrence > now && // la hora hoy no pasó aún
+            todayOccurrence.getDay() === today.getDay() // es el mismo día de la semana
           ) {
-            const todayAdherenceData: AdherenceGenerationData = {
-              user_id: medication.user_id,
-              medication_id: medication.id,
-              scheduled_time: utcTime,
-              scheduled_date: today,
-              user_timezone: userTimezone,
-              status: 'pending',
-            };
-
-            adherenceRecords.push(
-              this.createAdherenceEntity(todayAdherenceData),
-            );
+            pushAdherence(localTime, today);
           }
         }
       }
     } else {
-      // For daily medications, create records starting from the next occurrence
-      for (let i = 0; i < localScheduledTimes.length; i++) {
-        const localTime = localScheduledTimes[i];
-        const utcTime = utcScheduledTimes[i];
+      for (const localTime of localScheduledTimes) {
         const nextDate =
           this.dateCalculationService.getNextDailyOccurrence(localTime);
 
-        // Create adherence record with the properly converted UTC time
-        const adherenceData: AdherenceGenerationData = {
-          user_id: medication.user_id,
-          medication_id: medication.id,
-          scheduled_time: utcTime, // This now contains the correct UTC time
-          scheduled_date: nextDate,
-          user_timezone: userTimezone,
-          status: 'pending',
-        };
-
-        adherenceRecords.push(this.createAdherenceEntity(adherenceData));
+        pushAdherence(localTime, nextDate);
       }
     }
 
     return adherenceRecords;
   }
 
-  /**
-   * Create an Adherence entity from generation data
-   */
   private createAdherenceEntity(data: AdherenceGenerationData): Adherence {
     const id = data.id || uuidv4();
 
