@@ -27,7 +27,7 @@ export interface CreateMedicationDto {
     next_refill?: string | null;
     supply_amount: number;
     supply_unit: string;
-  };
+  } | null;
   side_effects_to_watch: string[];
   medication_type?: "prescription" | "otc" | "supplement";
 }

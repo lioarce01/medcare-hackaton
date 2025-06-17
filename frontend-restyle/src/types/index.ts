@@ -97,7 +97,7 @@ export interface Medication {
     next_refill?: string | null;
     supply_amount: number;
     supply_unit: string;
-  };
+  } | null;
   side_effects_to_watch: string[];
   active: boolean;
   medication_type?: "prescription" | "otc" | "supplement";

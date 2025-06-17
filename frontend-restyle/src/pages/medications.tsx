@@ -52,6 +52,7 @@ const medicationSchema = z.object({
   side_effects_to_watch: z.array(z.string()).optional(),
   refill_reminder_enabled: z.boolean(),
   refill_reminder_days: z.number().min(1).max(30).optional(),
+  supply_amount: z.number().min(1, 'Supply amount must be at least 1').optional(),
 });
 
 type MedicationFormData = z.infer<typeof medicationSchema>;
@@ -92,6 +93,7 @@ export function MedicationsPage() {
       refill_reminder_days: 7,
       scheduled_times: ['08:00'],
       side_effects_to_watch: [],
+      supply_amount: 1
     },
   });
 
@@ -123,20 +125,31 @@ export function MedicationsPage() {
         instructions: data.instructions || '',
         start_date: new Date(data.start_date).toISOString(),
         end_date: data.end_date ? new Date(data.end_date).toISOString() : undefined,
-        refill_reminder: {
-          enabled: data.refill_reminder_enabled,
-          threshold: data.refill_reminder_days || 7,
-          last_refill: null,
-          next_refill: null,
-          supply_amount: 0,
-          supply_unit: 'days',
-        },
+        refill_reminder: data.refill_reminder_enabled
+          ? {
+              enabled: true,
+              threshold: data.refill_reminder_days || 7,
+              last_refill: new Date(data.start_date).toISOString(),
+              next_refill: null,
+              supply_amount: data.supply_amount ?? 1,
+              supply_unit: 'days',
+            }
+          : null,
         side_effects_to_watch: data.side_effects_to_watch || [],
         active: true,
         medication_type: data.medication_type,
         created_at: editingMedication?.created_at || new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };
+
+      if (newMedication.refill_reminder && !Array.isArray(newMedication.refill_reminder)) {
+          // OK, dejamos el objeto tal cual
+        } else {
+          newMedication.refill_reminder = null;
+      }
+
+      console.log("🚀 newMedication:", newMedication);
+
 
       if (!newMedication.refill_reminder) {
           throw new Error("Refill reminder is missing");
@@ -187,7 +200,7 @@ export function MedicationsPage() {
                 supply_amount: newMedication.refill_reminder.supply_amount,
                 supply_unit: newMedication.refill_reminder.supply_unit,
               }
-            : undefined,
+            : null,
           side_effects_to_watch: newMedication.side_effects_to_watch,
           medication_type: newMedication.medication_type,
         });
@@ -218,6 +231,7 @@ export function MedicationsPage() {
     setValue('side_effects_to_watch', medication.side_effects_to_watch ?? []);
     setValue('refill_reminder_enabled', medication.refill_reminder?.enabled ?? false);
     setValue('refill_reminder_days', medication.refill_reminder?.threshold ?? 7); // asumiendo que usas 'days_before'
+    setValue('supply_amount', medication.refill_reminder?.supply_amount ?? 1);
     setActiveTab('create');
   };
 
@@ -600,7 +614,8 @@ export function MedicationsPage() {
                         </SelectContent>
                       </Select>
                     </div>
-                    {frequencyType === 'daily' && (
+
+                    {(frequencyType === 'daily' || frequencyType === 'weekly') && (
                       <div className="space-y-2">
                         <Label htmlFor="times_per_day">Times per Day *</Label>
                         <Input
@@ -612,6 +627,7 @@ export function MedicationsPage() {
                         />
                       </div>
                     )}
+
                     <div className="space-y-2">
                       <Label htmlFor="frequency_interval">Interval *</Label>
                       <Input
@@ -624,7 +640,35 @@ export function MedicationsPage() {
                     </div>
                   </div>
 
-                  {frequencyType === 'daily' && (
+                  {/* ✅ Weekly: Select specific days */}
+                  {frequencyType === 'weekly' && (
+                    <div className="space-y-2">
+                      <Label>Specific Days</Label>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2">
+                        {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map((day) => (
+                          <label key={day} className="flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              value={day}
+                              checked={watch('specific_days')?.includes(day)}
+                              onChange={(e) => {
+                                const checked = e.target.checked;
+                                const prev = watch('specific_days') || [];
+                                const updated = checked
+                                  ? [...prev, day]
+                                  : prev.filter((d) => d !== day);
+                                setValue('specific_days', updated);
+                              }}
+                            />
+                            {day.slice(0, 3)}
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ✅ Daily or Weekly: Scheduled Times */}
+                  {(frequencyType === 'daily' || frequencyType === 'weekly') && (
                     <div className="space-y-2">
                       <Label>Scheduled Times</Label>
                       <div className="grid gap-2 sm:grid-cols-3">
@@ -655,9 +699,40 @@ export function MedicationsPage() {
                           </div>
                         ))}
                       </div>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={() => {
+                          const current = watch('scheduled_times') || [];
+                          setValue('scheduled_times', [...current, '']);
+                        }}
+                      >
+                        + Add Time
+                      </Button>
+                    </div>
+                  )}
+
+                  {/* ✅ Refill Reminder: Supply Amount */}
+                  {watch('refill_reminder_enabled') && (
+                    <div className="space-y-2">
+                      <Label htmlFor="supply_amount">Supply Amount</Label>
+                      <Input
+                        id="supply_amount"
+                        type="number"
+                        min="1"
+                        placeholder="e.g. 30"
+                        {...register('supply_amount', { valueAsNumber: true })}
+                      />
+                    {watch("supply_amount") && watch("times_per_day") ? (
+                  <p className="text-sm text-muted-foreground">
+                    This supply lasts approximately{" "}
+                    {Math.floor(watch("supply_amount")! / watch("times_per_day")!)} day(s)
+                  </p>
+                ) : null}
                     </div>
                   )}
                 </div>
+
 
                 <Separator />
 

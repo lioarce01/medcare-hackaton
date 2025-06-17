@@ -8,13 +8,18 @@ export const getUserProfile = async (): Promise<User> => {
 };
 
 // Update user profile
-export const updateUserProfile = async (userData: Partial<User>): Promise<User> => {
+export const updateUserProfile = async (
+  userData: Partial<User>
+): Promise<User> => {
   const response = await apiClient.put(`/users/${userData.id}`, userData);
   return response.data;
 };
 
 // Update user settings
-export const updateUserSettings = async (userId: string, settings: Partial<UserSettings>): Promise<UserSettings> => {
+export const updateUserSettings = async (
+  userId: string,
+  settings: Partial<UserSettings>
+): Promise<UserSettings> => {
   const response = await apiClient.patch(`/users/${userId}/settings`, settings);
   return response.data;
 };

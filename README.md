@@ -11,7 +11,6 @@ A comprehensive medication management and adherence tracking system built with R
 - 📊 **Adherence Analytics**: Visualize medication adherence patterns
 - 🔔 **Reminder System**: Smart notifications for medication schedules
 - 🌐 **Multi-language Support**: Internationalization with i18n
-- 📱 **Progressive Web App**: Installable on mobile devices
 - ♿ **Accessibility**: WCAG 2.1 compliant
 - 📈 **Performance Monitoring**: Real-time error tracking with Sentry
 

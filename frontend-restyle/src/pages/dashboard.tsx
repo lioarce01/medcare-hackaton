@@ -26,7 +26,8 @@ export function DashboardPage() {
   const { data: stats, isLoading: statsLoading } = useDashboardStats();
   const { data: alerts, isLoading: alertsLoading } = useDashboardAlerts();
   const { handleMedicationAction, isLoading: actionLoading } = useDashboardActions();
-
+  
+  console.log("🔔 Alerts:", alerts);
   console.log("today schedule:", todaySchedule)
 
   const isLoading = scheduleLoading || statsLoading || alertsLoading;

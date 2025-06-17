@@ -39,6 +39,17 @@ const mapSupabaseUserToLocalUser = (
   };
 };
 
+const updateUserTimezone = async (userId: string, timezone: string) => {
+  const { error } = await supabase
+    .from("user_settings")
+    .update({ timezone })
+    .eq("user_id", userId);
+
+  if (error) {
+    console.warn("Error updating user timezone:", error);
+  }
+};
+
 export const useSignUp = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -53,9 +64,19 @@ export const useSignUp = () => {
       email: string;
       password: string;
     }) => signUp(name, email, password),
-    onSuccess: () => {
-      // Invalidate queries to refresh user data
+    onSuccess: async (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["session"] });
+
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+      if (user) {
+        await updateUserTimezone(user.id, timezone);
+      }
+
       queryClient.invalidateQueries({ queryKey: ["user"] });
       navigate("/dashboard");
     },
@@ -87,8 +108,14 @@ export const useSignIn = () => {
         weakPassword: data.weakPassword,
       };
     },
-    onSuccess: () => {
+    onSuccess: async (data) => {
       queryClient.invalidateQueries({ queryKey: ["session"] });
+
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      if (data.user) {
+        await updateUserTimezone(data.user.id, timezone);
+      }
+
       queryClient.invalidateQueries({ queryKey: ["user"] });
     },
   });

@@ -12,11 +12,13 @@ import { useAuth } from "./useAuth";
 import { AdherenceTimelineData } from "@/api/analytics";
 import { useAdherenceTimeline } from "./useAnalytics";
 import { useMemo } from "react";
+import { DateTime } from "luxon";
 
 // Hook for today's adherence schedule
 export const useTodaySchedule = () => {
   const { user } = useAuth();
-  const today = format(new Date(), "yyyy-MM-dd");
+  const timezone = user?.settings?.timezone || "UTC";
+  const today = DateTime.now().setZone(timezone).toISODate() ?? undefined;
 
   const { data: adherenceHistory, isLoading: adherenceLoading } =
     useAdherenceHistory(today);
@@ -29,16 +31,37 @@ export const useTodaySchedule = () => {
 
   const schedule = useMemo(() => {
     if (!user || !adherenceHistory || !medications) return [];
+    const normalizedMedications = medications.map((med) => ({
+      ...med,
+      refill_reminder:
+        med.refill_reminder && !Array.isArray(med.refill_reminder)
+          ? med.refill_reminder
+          : {
+              enabled: false,
+              threshold: 7,
+              last_refill: null,
+              next_refill: null,
+              supply_amount: 0,
+              supply_unit: "days",
+            },
+    }));
 
-    const normalizeTime = (time: string) => time.slice(0, 5); // HH:mm:ss -> HH:mm
+    const timezone = user?.settings?.timezone || "UTC";
+    const today = DateTime.now().setZone(timezone).toISODate(); // yyyy-MM-dd
 
-    return medications
+    return normalizedMedications
       .flatMap((medication) =>
         medication.scheduled_times.map((time) => {
+          const localDateTime = DateTime.fromISO(`${today}T${time}`, {
+            zone: timezone,
+          });
+          const scheduledUTC = localDateTime.toUTC().toISO();
+
           const adherenceRecord = adherenceHistory.find(
             (adh) =>
               adh.medication_id === medication.id &&
-              normalizeTime(adh.scheduled_time) === normalizeTime(time)
+              DateTime.fromISO(adh.scheduled_time).toUTC().toISO() ===
+                scheduledUTC
           );
 
           return {
@@ -106,14 +129,23 @@ export const useDashboardAlerts = () => {
   const { data: timelineData, isLoading: timelineLoading } =
     useAdherenceTimeline(30);
 
+  console.log("User:", user);
+  console.log("Medications:", medications);
+  console.log("Schedule:", todaySchedule);
+  console.log("Timeline Loading:", timelineLoading);
+
   return useQuery({
     queryKey: ["dashboard", "alerts"],
     queryFn: () => {
+      console.log("[queryFn] Dashboard is loading...");
+
       const alerts = [];
 
       // Refill reminders
       if (medications) {
-        medications.forEach((medication) => {
+        medications?.forEach((medication) => {
+          console.log("↪️ Checking medication:", medication.name);
+          console.log("  ➤ RefillReminder:", medication.refill_reminder);
           if (medication.refill_reminder?.enabled) {
             const { last_refill, supply_amount, threshold } =
               medication.refill_reminder;
@@ -179,6 +211,8 @@ export const useDashboardAlerts = () => {
         const currentTime = format(now, "HH:mm");
 
         todaySchedule.forEach((item) => {
+          console.log("🕒 Dose:", item.scheduled_time, "Status:", item.status);
+
           if (item.status === "pending" && item.scheduled_time < currentTime) {
             alerts.push({
               id: `missed-${item.id}`,
@@ -208,7 +242,8 @@ export const useDashboardAlerts = () => {
 
       return alerts;
     },
-    enabled: !!user && !!medications && !!todaySchedule && !timelineLoading,
+    // enabled: !!user && !!medications && !!todaySchedule && !timelineLoading,
+    enabled: !!user,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 };

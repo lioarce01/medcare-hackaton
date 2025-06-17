@@ -12,6 +12,7 @@ export const getAdherenceHistory = async (
 ): Promise<Adherence[]> => {
   const params = date ? { date } : {};
   const response = await apiClient.get("/adherence/history", { params });
+  console.log("adherence api response:", response.data);
   return response.data;
 };
 
