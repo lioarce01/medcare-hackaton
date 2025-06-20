@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { AdherenceRepository } from '../../../domain/adherence/repositories/adherence.repository';
 import { AdherenceStats } from '../../../domain/adherence/entities/adherence-stats.entity';
 import { AdherenceStatsService } from '../../../domain/adherence/services/adherence-stats.service';
+import { DateTime } from 'luxon';
 
 @Injectable()
 export class GetAdherenceStatsUseCase {
@@ -9,62 +10,68 @@ export class GetAdherenceStatsUseCase {
     @Inject('AdherenceRepository')
     private readonly adherenceRepository: AdherenceRepository,
     private readonly adherenceStatsService: AdherenceStatsService,
-  ) {}
+  ) { }
 
   private async getStatsForRange(
     userId: string,
-    startDate: string,
-    endDate: string,
+    startDate: DateTime,
+    endDate: DateTime,
+    timezone: string,
   ): Promise<AdherenceStats> {
+    // Fetch a potentially wider range from DB in UTC
     const rawData = await this.adherenceRepository.getStats(
       userId,
       startDate,
       endDate,
+      timezone,
     );
+    // Process and filter raw data based on local time range
     return this.adherenceStatsService.processStats(rawData);
   }
 
-  async execute(userId: string): Promise<{
+  async execute(userId: string, timezone?: string): Promise<{
     today: AdherenceStats;
     week: AdherenceStats;
     month: AdherenceStats;
     ranking: AdherenceStats['ranking'];
   }> {
-    const now = new Date();
+    // Usar la zona horaria del usuario o UTC por defecto
+    const userTz = timezone || 'UTC';
+    const now = DateTime.now().setZone(userTz);
 
-    // Today: desde el inicio del día hasta ahora
-    const startToday = new Date(now);
-    startToday.setHours(0, 0, 0, 0);
+    // Hoy en zona del usuario
+    const startToday = now.startOf('day');
     const endToday = now;
 
-    // Week: desde el lunes (inicio de la semana) hasta ahora
-    const startWeek = new Date(now);
-    const dayOfWeek = startWeek.getDay(); // domingo=0 ... sábado=6
-    const diffToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // ajusta domingo a lunes
-    startWeek.setDate(startWeek.getDate() - diffToMonday);
-    startWeek.setHours(0, 0, 0, 0);
-    const endWeek = now;
+    // Semana: desde el lunes en zona del usuario
+    const startWeek = now.startOf('week'); // Luxon: lunes
+    // const endWeek = now;
 
-    // Month: desde el 1ro del mes hasta ahora
-    const startMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    startMonth.setHours(0, 0, 0, 0);
-    const endMonth = now;
+    // Mes: desde el 1ro en zona del usuario
+    const startMonth = now.startOf('month');
+    // const endMonth = now;
 
-    // Formatear fechas a ISO YYYY-MM-DD para el repositorio
-    const formatDate = (d: Date) => d.toISOString().split('T')[0];
+    // Convertir a UTC ISO YYYY-MM-DD
+    const formatDate = (dt: DateTime) => dt.toUTC().toISODate() || dt.toUTC().toFormat('yyyy-MM-dd');
 
-    // Obtener stats para cada rango
     const [todayStats, weekStats, monthStats] = await Promise.all([
       this.getStatsForRange(
         userId,
-        formatDate(startToday),
-        formatDate(endToday),
+        startToday,
+        endToday,
+        userTz,
       ),
-      this.getStatsForRange(userId, formatDate(startWeek), formatDate(endWeek)),
       this.getStatsForRange(
         userId,
-        formatDate(startMonth),
-        formatDate(endMonth),
+        startWeek,
+        endToday,
+        userTz,
+      ),
+      this.getStatsForRange(
+        userId,
+        startMonth,
+        endToday,
+        userTz,
       ),
     ]);
 

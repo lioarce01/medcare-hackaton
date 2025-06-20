@@ -20,7 +20,7 @@ export class AdherenceController {
     private readonly confirmDoseUseCase: ConfirmDoseUseCase,
     private readonly skipDoseUseCase: SkipDoseUseCase,
     private readonly getAdherenceStatsUseCase: GetAdherenceStatsUseCase,
-  ) {}
+  ) { }
 
   @Get('history')
   @UseGuards(JwtAuthGuard)
@@ -68,6 +68,7 @@ export class AdherenceController {
     @Query() query: GetAdherenceStatsDto,
     @GetUserId() userId: string,
   ) {
-    return await this.getAdherenceStatsUseCase.execute(userId);
+    // Pasar timezone al usecase
+    return await this.getAdherenceStatsUseCase.execute(userId, query.timezone);
   }
 }

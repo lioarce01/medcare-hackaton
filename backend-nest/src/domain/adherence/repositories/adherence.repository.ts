@@ -1,5 +1,6 @@
 import { Adherence } from '../entities/adherence.entity';
 import { AdherenceStatsRaw } from '../entities/adherence-stats.entity';
+import { DateTime } from 'luxon'; // Importar DateTime
 
 export interface AdherenceRepository {
   create(adherence: Adherence): Promise<Adherence>;
@@ -15,8 +16,9 @@ export interface AdherenceRepository {
   skipDose(adherenceId: string, userId: string): Promise<Adherence>;
   getStats(
     userId: string,
-    startDate?: string,
-    endDate?: string,
+    startDate: DateTime, // Cambiado a DateTime
+    endDate: DateTime, // Cambiado a DateTime
+    timezone: string, // Agregado timezone
   ): Promise<AdherenceStatsRaw[]>;
 
   // Methods for cron jobs

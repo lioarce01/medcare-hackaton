@@ -1,4 +1,4 @@
-import { IsOptional, IsDateString } from 'class-validator';
+import { IsOptional, IsDateString, IsString } from 'class-validator';
 
 export class GetAdherenceStatsDto {
   @IsOptional()
@@ -8,4 +8,8 @@ export class GetAdherenceStatsDto {
   @IsOptional()
   @IsDateString()
   endDate?: string;
+
+  @IsOptional()
+  @IsString()
+  timezone?: string; // Nueva propiedad para la zona horaria del usuario
 }

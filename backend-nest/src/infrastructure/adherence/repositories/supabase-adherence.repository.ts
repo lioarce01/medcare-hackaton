@@ -4,6 +4,7 @@ import { Adherence } from '../../../domain/adherence/entities/adherence.entity';
 import { AdherenceStatsRaw } from '../../../domain/adherence/entities/adherence-stats.entity';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AdherenceMapper } from '../../../domain/adherence/mappers/adherence.mapper';
+import { DateTime } from 'luxon';
 
 @Injectable()
 export class SupabaseAdherenceRepository implements AdherenceRepository {
@@ -198,26 +199,22 @@ export class SupabaseAdherenceRepository implements AdherenceRepository {
 
   async getStats(
     userId: string,
-    startDate?: string,
-    endDate?: string,
+    startDate: DateTime, // Ahora recibe DateTime
+    endDate: DateTime, // Ahora recibe DateTime
+    timezone: string, // Recibe timezone
   ): Promise<AdherenceStatsRaw[]> {
     const whereClause: any = {
       user_id: userId,
     };
 
-    if (startDate) {
-      whereClause.scheduled_datetime = {
-        ...whereClause.scheduled_datetime,
-        gte: new Date(startDate),
-      };
-    }
+    // Calculate a wider UTC range for DB query based on local range
+    const startUtcQuery = startDate.startOf('day').toUTC().toJSDate();
+    const endUtcQuery = endDate.endOf('day').toUTC().toJSDate();
 
-    if (endDate) {
-      whereClause.scheduled_datetime = {
-        ...whereClause.scheduled_datetime,
-        lte: new Date(endDate),
-      };
-    }
+    whereClause.scheduled_datetime = {
+      gte: startUtcQuery,
+      lte: endUtcQuery,
+    };
 
     const adherences = await this.prisma.adherence.findMany({
       where: whereClause,
