@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -21,8 +21,13 @@ import {
   Target,
 } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, subDays, addDays } from 'date-fns';
-import { mockMedications, mockAdherence, generateAdherenceData } from '@/lib/mock-data';
+// Remove mock data import if not used elsewhere
+// import { mockMedications, mockAdherence, generateAdherenceData } from '@/lib/mock-data';
 import { Medication, Adherence } from '@/types';
+// Import useActiveMedications hook
+import { useAdherenceCalendar, useAdherenceStats } from '@/hooks/useAdherence';
+import { DateTime } from 'luxon';
+import { useActiveMedications } from '@/hooks/useMedications';
 
 interface AdherenceDay {
   date: Date;
@@ -42,104 +47,98 @@ interface AdherenceDay {
 }
 
 export function AdherencePage() {
-  const [isLoading, setIsLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
-  const [adherenceData, setAdherenceData] = useState<AdherenceDay[]>([]);
   const [filterMedication, setFilterMedication] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
-  const [chartData, setChartData] = useState<any[]>([]);
 
-  useEffect(() => {
-    // Simulate loading and generate adherence data
-    const timer = setTimeout(() => {
-      generateAdherenceCalendarData();
-      setChartData(generateAdherenceData(30));
-      setIsLoading(false);
-    }, 1000);
+  const { data: adherenceStats, isLoading: isStatsLoading } = useAdherenceStats();
+  const { data: adherenceData = [], isLoading: isCalendarLoading } = useAdherenceCalendar(selectedMonth);
+  // Fetch active medications
+  const { data: activeMedications = [], isLoading: isMedicationsLoading } = useActiveMedications();
 
-    return () => clearTimeout(timer);
-  }, [selectedMonth]);
 
-  const generateAdherenceCalendarData = () => {
-    const monthStart = startOfMonth(selectedMonth);
-    const monthEnd = endOfMonth(selectedMonth);
-    const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
+  // Update isLoading to include medications loading state
+  const isLoading = isStatsLoading || isCalendarLoading || isMedicationsLoading;
 
-    const adherenceCalendarData: AdherenceDay[] = days.map(date => {
-      const dayMedications = mockMedications.flatMap(med => 
-        med.scheduled_times.map(time => {
-          // Generate realistic adherence data
-          const isToday = isSameDay(date, new Date());
-          const isFuture = date > new Date();
-          
-          let status: 'taken' | 'skipped' | 'missed' | 'pending';
-          let taken_time: string | undefined;
 
-          if (isFuture) {
-            status = 'pending';
-          } else if (isToday) {
-            const currentHour = new Date().getHours();
-            const scheduledHour = parseInt(time.split(':')[0]);
-            
-            if (currentHour >= scheduledHour) {
-              status = Math.random() > 0.2 ? 'taken' : 'skipped';
-              taken_time = status === 'taken' ? 
-                `${date.toISOString().split('T')[0]}T${time}:00Z` : undefined;
-            } else {
-              status = 'pending';
-            }
-          } else {
-            // Past dates - generate realistic adherence (85% taken, 10% skipped, 5% missed)
-            const rand = Math.random();
-            if (rand < 0.85) {
-              status = 'taken';
-              taken_time = `${date.toISOString().split('T')[0]}T${time}:00Z`;
-            } else if (rand < 0.95) {
-              status = 'skipped';
-            } else {
-              status = 'missed';
-            }
-          }
+  function groupAdherenceByDay(adherences: Adherence[], timezone: string): AdherenceDay[] {
+    const grouped: Record<string, AdherenceDay> = {};
 
-          return {
-            medication: med,
-            status,
-            scheduled_time: time,
-            taken_time,
-          };
-        })
-      );
+    for (const item of adherences) {
+      // Ensure item.scheduled_datetime is a valid string before processing
+      if (!item.scheduled_datetime || typeof item.scheduled_datetime !== 'string') {
+        console.warn('Skipping adherence item with invalid scheduled_datetime:', item);
+        continue;
+      }
 
-      const total = dayMedications.length;
-      const taken = dayMedications.filter(m => m.status === 'taken').length;
-      const skipped = dayMedications.filter(m => m.status === 'skipped').length;
-      const missed = dayMedications.filter(m => m.status === 'missed').length;
-      const percentage = total > 0 ? Math.round((taken / total) * 100) : 0;
+      const localDate = DateTime.fromISO(item.scheduled_datetime, { zone: 'utc' }).setZone(timezone).toISODate();
+      if (!localDate) {
+        console.warn('Skipping adherence item, could not determine local date:', item);
+        continue; // skip if localDate is null
+      }
 
-      return {
-        date,
-        adherenceData: { total, taken, skipped, missed, percentage },
-        medications: dayMedications,
-      };
-    });
+      if (!grouped[localDate]) {
+        grouped[localDate] = {
+          date: DateTime.fromISO(localDate, { zone: timezone }).toJSDate(), // Parse localDate in the target timezone
+          adherenceData: { total: 0, taken: 0, skipped: 0, missed: 0, percentage: 0 },
+          medications: [],
+        };
+      }
 
-    setAdherenceData(adherenceCalendarData);
-  };
+      // Ensure item.medication exists before pushing
+      if (item.medication) {
+        grouped[localDate].medications.push({
+          medication: item.medication,
+          status: item.status,
+          scheduled_time: DateTime.fromISO(item.scheduled_datetime, { zone: 'utc' }).setZone(timezone).toFormat('HH:mm'),
+          taken_time: item.taken_time || undefined,
+        });
+      } else {
+        console.warn('Skipping adherence item without medication:', item);
+      }
 
-  const getSelectedDayData = () => {
-    return adherenceData.find(day => isSameDay(day.date, selectedDate));
-  };
+
+      grouped[localDate].adherenceData.total += 1;
+      if (item.status === 'taken') grouped[localDate].adherenceData.taken += 1;
+      if (item.status === 'skipped') grouped[localDate].adherenceData.skipped += 1;
+      if (item.status === 'missed') grouped[localDate].adherenceData.missed += 1;
+    }
+
+    // Calcular porcentaje
+    for (const day of Object.values(grouped)) {
+      const { total, taken } = day.adherenceData;
+      day.adherenceData.percentage = total > 0 ? Math.round((taken / total) * 100) : 0;
+    }
+
+    // Ordenar por fecha asc
+    return Object.values(grouped).sort((a, b) => a.date.getTime() - b.date.getTime());
+  }
+
+  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+  // Memoize the result of groupAdherenceByDay
+  const groupedData = useMemo(() => {
+    console.log('Regrouping adherence data...'); // Add a log to see when this runs
+    return groupAdherenceByDay(adherenceData, timezone);
+  }, [adherenceData, timezone]); // Dependencies: re-run only when adherenceData or timezone changes
+
+
+  const selectedDayData = useMemo(() => {
+    console.log('Finding selected day data...'); // Add a log
+    return groupedData.find(day => isSameDay(day.date, selectedDate));
+  }, [groupedData, selectedDate]); // Dependencies: re-run when groupedData or selectedDate changes
+
 
   const getCalendarDayClassName = (date: Date) => {
-    const dayData = adherenceData.find(day => isSameDay(day.date, date));
+    const dayData = groupedData.find(day => isSameDay(day.date, date));
     if (!dayData || dayData.adherenceData.total === 0) return '';
 
     const percentage = dayData.adherenceData.percentage;
     if (percentage >= 90) return 'bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900 dark:text-green-100 dark:hover:bg-green-800';
     if (percentage >= 70) return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200 dark:bg-yellow-900 dark:text-yellow-100 dark:hover:bg-yellow-800';
     if (percentage >= 50) return 'bg-orange-100 text-orange-800 hover:bg-orange-200 dark:bg-orange-900 dark:text-orange-100 dark:hover:bg-orange-800';
-    return 'bg-red-100 text-red-800 hover:bg-red-200 dark:bg-red-900 dark:text-red-100 dark:hover:bg-red-800';
+    return 'bg-red-100 text-red-800 hover:bg-red-200 dark:bg-red-900 dark:text-red-800 dark:hover:bg-red-800';
   };
 
   const filteredMedications = (medications: any[]) => {
@@ -176,24 +175,11 @@ export function AdherencePage() {
     }
   };
 
-  const calculateMonthlyStats = () => {
-    const totalDoses = adherenceData.reduce((sum, day) => sum + day.adherenceData.total, 0);
-    const takenDoses = adherenceData.reduce((sum, day) => sum + day.adherenceData.taken, 0);
-    const skippedDoses = adherenceData.reduce((sum, day) => sum + day.adherenceData.skipped, 0);
-    const missedDoses = adherenceData.reduce((sum, day) => sum + day.adherenceData.missed, 0);
-    
-    return {
-      total: totalDoses,
-      taken: takenDoses,
-      skipped: skippedDoses,
-      missed: missedDoses,
-      percentage: totalDoses > 0 ? Math.round((takenDoses / totalDoses) * 100) : 0,
-    };
-  };
+  const monthlyStats = adherenceStats?.month;
+  const todayStats = adherenceStats?.today;
+  const weekStats = adherenceStats?.week;
 
-  const selectedDayData = getSelectedDayData();
-  const monthlyStats = calculateMonthlyStats();
-
+  // Use the derived isLoading state
   if (isLoading) {
     return <DashboardSkeleton />;
   }
@@ -222,10 +208,10 @@ export function AdherencePage() {
             <Target className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{monthlyStats.percentage}%</div>
-            <Progress value={monthlyStats.percentage} className="mt-2" />
+            <div className="text-2xl font-bold">{monthlyStats ? `${monthlyStats.adherenceRate}%` : '-'}</div>
+            <Progress value={monthlyStats?.adherenceRate ?? 0} className="mt-2" />
             <p className="text-xs text-muted-foreground mt-2">
-              {monthlyStats.taken} of {monthlyStats.total} doses
+              {monthlyStats?.taken} of {monthlyStats?.total} doses
             </p>
           </CardContent>
         </Card>
@@ -236,9 +222,9 @@ export function AdherencePage() {
             <CheckCircle2 className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">{monthlyStats.taken}</div>
+            <div className="text-2xl font-bold text-green-600">{monthlyStats?.taken}</div>
             <p className="text-xs text-muted-foreground">
-              {monthlyStats.total > 0 ? Math.round((monthlyStats.taken / monthlyStats.total) * 100) : 0}% of total
+              {monthlyStats?.total && monthlyStats.total > 0 ? Math.round((monthlyStats.taken / monthlyStats.total) * 100) : 0}% of total
             </p>
           </CardContent>
         </Card>
@@ -249,9 +235,11 @@ export function AdherencePage() {
             <XCircle className="h-4 w-4 text-orange-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-600">{monthlyStats.skipped}</div>
+            <div className="text-2xl font-bold text-orange-600">{monthlyStats?.skipped}</div>
             <p className="text-xs text-muted-foreground">
-              {monthlyStats.total > 0 ? Math.round((monthlyStats.skipped / monthlyStats.total) * 100) : 0}% of total
+              {monthlyStats && monthlyStats.total && monthlyStats.total > 0
+                ? Math.round((monthlyStats.skipped / monthlyStats.total) * 100)
+                : 0}% of total
             </p>
           </CardContent>
         </Card>
@@ -262,9 +250,9 @@ export function AdherencePage() {
             <AlertCircle className="h-4 w-4 text-red-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">{monthlyStats.missed}</div>
+            <div className="text-2xl font-bold text-red-600">{monthlyStats?.missed}</div>
             <p className="text-xs text-muted-foreground">
-              {monthlyStats.total > 0 ? Math.round((monthlyStats.missed / monthlyStats.total) * 100) : 0}% of total
+              {monthlyStats?.total && monthlyStats?.total > 0 ? Math.round(((monthlyStats?.missed ?? 0) / monthlyStats.total) * 100) : 0}% of total
             </p>
           </CardContent>
         </Card>
@@ -321,8 +309,9 @@ export function AdherencePage() {
                       day_hidden: "invisible",
                     }}
                     components={{
-                      Day: ({ date, ...props }) => {
-                        const dayData = adherenceData.find(day => isSameDay(day.date, date));
+                      // Destructure displayMonth and any other unwanted props here
+                      Day: ({ date, displayMonth, ...props }) => {
+                        const dayData = groupedData.find(day => isSameDay(day.date, date));
                         const className = getCalendarDayClassName(date);
                         const isToday = isSameDay(date, new Date());
                         const isSelected = selectedDate && isSameDay(date, selectedDate);
@@ -337,17 +326,16 @@ export function AdherencePage() {
                               hover:bg-accent hover:text-accent-foreground
                             `}
                             onClick={() => setSelectedDate(date)}
-                            {...props}
+                            {...props} // Spread the remaining props (excluding displayMonth)
                           >
                             <span className="text-sm">{format(date, 'd')}</span>
                             {dayData && dayData.adherenceData.total > 0 && (
                               <div className="absolute -bottom-0.5 left-1/2 transform -translate-x-1/2">
-                                <div className={`w-1.5 h-1.5 rounded-full ${
-                                  dayData.adherenceData.percentage >= 90 ? 'bg-green-600' :
+                                <div className={`w-1.5 h-1.5 rounded-full ${dayData.adherenceData.percentage >= 90 ? 'bg-green-600' :
                                   dayData.adherenceData.percentage >= 70 ? 'bg-yellow-600' :
-                                  dayData.adherenceData.percentage >= 50 ? 'bg-orange-600' :
-                                  'bg-red-600'
-                                }`} />
+                                    dayData.adherenceData.percentage >= 50 ? 'bg-orange-600' :
+                                      'bg-red-600'
+                                  }`} />
                               </div>
                             )}
                           </div>
@@ -356,7 +344,7 @@ export function AdherencePage() {
                     }}
                   />
                 </div>
-                
+
                 {/* Legend */}
                 <div className="mt-4 space-y-2">
                   <h4 className="text-sm font-medium">Adherence Legend:</h4>
@@ -466,11 +454,12 @@ export function AdherencePage() {
                   <Label htmlFor="filter-medication">Filter by Medication</Label>
                   <Select value={filterMedication} onValueChange={setFilterMedication}>
                     <SelectTrigger>
-                      <SelectValue />
+                      <SelectValue placeholder="Select a medication" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Medications</SelectItem>
-                      {mockMedications.map(med => (
+                      {/* Use activeMedications data here */}
+                      {activeMedications.map((med: Medication) => (
                         <SelectItem key={med.id} value={med.id}>{med.name}</SelectItem>
                       ))}
                     </SelectContent>
@@ -480,7 +469,7 @@ export function AdherencePage() {
                   <Label htmlFor="filter-status">Filter by Status</Label>
                   <Select value={filterStatus} onValueChange={setFilterStatus}>
                     <SelectTrigger>
-                      <SelectValue />
+                      <SelectValue placeholder="Select a status" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Statuses</SelectItem>
@@ -507,57 +496,63 @@ export function AdherencePage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {adherenceData
-                .slice()
-                .reverse()
-                .slice(0, 14) // Show last 14 days
-                .map((dayData, dayIndex) => {
-                  const filteredMeds = filteredMedications(dayData.medications);
-                  
-                  if (filteredMeds.length === 0) return null;
+              {/* Ensure groupedData is not empty before slicing */}
+              {groupedData && groupedData.length > 0 ? (
+                groupedData
+                  .slice()
+                  .slice(0, 14) // Show last 14 days
+                  .map((dayData, dayIndex) => {
+                    const filteredMeds = filteredMedications(dayData.medications);
 
-                  return (
-                    <div key={dayIndex} className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <h4 className="font-medium">
-                          {format(dayData.date, 'EEEE, MMM d, yyyy')}
-                        </h4>
-                        <Badge className="bg-purple-600 text-white hover:bg-purple-700 dark:bg-purple-600 dark:text-white dark:hover:bg-purple-700">
-                          {dayData.adherenceData.percentage}% adherence
-                        </Badge>
-                      </div>
-                      
-                      <div className="grid gap-2">
-                        {filteredMeds.map((med, medIndex) => (
-                          <div key={medIndex} className="flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                                <Pill className="h-5 w-5 text-primary" />
-                              </div>
-                              <div className="space-y-1">
-                                <div className="font-medium">{med.medication.name}</div>
-                                <div className="text-sm text-muted-foreground">
-                                  {med.medication.dosage.amount}{med.medication.dosage.unit} at {med.scheduled_time}
+                    if (filteredMeds.length === 0) return null;
+
+                    return (
+                      <div key={dayIndex} className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-medium">
+                            {format(dayData.date, 'EEEE, MMM d, yyyy')}
+                          </h4>
+                          <Badge className="bg-purple-600 text-white hover:bg-purple-700 dark:bg-purple-600 dark:text-white dark:hover:bg-purple-700">
+                            {dayData.adherenceData.percentage}% adherence
+                          </Badge>
+                        </div>
+
+                        <div className="grid gap-2">
+                          {filteredMeds.map((med, medIndex) => (
+                            <div key={medIndex} className="flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
+                              <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                                  <Pill className="h-5 w-5 text-primary" />
                                 </div>
-                                {med.taken_time && (
-                                  <div className="text-xs text-green-600">
-                                    Taken at {format(new Date(med.taken_time), 'HH:mm')}
+                                <div className="space-y-1">
+                                  <div className="font-medium">{med.medication.name}</div>
+                                  <div className="text-sm text-muted-foreground">
+                                    {med.medication.dosage.amount}{med.medication.dosage.unit} at {med.scheduled_time}
                                   </div>
-                                )}
+                                  {med.taken_time && (
+                                    <div className="text-xs text-green-600">
+                                      Taken at {format(new Date(med.taken_time), 'HH:mm')}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                {getStatusIcon(med.status)}
+                                {getStatusBadge(med.status)}
                               </div>
                             </div>
-                            <div className="flex items-center gap-2">
-                              {getStatusIcon(med.status)}
-                              {getStatusBadge(med.status)}
-                            </div>
-                          </div>
-                        ))}
+                          ))}
+                        </div>
+
+                        {dayIndex < 13 && <Separator />}
                       </div>
-                      
-                      {dayIndex < 13 && <Separator />}
-                    </div>
-                  );
-                })}
+                    );
+                  })
+              ) : (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  No adherence data available for the selected month.
+                </p>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

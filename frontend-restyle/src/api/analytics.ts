@@ -1,5 +1,4 @@
 import apiClient from "../config/api";
-import { AdherenceStats } from "../types";
 
 export interface AdherenceTimelineData {
   date: string;

@@ -291,8 +291,8 @@ export function MedicationsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="max-w-6xl mx-auto space-y-4 px-4 sm:px-6">
+      <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-bold">Medications</h1>
           <p className="text-muted-foreground">Manage your medication schedule and track your prescriptions</p>
@@ -312,7 +312,7 @@ export function MedicationsPage() {
         )}
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="list">Medication List</TabsTrigger>
           <TabsTrigger value="create">{editingMedication ? "Edit Medication" : "Add Medication"}</TabsTrigger>
@@ -327,8 +327,8 @@ export function MedicationsPage() {
                 Search & Filter
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex flex-col sm:flex-row gap-4">
+            <CardContent className="space-y-3">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <div className="flex-1">
                   <Label htmlFor="search">Search medications</Label>
                   <Input
@@ -358,7 +358,7 @@ export function MedicationsPage() {
           </Card>
 
           {/* Medications List */}
-          <div className="grid gap-4">
+          <div className="grid gap-3">
             {filteredMedications.length === 0 ? (
               <Card>
                 <CardContent className="flex flex-col items-center justify-center py-12">
@@ -420,7 +420,7 @@ export function MedicationsPage() {
                     </div>
                   </CardHeader>
 
-                  <CardContent className="space-y-6">
+                  <CardContent className="space-y-4">
                     {/* Schedule Section */}
                     <div className="space-y-3">
                       <div className="flex items-center gap-2">
@@ -431,7 +431,7 @@ export function MedicationsPage() {
                           {medication.frequency.times_per_day} time(s) {medication.frequency.type}
                         </span>
                       </div>
-                      <div className="flex flex-wrap gap-2">
+                      <div className="flex flex-wrap gap-1.5">
                         {medication.scheduled_times.map((time, index) => {
                           const userTz = user?.settings?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone
                           const refDate = medication.start_date
@@ -447,7 +447,7 @@ export function MedicationsPage() {
                             .setZone("utc")
                           const localDateTime = utcDateTime.setZone(userTz)
                           return (
-                            <Badge key={index} variant="outline" className="px-3 py-1 font-mono">
+                            <Badge key={index} variant="outline" className="px-2 py-0.5 font-mono text-xs">
                               {localDateTime.toFormat("HH:mm")}
                             </Badge>
                           )
@@ -473,12 +473,12 @@ export function MedicationsPage() {
                           <AlertTriangle className="h-4 w-4 text-amber-500" />
                           <span className="font-semibold text-sm">Side Effects to Monitor</span>
                         </div>
-                        <div className="flex flex-wrap gap-2 pl-6">
+                        <div className="flex flex-wrap gap-1.5 pl-6">
                           {medication.side_effects_to_watch.map((effect, index) => (
                             <Badge
                               key={index}
                               variant="outline"
-                              className="text-xs bg-amber-50 border-amber-200 text-amber-800"
+                              className="text-xs bg-amber-50 border-amber-200 text-amber-800 px-2 py-0.5"
                             >
                               {effect}
                             </Badge>
@@ -530,16 +530,16 @@ export function MedicationsPage() {
                 </div>
               </div>
             </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+            <CardContent className="px-4 sm:px-6">
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                 {/* Basic Information Section */}
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2 pb-2">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 pb-1">
                     <Info className="h-5 w-5 text-muted-foreground" />
                     <h3 className="text-lg font-semibold">Basic Information</h3>
                     <Separator className="flex-1 ml-4" />
                   </div>
-                  <div className="grid gap-6 sm:grid-cols-2 pl-7">
+                  <div className="grid gap-4 sm:grid-cols-2 pl-6">
                     <div className="space-y-2">
                       <Label htmlFor="name" className="text-sm font-medium">
                         Medication Name *
@@ -597,13 +597,13 @@ export function MedicationsPage() {
                 <Separator />
 
                 {/* Dosage Information Section */}
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2 pb-2">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 pb-1">
                     <Pill className="h-5 w-5 text-muted-foreground" />
                     <h3 className="text-lg font-semibold">Dosage Information</h3>
                     <Separator className="flex-1 ml-4" />
                   </div>
-                  <div className="grid gap-6 sm:grid-cols-3 pl-7">
+                  <div className="grid gap-4 sm:grid-cols-3 pl-6">
                     <div className="space-y-2">
                       <Label htmlFor="dosage_amount" className="text-sm font-medium">
                         Amount *
@@ -677,14 +677,14 @@ export function MedicationsPage() {
                 <Separator />
 
                 {/* Schedule & Frequency Section */}
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2 pb-2">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 pb-1">
                     <Clock className="h-5 w-5 text-muted-foreground" />
                     <h3 className="text-lg font-semibold">Schedule & Frequency</h3>
                     <Separator className="flex-1 ml-4" />
                   </div>
-                  <div className="space-y-6 pl-7">
-                    <div className="grid gap-6 sm:grid-cols-3">
+                  <div className="space-y-6 pl-6">
+                    <div className="grid gap-4 sm:grid-cols-3">
                       <div className="space-y-2">
                         <Label htmlFor="frequency_type" className="text-sm font-medium">
                           Frequency Type *
@@ -739,7 +739,7 @@ export function MedicationsPage() {
                     {frequencyType === "weekly" && (
                       <div className="space-y-3">
                         <Label className="text-sm font-medium">Specific Days</Label>
-                        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3">
+                        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-7 gap-2">
                           {["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"].map((day) => (
                             <label
                               key={day}
@@ -768,7 +768,7 @@ export function MedicationsPage() {
                     {(frequencyType === "daily" || frequencyType === "weekly") && (
                       <div className="space-y-3">
                         <Label className="text-sm font-medium">Scheduled Times</Label>
-                        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                           {watch("scheduled_times")?.map((time, index) => (
                             <div key={index} className="flex items-center gap-2 p-3 border rounded-lg">
                               <Clock className="h-4 w-4 text-muted-foreground" />
@@ -819,13 +819,13 @@ export function MedicationsPage() {
                 <Separator />
 
                 {/* Treatment Period Section */}
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2 pb-2">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 pb-1">
                     <Calendar className="h-5 w-5 text-muted-foreground" />
                     <h3 className="text-lg font-semibold">Treatment Period</h3>
                     <Separator className="flex-1 ml-4" />
                   </div>
-                  <div className="grid gap-6 sm:grid-cols-2 pl-7">
+                  <div className="grid gap-4 sm:grid-cols-2 pl-6">
                     <div className="space-y-2">
                       <Label htmlFor="start_date" className="text-sm font-medium">
                         Start Date *
@@ -857,13 +857,13 @@ export function MedicationsPage() {
                 <Separator />
 
                 {/* Instructions & Notes Section */}
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2 pb-2">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 pb-1">
                     <Info className="h-5 w-5 text-muted-foreground" />
                     <h3 className="text-lg font-semibold">Instructions & Notes</h3>
                     <Separator className="flex-1 ml-4" />
                   </div>
-                  <div className="space-y-4 pl-7">
+                  <div className="space-y-4 pl-6">
                     <div className="space-y-2">
                       <Label htmlFor="instructions" className="text-sm font-medium">
                         Special Instructions
@@ -884,13 +884,13 @@ export function MedicationsPage() {
                 <Separator />
 
                 {/* Refill Reminder Section */}
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2 pb-2">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 pb-1">
                     <CheckCircle2 className="h-5 w-5 text-muted-foreground" />
                     <h3 className="text-lg font-semibold">Refill Reminder</h3>
                     <Separator className="flex-1 ml-4" />
                   </div>
-                  <div className="space-y-4 pl-7">
+                  <div className="space-y-4 pl-6">
                     <div className="flex items-center justify-between p-4 border rounded-lg">
                       <div className="space-y-1">
                         <Label htmlFor="refill_reminder_enabled" className="text-sm font-medium cursor-pointer">
@@ -908,7 +908,7 @@ export function MedicationsPage() {
                     </div>
 
                     {refillReminderEnabled && (
-                      <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="grid gap-3 sm:grid-cols-2">
                         <div className="space-y-2">
                           <Label htmlFor="refill_reminder_days" className="text-sm font-medium">
                             Reminder Days

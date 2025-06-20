@@ -7,7 +7,6 @@ import {
   Calendar,
   Clock,
   TrendingUp,
-  AlertTriangle,
   CheckCircle2,
   XCircle,
   Pill,

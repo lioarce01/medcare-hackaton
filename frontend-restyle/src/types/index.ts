@@ -173,16 +173,25 @@ export interface AdherenceStats {
   today: {
     taken: number;
     total: number;
+    missed: number;
+    skipped: number;
+    pending: number;
     adherenceRate: number;
   };
   week: {
     taken: number;
     total: number;
+    missed: number;
+    skipped: number;
+    pending: number;
     adherenceRate: number;
   };
   month: {
     taken: number;
     total: number;
+    missed: number;
+    skipped: number;
+    pending: number;
     adherenceRate: number;
   };
   ranking: {
