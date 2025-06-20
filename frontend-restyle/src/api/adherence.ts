@@ -30,6 +30,8 @@ export const skipDose = async (data: SkipDoseDto): Promise<Adherence> => {
 
 // Get adherence statistics
 export const getAdherenceStats = async (): Promise<AdherenceStats> => {
-  const response = await apiClient.get("/adherence/stats");
+  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const response = await apiClient.get("/adherence/stats", { params: { timezone } });
+  console.log('Adherence Stats Response:', response.data); // Log para depuración
   return response.data;
 };

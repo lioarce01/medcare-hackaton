@@ -18,9 +18,15 @@ import { TrialBanner } from '@/components/premium/trial-banner';
 import { useTodaySchedule, useDashboardStats, useDashboardAlerts, useDashboardActions } from '@/hooks/useDashboard';
 import { useAuth } from '@/hooks/useAuth';
 import { DateTime } from 'luxon';
+import { useRealtimeMedications, useRealtimeAdherence, useRealtimeReminders } from '@/hooks/useRealtime';
 
 export function DashboardPage() {
   const { user } = useAuth();
+
+  // Enable realtime updates for dashboard data
+  useRealtimeMedications();
+  useRealtimeAdherence();
+  useRealtimeReminders();
 
   // Fetch real data using custom hooks
   const { data: todaySchedule, isLoading: scheduleLoading } = useTodaySchedule();
@@ -33,12 +39,6 @@ export function DashboardPage() {
   const nowLocal = DateTime.now().setZone(userTimezone);
   const localTimeStr = nowLocal.toFormat('HH:mm');
   const localTzStr = nowLocal.offsetNameShort;
-
-  // Debug print (after userTimezone is defined)
-  // todaySchedule.forEach(item => {
-  //   const scheduledLocal = DateTime.fromISO(item.scheduled_datetime, { zone: 'utc' }).setZone(userTimezone);
-  //   console.log(`Scheduled UTC: ${item.scheduled_datetime}, Local: ${scheduledLocal.toString()} (${userTimezone})`);
-  // });
 
   const isLoading = scheduleLoading || statsLoading || alertsLoading;
 
@@ -216,7 +216,7 @@ export function DashboardPage() {
         </Card>
 
         {/* Quick Stats & Alerts */}
-        <Card>
+        {/* <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5" />
@@ -263,7 +263,7 @@ export function DashboardPage() {
               View All Notifications
             </Button>
           </CardContent>
-        </Card>
+        </Card> */}
       </div>
     </div>
   );
