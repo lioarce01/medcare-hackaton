@@ -1,3 +1,4 @@
+import { DateTime } from "luxon";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   getAdherenceHistory,
@@ -37,7 +38,7 @@ export const useAdherenceHistoryRange = (
       if (!data || !startDate || !endDate) return [];
 
       return data.filter((item) => {
-        const itemDate = item.scheduled_date;
+        const itemDate = item.scheduled_datetime;
         return itemDate >= startDate && itemDate <= endDate;
       });
     },
@@ -95,6 +96,31 @@ export const useSkipDose = () => {
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.message || "Failed to skip dose");
+    },
+  });
+};
+
+// Hook para obtener adherencias de hoy en la zona horaria del usuario
+export const useTodayAdherence = () => {
+  const { user } = useAuth();
+  const userTimezone =
+    user?.settings?.timezone ||
+    Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+  return useQuery({
+    queryKey: ["adherence", "today", userTimezone],
+    queryFn: () => getAdherenceHistory(),
+    enabled: !!user,
+    select: (data) => {
+      if (!data) return [];
+      const todayLocal = DateTime.now().setZone(userTimezone).toISODate();
+      const result = data.filter((item) => {
+        // Use scheduled_datetime (UTC ISO string)
+        const scheduledUTC = DateTime.fromISO(item.scheduled_datetime, { zone: "utc" });
+        const local = scheduledUTC.setZone(userTimezone);
+        return local.toISODate() === todayLocal;
+      });
+      return result;
     },
   });
 };

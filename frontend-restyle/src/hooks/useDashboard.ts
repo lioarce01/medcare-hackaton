@@ -6,6 +6,7 @@ import {
   useAdherenceStats,
   useConfirmDose,
   useSkipDose,
+  useTodayAdherence,
 } from "./useAdherence";
 import { useUpcomingReminders } from "./useReminders";
 import { useAuth } from "./useAuth";
@@ -17,67 +18,50 @@ import { DateTime } from "luxon";
 // Hook for today's adherence schedule
 export const useTodaySchedule = () => {
   const { user } = useAuth();
-  const timezone = user?.settings?.timezone || "UTC";
-  const today = DateTime.now().setZone(timezone).toISODate() ?? undefined;
-
-  const { data: adherenceHistory, isLoading: adherenceLoading } =
-    useAdherenceHistory(today);
-  const { data: medications, isLoading: medicationsLoading } =
-    useActiveMedications();
-
-  console.log("adherenceHistory", adherenceHistory);
+  const { data: todayAdherence, isLoading: adherenceLoading } = useTodayAdherence();
+  const { data: medications, isLoading: medicationsLoading } = useActiveMedications();
 
   const isLoading = adherenceLoading || medicationsLoading;
 
   const schedule = useMemo(() => {
-    if (!user || !adherenceHistory || !medications) return [];
+    if (!user || !todayAdherence || !medications) return [];
     const normalizedMedications = medications.map((med) => ({
       ...med,
       refill_reminder:
         med.refill_reminder && !Array.isArray(med.refill_reminder)
           ? med.refill_reminder
           : {
-              enabled: false,
-              threshold: 7,
-              last_refill: null,
-              next_refill: null,
-              supply_amount: 0,
-              supply_unit: "days",
-            },
+            enabled: false,
+            threshold: 7,
+            last_refill: null,
+            next_refill: null,
+            supply_amount: 0,
+            supply_unit: "days",
+          },
     }));
-
-    const timezone = user?.settings?.timezone || "UTC";
-    const today = DateTime.now().setZone(timezone).toISODate(); // yyyy-MM-dd
-
-    return normalizedMedications
-      .flatMap((medication) =>
-        medication.scheduled_times.map((time) => {
-          const localDateTime = DateTime.fromISO(`${today}T${time}`, {
-            zone: timezone,
-          });
-          const scheduledUTC = localDateTime.toUTC().toISO();
-
-          const adherenceRecord = adherenceHistory.find(
-            (adh) =>
-              adh.medication_id === medication.id &&
-              DateTime.fromISO(adh.scheduled_time).toUTC().toISO() ===
-                scheduledUTC
-          );
-
-          return {
-            id: adherenceRecord?.id,
-            medication,
-            scheduled_time: time,
-            scheduled_date: today,
-            status: adherenceRecord?.status || "pending",
-            taken_time: adherenceRecord?.taken_time,
-            notes: adherenceRecord?.notes,
-            adherenceId: adherenceRecord?.id,
-          };
-        })
-      )
-      .sort((a, b) => a.scheduled_time.localeCompare(b.scheduled_time));
-  }, [adherenceHistory, medications, today, user]);
+    // Relacionar adherencia con medicación y hora local
+    return todayAdherence
+      .map((adh) => {
+        const medication = normalizedMedications.find(
+          (med) => med.id === adh.medication_id
+        );
+        // Convert scheduled_datetime to local time for display and sorting
+        const scheduledLocal = DateTime.fromISO(adh.scheduled_datetime, { zone: 'utc' }).setZone(user?.settings?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone);
+        return {
+          id: adh.id,
+          medication,
+          scheduled_datetime: adh.scheduled_datetime,
+          scheduled_local: scheduledLocal,
+          scheduled_local_time: scheduledLocal.toFormat('HH:mm'),
+          scheduled_local_date: scheduledLocal.toLocaleString(DateTime.DATE_MED),
+          status: adh.status,
+          taken_time: adh.taken_time,
+          notes: adh.notes,
+          adherenceId: adh.id,
+        };
+      })
+      .sort((a, b) => a.scheduled_datetime.localeCompare(b.scheduled_datetime));
+  }, [todayAdherence, medications, user]);
 
   return { data: schedule, isLoading };
 };
@@ -170,11 +154,9 @@ export const useDashboardAlerts = () => {
                   type: "refill",
                   priority: "warning",
                   title: "Refill Reminder",
-                  message: `${
-                    medication.name
-                  } refill needed in ${daysUntilRefill} day${
-                    daysUntilRefill !== 1 ? "s" : ""
-                  }`,
+                  message: `${medication.name
+                    } refill needed in ${daysUntilRefill} day${daysUntilRefill !== 1 ? "s" : ""
+                    }`,
                   medication_id: medication.id,
                 });
               }
@@ -186,20 +168,22 @@ export const useDashboardAlerts = () => {
       // Upcoming doses
       if (todaySchedule) {
         const now = new Date();
-        const currentTime = format(now, "HH:mm");
+        const nowLocal = DateTime.fromJSDate(now);
 
         const nextDose = todaySchedule.find(
           (item) =>
-            item.status === "pending" && item.scheduled_time > currentTime
+            item.status === "pending" &&
+            DateTime.fromISO(item.scheduled_datetime).toLocal() > nowLocal
         );
 
-        if (nextDose) {
+        if (nextDose && nextDose.medication) {
+          const localTime = DateTime.fromISO(nextDose.scheduled_datetime).toLocal().toFormat('HH:mm');
           alerts.push({
             id: `upcoming-${nextDose.id}`,
             type: "upcoming",
             priority: "info",
             title: "Upcoming Dose",
-            message: `${nextDose.medication.name} at ${nextDose.scheduled_time}`,
+            message: `${nextDose.medication.name} at ${localTime}`,
             medication_id: nextDose.medication.id,
           });
         }
@@ -208,18 +192,21 @@ export const useDashboardAlerts = () => {
       // Missed doses (dosis perdidas)
       if (todaySchedule) {
         const now = new Date();
-        const currentTime = format(now, "HH:mm");
+        const nowLocal = DateTime.fromJSDate(now);
 
         todaySchedule.forEach((item) => {
-          console.log("🕒 Dose:", item.scheduled_time, "Status:", item.status);
-
-          if (item.status === "pending" && item.scheduled_time < currentTime) {
+          if (
+            item.status === "pending" &&
+            DateTime.fromISO(item.scheduled_datetime).toLocal() < nowLocal &&
+            item.medication
+          ) {
+            const localTime = DateTime.fromISO(item.scheduled_datetime).toLocal().toFormat('HH:mm');
             alerts.push({
               id: `missed-${item.id}`,
               type: "missed",
               priority: "error",
               title: "Missed Dose",
-              message: `${item.medication.name} dose scheduled at ${item.scheduled_time} was missed.`,
+              message: `${item.medication.name} dose scheduled at ${localTime} was missed.`,
               medication_id: item.medication.id,
             });
           }

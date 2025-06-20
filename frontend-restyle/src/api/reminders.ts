@@ -3,8 +3,7 @@ import { Reminder, UserSettings } from "../types";
 
 export interface CreateReminderDto {
   medication_id: string;
-  scheduled_time: string;
-  scheduled_date: string;
+  scheduled_datetime: string; // ISO string, UTC
   channels?: {
     email: {
       enabled: boolean;

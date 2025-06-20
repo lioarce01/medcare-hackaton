@@ -102,6 +102,7 @@ export interface Medication {
   active: boolean;
   medication_type?: "prescription" | "otc" | "supplement";
   image_url?: string;
+  user_timezone?: string;
   created_at: string;
   updated_at: string;
 }
@@ -110,8 +111,7 @@ export interface Adherence {
   id: string;
   user_id: string;
   medication_id: string;
-  scheduled_time: string;
-  scheduled_date: string;
+  scheduled_datetime: string; // ISO string, UTC
   taken_time?: string;
   status: "pending" | "taken" | "skipped" | "missed";
   notes?: string;
@@ -120,9 +120,12 @@ export interface Adherence {
   dosage_taken?: {
     amount: number;
     unit: string;
-  };
-  created_at: string;
-  updated_at: string;
+  } | null;
+  created_at?: string;
+  updated_at?: string;
+  medication?: Medication;
+  user?: User;
+  reminders?: any[];
 }
 
 export interface ConfirmDoseDto {

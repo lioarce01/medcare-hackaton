@@ -17,6 +17,7 @@ import { format } from 'date-fns';
 import { TrialBanner } from '@/components/premium/trial-banner';
 import { useTodaySchedule, useDashboardStats, useDashboardAlerts, useDashboardActions } from '@/hooks/useDashboard';
 import { useAuth } from '@/hooks/useAuth';
+import { DateTime } from 'luxon';
 
 export function DashboardPage() {
   const { user } = useAuth();
@@ -26,9 +27,18 @@ export function DashboardPage() {
   const { data: stats, isLoading: statsLoading } = useDashboardStats();
   const { data: alerts, isLoading: alertsLoading } = useDashboardAlerts();
   const { handleMedicationAction, isLoading: actionLoading } = useDashboardActions();
-  
-  console.log("🔔 Alerts:", alerts);
-  console.log("today schedule:", todaySchedule)
+
+  // Hora local del usuario
+  const userTimezone = user?.settings?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const nowLocal = DateTime.now().setZone(userTimezone);
+  const localTimeStr = nowLocal.toFormat('HH:mm');
+  const localTzStr = nowLocal.offsetNameShort;
+
+  // Debug print (after userTimezone is defined)
+  // todaySchedule.forEach(item => {
+  //   const scheduledLocal = DateTime.fromISO(item.scheduled_datetime, { zone: 'utc' }).setZone(userTimezone);
+  //   console.log(`Scheduled UTC: ${item.scheduled_datetime}, Local: ${scheduledLocal.toString()} (${userTimezone})`);
+  // });
 
   const isLoading = scheduleLoading || statsLoading || alertsLoading;
 
@@ -53,7 +63,11 @@ export function DashboardPage() {
             Here's your medication overview for {format(new Date(), 'EEEE, MMMM d, yyyy')}
           </p>
         </div>
-        <div className="text-right">
+        <div className="flex flex-col items-end gap-2">
+          <div className="flex items-center gap-2">
+            <Clock className="w-5 h-5 text-primary" />
+            <span className="text-lg font-semibold">{localTimeStr} <span className="text-xs text-muted-foreground">{localTzStr}</span></span>
+          </div>
           <div className="text-2xl font-bold text-primary">
             {(stats.today.adherenceRate).toFixed() || 0}%
           </div>
@@ -141,9 +155,22 @@ export function DashboardPage() {
                     <Pill className="h-5 w-5 text-primary" />
                   </div>
                   <div>
-                    <div className="font-medium">{item.medication.name}</div>
+                    <div className="font-medium">
+                      {item.medication ? item.medication.name : <span className="italic text-muted-foreground">Unknown</span>}
+                    </div>
                     <div className="text-sm text-muted-foreground">
-                      {item.medication.dosage.amount}{item.medication.dosage.unit} at {item.scheduled_time}
+                      {item.medication && item.medication.dosage ? (
+                        <>
+                          {item.medication.dosage.amount}
+                          {item.medication.dosage.unit}
+                        </>
+                      ) : (
+                        <span className="italic">No dosage</span>
+                      )}
+                      {" at "}
+                      <span className="font-semibold">
+                        {item.scheduled_local_time}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -204,12 +231,11 @@ export function DashboardPage() {
               alerts.map((alert) => (
                 <div
                   key={alert.id}
-                  className={`p-4 rounded-lg border ${
-                    alert.priority === 'warning' ? 'bg-warning-light' :
+                  className={`p-4 rounded-lg border ${alert.priority === 'warning' ? 'bg-warning-light' :
                     alert.priority === 'info' ? 'bg-info-light' :
-                    alert.priority === 'success' ? 'bg-success-light' :
-                    'bg-muted'
-                  }`}
+                      alert.priority === 'success' ? 'bg-success-light' :
+                        'bg-muted'
+                    }`}
                 >
                   <div className="flex items-center space-x-2">
                     {alert.type === 'refill' && <AlertTriangle className="h-4 w-4" />}

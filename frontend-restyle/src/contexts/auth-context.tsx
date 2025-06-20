@@ -111,15 +111,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, [invalidateAuthQueries, handleAuthError]);
 
+  // Helper: Retry fetching user profile/settings with backoff
+  async function waitForUserProfile(userId: string, maxAttempts = 6, delayMs = 500): Promise<void> {
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        // Try to fetch both profile and settings
+        await Promise.all([
+          import('@/api/auth').then(m => m.getUserProfile(userId)),
+          import('@/api/auth').then(m => m.getUserSettings(userId)),
+        ]);
+        return; // Success
+      } catch (err) {
+        if (attempt === maxAttempts) throw err;
+        await new Promise(res => setTimeout(res, delayMs * attempt)); // Exponential backoff
+      }
+    }
+  }
+
   // Funciones de autenticación con manejo de errores mejorado
   const login = async (email: string, password: string, redirectTo: string = '/dashboard') => {
     try {
       setAuthError(null);
       const result = await signInMutation.mutateAsync({ email, password });
-      
+      // Esperar a que el perfil/settings estén disponibles
+      if (result?.user?.id) {
+        await waitForUserProfile(result.user.id);
+      }
       // Redirección después de login exitoso
       navigate(redirectTo);
-      
       return result;
     } catch (error) {
       handleAuthError(error);
@@ -131,10 +150,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       setAuthError(null);
       const result = await signUpMutation.mutateAsync({ name, email, password });
-      
+      // Esperar a que el perfil/settings estén disponibles
+      if (result?.user?.id) {
+        await waitForUserProfile(result.user.id);
+      }
       // Redirección después de registro exitoso
       navigate(redirectTo);
-      
       return result;
     } catch (error) {
       handleAuthError(error);

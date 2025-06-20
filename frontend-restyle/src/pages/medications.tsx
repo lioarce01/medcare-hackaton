@@ -1,79 +1,81 @@
-import { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
-import { Separator } from '@/components/ui/separator';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { DashboardSkeleton } from '@/components/ui/loading-skeleton';
-import { toast } from 'sonner';
+"use client"
+
+import { useState, useEffect } from "react"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Badge } from "@/components/ui/badge"
+import { Switch } from "@/components/ui/switch"
+import { Separator } from "@/components/ui/separator"
 import {
-  Pill,
-  Plus,
-  Search,
-  Filter,
-  Edit,
-  Trash2,
-  Clock,
-  Calendar,
-  AlertTriangle,
-  CheckCircle2,
-  Info,
-  X,
-} from 'lucide-react';
-import { Medication } from '@/types';
-import { useMedicationLimits } from '@/hooks/useSubscription';
-import { LimitGuard } from '@/components/premium/premium-guard';
-import { useMedicationsWithFilters, useCreateMedication, useUpdateMedication, useDeleteMedication } from '@/hooks/useMedications';
-import { useAuth } from '@/hooks/useAuth';
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { DashboardSkeleton } from "@/components/ui/loading-skeleton"
+import { toast } from "sonner"
+import { Pill, Plus, Search, Edit, Trash2, Clock, Calendar, AlertTriangle, CheckCircle2, Info, X } from "lucide-react"
+import type { Medication } from "@/types"
+import { useMedicationLimits } from "@/hooks/useSubscription"
+import { LimitGuard } from "@/components/premium/premium-guard"
+import {
+  useMedicationsWithFilters,
+  useCreateMedication,
+  useUpdateMedication,
+  useDeleteMedication,
+} from "@/hooks/useMedications"
+import { useAuth } from "@/hooks/useAuth"
+import { DateTime } from "luxon"
 
 const medicationSchema = z.object({
-  name: z.string().min(1, 'Medication name is required'),
-  dosage_amount: z.number().min(0.1, 'Dosage amount must be greater than 0'),
-  dosage_unit: z.string().min(1, 'Dosage unit is required'),
-  dosage_form: z.string().min(1, 'Dosage form is required'),
-  frequency_type: z.enum(['daily', 'weekly', 'as_needed']),
-  frequency_interval: z.number().min(1, 'Frequency interval must be at least 1'),
-  times_per_day: z.number().min(1, 'Times per day must be at least 1').optional(),
-  specific_days: z.array(z.string()).optional(), // ✅ AÑADIR ESTO
-  scheduled_times: z.array(z.string()).min(1, 'At least one scheduled time is required'),
+  name: z.string().min(1, "Medication name is required"),
+  dosage_amount: z.number().min(0.1, "Dosage amount must be greater than 0"),
+  dosage_unit: z.string().min(1, "Dosage unit is required"),
+  dosage_form: z.string().min(1, "Dosage form is required"),
+  frequency_type: z.enum(["daily", "weekly", "as_needed"]),
+  frequency_interval: z.number().min(1, "Frequency interval must be at least 1"),
+  times_per_day: z.number().min(1, "Times per day must be at least 1").optional(),
+  specific_days: z.array(z.string()).optional(),
+  scheduled_times: z.array(z.string()).min(1, "At least one scheduled time is required"),
   instructions: z.string().optional(),
-  start_date: z.string().min(1, 'Start date is required'),
+  start_date: z.string().min(1, "Start date is required"),
   end_date: z.string().optional(),
-  medication_type: z.enum(['prescription', 'otc', 'supplement']),
+  medication_type: z.enum(["prescription", "otc", "supplement"]),
   side_effects_to_watch: z.array(z.string()).optional(),
   refill_reminder_enabled: z.boolean(),
   refill_reminder_days: z.number().min(1).max(30).optional(),
-  supply_amount: z.number().min(1, 'Supply amount must be at least 1').optional(),
-});
+  supply_amount: z.number().min(1, "Supply amount must be at least 1").optional(),
+})
 
-type MedicationFormData = z.infer<typeof medicationSchema>;
+type MedicationFormData = z.infer<typeof medicationSchema>
 
 export function MedicationsPage() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterType, setFilterType] = useState<string>('all');
-  const [editingMedication, setEditingMedication] = useState<Medication | null>(null);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [medicationToDelete, setMedicationToDelete] = useState<Medication | null>(null);
-  const [activeTab, setActiveTab] = useState('list');
+  const [searchTerm, setSearchTerm] = useState("")
+  const [filterType, setFilterType] = useState<string>("all")
+  const [editingMedication, setEditingMedication] = useState<Medication | null>(null)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [medicationToDelete, setMedicationToDelete] = useState<Medication | null>(null)
+  const [activeTab, setActiveTab] = useState("list")
 
   // Use real data hooks
-  const { data: filteredMedications = [], isLoading, originalData } = useMedicationsWithFilters(searchTerm, filterType);
-  const createMedicationMutation = useCreateMedication();
-  const updateMedicationMutation = useUpdateMedication();
-  const deleteMedicationMutation = useDeleteMedication();
+  const { data: filteredMedications = [], isLoading, originalData } = useMedicationsWithFilters(searchTerm, filterType)
+  const createMedicationMutation = useCreateMedication()
+  const updateMedicationMutation = useUpdateMedication()
+  const deleteMedicationMutation = useDeleteMedication()
 
-  const { canAdd, isAtLimit, maxMedications, currentCount } = useMedicationLimits(originalData?.length || 0);
+  const { canAdd, maxMedications, currentCount } = useMedicationLimits(originalData?.length || 0)
 
-  const { user } = useAuth();
+  const { user } = useAuth()
 
   const {
     register,
@@ -85,30 +87,43 @@ export function MedicationsPage() {
   } = useForm<MedicationFormData>({
     resolver: zodResolver(medicationSchema),
     defaultValues: {
-      frequency_type: 'daily',
+      frequency_type: "daily",
       frequency_interval: 1,
       times_per_day: 1,
-      medication_type: 'prescription',
+      medication_type: "prescription",
       refill_reminder_enabled: true,
       refill_reminder_days: 7,
-      scheduled_times: ['08:00'],
+      scheduled_times: ["08:00"],
       side_effects_to_watch: [],
-      supply_amount: 1
+      supply_amount: 1,
     },
-  });
+  })
 
-  const frequencyType = watch('frequency_type');
-  const timesPerDay = watch('times_per_day') || 1;
-  const refillReminderEnabled = watch('refill_reminder_enabled');
+  const frequencyType = watch("frequency_type")
+  const timesPerDay = watch("times_per_day") || 1
+  const refillReminderEnabled = watch("refill_reminder_enabled")
 
-  console.log("filteredMedications:", filteredMedications, Array.isArray(filteredMedications));
-
+  console.log("filteredMedications:", filteredMedications, Array.isArray(filteredMedications))
 
   const onSubmit = async (data: MedicationFormData) => {
     try {
+      // Get user timezone
+      const userTz = user?.settings?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone
+
+      // Convert scheduled_times from local time to UTC before sending to backend
+      const scheduled_times_utc = data.scheduled_times.map((timeStr) => {
+        const [hours, minutes] = timeStr.split(":").map(Number)
+        const userZone = userTz
+        // Use start_date as the reference date
+        const refDate = DateTime.fromISO(data.start_date, { zone: userZone })
+        const localDateTime = refDate.set({ hour: hours, minute: minutes, second: 0, millisecond: 0 })
+        const utcDateTime = localDateTime.toUTC()
+        return utcDateTime.toFormat("HH:mm")
+      })
+
       const newMedication: Medication = {
         id: editingMedication?.id || `med-${Date.now()}`,
-        user_id: '',
+        user_id: "",
         name: data.name,
         dosage: {
           amount: data.dosage_amount,
@@ -121,39 +136,38 @@ export function MedicationsPage() {
           times_per_day: data.times_per_day,
           specific_days: data.specific_days || [],
         },
-        scheduled_times: data.scheduled_times,
-        instructions: data.instructions || '',
-        start_date: new Date(data.start_date).toISOString(),
-        end_date: data.end_date ? new Date(data.end_date).toISOString() : undefined,
+        scheduled_times: scheduled_times_utc, // just send as is
+        instructions: data.instructions || "",
+        start_date: data.start_date,
+        end_date: data.end_date || undefined,
         refill_reminder: data.refill_reminder_enabled
           ? {
-              enabled: true,
-              threshold: data.refill_reminder_days || 7,
-              last_refill: new Date(data.start_date).toISOString(),
-              next_refill: null,
-              supply_amount: data.supply_amount ?? 1,
-              supply_unit: 'days',
-            }
+            enabled: true,
+            threshold: data.refill_reminder_days || 7,
+            last_refill: data.start_date,
+            next_refill: null,
+            supply_amount: data.supply_amount ?? 1,
+            supply_unit: "days",
+          }
           : null,
         side_effects_to_watch: data.side_effects_to_watch || [],
         active: true,
         medication_type: data.medication_type,
         created_at: editingMedication?.created_at || new Date().toISOString(),
         updated_at: new Date().toISOString(),
-      };
-
-      if (newMedication.refill_reminder && !Array.isArray(newMedication.refill_reminder)) {
-          // OK, dejamos el objeto tal cual
-        } else {
-          newMedication.refill_reminder = null;
       }
 
-      console.log("🚀 newMedication:", newMedication);
+      if (newMedication.refill_reminder && !Array.isArray(newMedication.refill_reminder)) {
+        // OK, dejamos el objeto tal cual
+      } else {
+        newMedication.refill_reminder = null
+      }
 
+      console.log("🚀 newMedication:", newMedication)
 
       if (!newMedication.refill_reminder) {
-          throw new Error("Refill reminder is missing");
-        }
+        throw new Error("Refill reminder is missing")
+      }
 
       if (editingMedication) {
         await updateMedicationMutation.mutateAsync({
@@ -168,21 +182,21 @@ export function MedicationsPage() {
             end_date: newMedication.end_date,
             refill_reminder: {
               enabled: newMedication.refill_reminder?.enabled || false,
-              days_before: newMedication.refill_reminder?.threshold || 7, 
+              days_before: newMedication.refill_reminder?.threshold || 7,
               threshold: newMedication.refill_reminder?.threshold || 7,
               last_refill: newMedication.refill_reminder?.last_refill || null,
               next_refill: newMedication.refill_reminder?.next_refill || null,
               supply_amount: newMedication.refill_reminder?.supply_amount || 0,
-              supply_unit: newMedication.refill_reminder?.supply_unit || 'days',
+              supply_unit: newMedication.refill_reminder?.supply_unit || "days",
             },
             side_effects_to_watch: newMedication.side_effects_to_watch,
             medication_type: newMedication.medication_type,
           },
-        });
-        setEditingMedication(null);
+        })
+        setEditingMedication(null)
       } else {
         await createMedicationMutation.mutateAsync({
-          user_id: user?.id ?? '',
+          user_id: user?.id ?? "",
           name: newMedication.name,
           dosage: newMedication.dosage,
           frequency: newMedication.frequency,
@@ -192,89 +206,88 @@ export function MedicationsPage() {
           end_date: newMedication.end_date,
           refill_reminder: newMedication.refill_reminder?.enabled
             ? {
-                enabled: newMedication.refill_reminder.enabled,
-                threshold: newMedication.refill_reminder.threshold,
-                days_before: newMedication.refill_reminder.threshold,
-                last_refill: newMedication.refill_reminder.last_refill,
-                next_refill: newMedication.refill_reminder.next_refill,
-                supply_amount: newMedication.refill_reminder.supply_amount,
-                supply_unit: newMedication.refill_reminder.supply_unit,
-              }
+              enabled: newMedication.refill_reminder.enabled,
+              threshold: newMedication.refill_reminder.threshold,
+              days_before: newMedication.refill_reminder.threshold,
+              last_refill: newMedication.refill_reminder.last_refill,
+              next_refill: newMedication.refill_reminder.next_refill,
+              supply_amount: newMedication.refill_reminder.supply_amount,
+              supply_unit: newMedication.refill_reminder.supply_unit,
+            }
             : null,
           side_effects_to_watch: newMedication.side_effects_to_watch,
           medication_type: newMedication.medication_type,
-        });
+        })
       }
 
-      reset();
-      setActiveTab('list');
+      reset()
+      setActiveTab("list")
     } catch (error) {
-      toast.error('Failed to save medication');
+      toast.error("Failed to save medication")
     }
-  };
+  }
 
   const handleEdit = (medication: Medication) => {
-    setEditingMedication(medication);
-    setValue('name', medication.name);
-    setValue('dosage_amount', medication.dosage.amount);
-    setValue('dosage_unit', medication.dosage.unit);
-    setValue('dosage_form', medication.dosage.form);
-    setValue('frequency_type', medication.frequency.type);
-    setValue('frequency_interval', medication.frequency.interval);
-    setValue('times_per_day', medication.frequency.times_per_day ?? 1);
-    setValue('specific_days', medication.frequency.specific_days ?? []); // aquí el cambio
-    setValue('scheduled_times', medication.scheduled_times);
-    setValue('instructions', medication.instructions || '');
-    setValue('start_date', medication.start_date.split('T')[0]);
-    setValue('end_date', medication.end_date ? medication.end_date.split('T')[0] : '');
-    setValue('medication_type', medication.medication_type || 'prescription');
-    setValue('side_effects_to_watch', medication.side_effects_to_watch ?? []);
-    setValue('refill_reminder_enabled', medication.refill_reminder?.enabled ?? false);
-    setValue('refill_reminder_days', medication.refill_reminder?.threshold ?? 7); // asumiendo que usas 'days_before'
-    setValue('supply_amount', medication.refill_reminder?.supply_amount ?? 1);
-    setActiveTab('create');
-  };
-
+    setEditingMedication(medication)
+    setValue("name", medication.name)
+    setValue("dosage_amount", medication.dosage.amount)
+    setValue("dosage_unit", medication.dosage.unit)
+    setValue("dosage_form", medication.dosage.form)
+    setValue("frequency_type", medication.frequency.type)
+    setValue("frequency_interval", medication.frequency.interval)
+    setValue("times_per_day", medication.frequency.times_per_day ?? 1)
+    setValue("specific_days", medication.frequency.specific_days ?? []) // aquí el cambio
+    setValue("scheduled_times", medication.scheduled_times)
+    setValue("instructions", medication.instructions || "")
+    setValue("start_date", medication.start_date.split("T")[0])
+    setValue("end_date", medication.end_date ? medication.end_date.split("T")[0] : "")
+    setValue("medication_type", medication.medication_type || "prescription")
+    setValue("side_effects_to_watch", medication.side_effects_to_watch ?? [])
+    setValue("refill_reminder_enabled", medication.refill_reminder?.enabled ?? false)
+    setValue("refill_reminder_days", medication.refill_reminder?.threshold ?? 7) // asumiendo que usas 'days_before'
+    setValue("supply_amount", medication.refill_reminder?.supply_amount ?? 1)
+    setActiveTab("create")
+  }
 
   const handleDelete = (medication: Medication) => {
-    setMedicationToDelete(medication);
-    setIsDeleteDialogOpen(true);
-  };
+    setMedicationToDelete(medication)
+    setIsDeleteDialogOpen(true)
+  }
 
   const confirmDelete = async () => {
     if (medicationToDelete) {
       try {
-        await deleteMedicationMutation.mutateAsync(medicationToDelete.id);
-        setIsDeleteDialogOpen(false);
-        setMedicationToDelete(null);
+        await deleteMedicationMutation.mutateAsync(medicationToDelete.id)
+        setIsDeleteDialogOpen(false)
+        setMedicationToDelete(null)
       } catch (error) {
-        console.error('Failed to delete medication:', error);
+        console.error("Failed to delete medication:", error)
       }
     }
-  };
+  }
 
   const generateTimeSlots = (count: number) => {
-    const times = [];
-    const startHour = 8; // Start at 8 AM
-    const interval = Math.floor(12 / count); // Distribute over 12 hours
+    const times = []
+    const startHour = 8 // Start at 8 AM
+    const interval = Math.floor(12 / count) // Distribute over 12 hours
 
     for (let i = 0; i < count; i++) {
-      const hour = startHour + (i * interval);
-      const timeString = `${hour.toString().padStart(2, '0')}:00`;
-      times.push(timeString);
+      const hour = startHour + i * interval
+      const timeString = `${hour.toString().padStart(2, "0")}:00`
+      times.push(timeString)
     }
 
-    setValue('scheduled_times', times);
-  };
+    setValue("scheduled_times", times)
+  }
 
   useEffect(() => {
-    if (frequencyType === 'daily' && timesPerDay) {
-      generateTimeSlots(timesPerDay);
+    if (frequencyType === "daily" && timesPerDay) {
+      generateTimeSlots(timesPerDay)
     }
-  }, [timesPerDay, frequencyType]);
+  }, [timesPerDay, frequencyType])
 
   if (isLoading) {
-    return <DashboardSkeleton />;
+    return <DashboardSkeleton />
   }
 
   return (
@@ -282,21 +295,15 @@ export function MedicationsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Medications</h1>
-          <p className="text-muted-foreground">
-            Manage your medication schedule and track your prescriptions
-          </p>
+          <p className="text-muted-foreground">Manage your medication schedule and track your prescriptions</p>
         </div>
         {canAdd ? (
-          <Button onClick={() => setActiveTab('create')} className="flex items-center gap-2">
+          <Button onClick={() => setActiveTab("create")} className="flex items-center gap-2">
             <Plus className="h-4 w-4" />
             Add Medication
           </Button>
         ) : (
-          <LimitGuard
-            currentCount={currentCount}
-            maxCount={maxMedications}
-            itemName="medication"
-          >
+          <LimitGuard currentCount={currentCount} maxCount={maxMedications} itemName="medication">
             <Button disabled className="flex items-center gap-2">
               <Plus className="h-4 w-4" />
               Add Medication
@@ -308,9 +315,7 @@ export function MedicationsPage() {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="list">Medication List</TabsTrigger>
-          <TabsTrigger value="create">
-            {editingMedication ? 'Edit Medication' : 'Add Medication'}
-          </TabsTrigger>
+          <TabsTrigger value="create">{editingMedication ? "Edit Medication" : "Add Medication"}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="list" className="space-y-6">
@@ -360,12 +365,11 @@ export function MedicationsPage() {
                   <Pill className="h-12 w-12 text-muted-foreground mb-4" />
                   <h3 className="text-lg font-semibold mb-2">No medications found</h3>
                   <p className="text-muted-foreground text-center mb-4">
-                    {searchTerm || filterType !== 'all' 
-                      ? 'Try adjusting your search or filter criteria'
-                      : 'Get started by adding your first medication'
-                    }
+                    {searchTerm || filterType !== "all"
+                      ? "Try adjusting your search or filter criteria"
+                      : "Get started by adding your first medication"}
                   </p>
-                  <Button onClick={() => setActiveTab('create')}>
+                  <Button onClick={() => setActiveTab("create")}>
                     <Plus className="h-4 w-4 mr-2" />
                     Add Medication
                   </Button>
@@ -374,29 +378,34 @@ export function MedicationsPage() {
             ) : (
               filteredMedications?.map((medication) => (
                 <Card key={medication.id} className="hover:shadow-md transition-shadow">
-                  <CardHeader>
+                  <CardHeader className="pb-4">
                     <div className="flex items-start justify-between">
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-3">
                           <CardTitle className="text-xl">{medication.name}</CardTitle>
-                          <Badge variant={
-                            medication.medication_type === 'prescription' ? 'default' :
-                            medication.medication_type === 'otc' ? 'secondary' : 'outline'
-                          }>
-                            {medication.medication_type === 'prescription' ? 'Prescription' :
-                             medication.medication_type === 'otc' ? 'OTC' : 'Supplement'}
+                          <Badge
+                            variant={
+                              medication.medication_type === "prescription"
+                                ? "default"
+                                : medication.medication_type === "otc"
+                                  ? "secondary"
+                                  : "outline"
+                            }
+                          >
+                            {medication.medication_type === "prescription"
+                              ? "Prescription"
+                              : medication.medication_type === "otc"
+                                ? "OTC"
+                                : "Supplement"}
                           </Badge>
                         </div>
-                        <CardDescription>
-                          {medication.dosage.amount}{medication.dosage.unit} {medication.dosage.form}
+                        <CardDescription className="text-base font-medium">
+                          {medication.dosage.amount}
+                          {medication.dosage.unit} {medication.dosage.form}
                         </CardDescription>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleEdit(medication)}
-                        >
+                        <Button variant="outline" size="sm" onClick={() => handleEdit(medication)}>
                           <Edit className="h-4 w-4" />
                         </Button>
                         <Button
@@ -410,51 +419,67 @@ export function MedicationsPage() {
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2 text-sm">
-                          <Clock className="h-4 w-4 text-muted-foreground" />
-                          <span className="font-medium">Schedule:</span>
-                        </div>
-                        <div className="flex flex-wrap gap-1">
-                          {medication.scheduled_times.map((time, index) => (
-                            <Badge key={index} variant="outline" className="text-xs">
-                              {time}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2 text-sm">
-                          <Calendar className="h-4 w-4 text-muted-foreground" />
-                          <span className="font-medium">Frequency:</span>
-                        </div>
-                        <p className="text-sm text-muted-foreground">
+
+                  <CardContent className="space-y-6">
+                    {/* Schedule Section */}
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-muted-foreground" />
+                        <span className="font-semibold text-sm">Daily Schedule</span>
+                        <Separator className="flex-1" />
+                        <span className="text-xs text-muted-foreground">
                           {medication.frequency.times_per_day} time(s) {medication.frequency.type}
-                        </p>
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {medication.scheduled_times.map((time, index) => {
+                          const userTz = user?.settings?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone
+                          const refDate = medication.start_date
+                            ? DateTime.fromISO(medication.start_date, { zone: "utc" })
+                            : DateTime.now()
+                          const utcDateTime = refDate
+                            .set({
+                              hour: Number(time.split(":")[0]),
+                              minute: Number(time.split(":")[1] || 0),
+                              second: 0,
+                              millisecond: 0,
+                            })
+                            .setZone("utc")
+                          const localDateTime = utcDateTime.setZone(userTz)
+                          return (
+                            <Badge key={index} variant="outline" className="px-3 py-1 font-mono">
+                              {localDateTime.toFormat("HH:mm")}
+                            </Badge>
+                          )
+                        })}
                       </div>
                     </div>
 
+                    {/* Instructions Section */}
                     {medication.instructions && (
                       <div className="space-y-2">
-                        <div className="flex items-center gap-2 text-sm">
+                        <div className="flex items-center gap-2">
                           <Info className="h-4 w-4 text-muted-foreground" />
-                          <span className="font-medium">Instructions:</span>
+                          <span className="font-semibold text-sm">Instructions</span>
                         </div>
-                        <p className="text-sm text-muted-foreground">{medication.instructions}</p>
+                        <p className="text-sm text-muted-foreground pl-6 leading-relaxed">{medication.instructions}</p>
                       </div>
                     )}
 
+                    {/* Side Effects Section */}
                     {medication.side_effects_to_watch.length > 0 && (
                       <div className="space-y-2">
-                        <div className="flex items-center gap-2 text-sm">
-                          <AlertTriangle className="h-4 w-4 text-yellow-500" />
-                          <span className="font-medium">Side Effects to Watch:</span>
+                        <div className="flex items-center gap-2">
+                          <AlertTriangle className="h-4 w-4 text-amber-500" />
+                          <span className="font-semibold text-sm">Side Effects to Monitor</span>
                         </div>
-                        <div className="flex flex-wrap gap-1">
+                        <div className="flex flex-wrap gap-2 pl-6">
                           {medication.side_effects_to_watch.map((effect, index) => (
-                            <Badge key={index} variant="outline" className="text-xs bg-warning-light border">
+                            <Badge
+                              key={index}
+                              variant="outline"
+                              className="text-xs bg-amber-50 border-amber-200 text-amber-800"
+                            >
                               {effect}
                             </Badge>
                           ))}
@@ -462,12 +487,23 @@ export function MedicationsPage() {
                       </div>
                     )}
 
-                    {medication.refill_reminder?.enabled && (
-                      <div className="flex items-center gap-2 text-sm text-blue-600">
-                        <CheckCircle2 className="h-4 w-4" />
-                        <span>Refill reminder enabled ({medication.refill_reminder.threshold} days before)</span>
+                    {/* Footer Section */}
+                    <div className="pt-2 border-t">
+                      <div className="flex items-center justify-between text-sm">
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <Calendar className="h-4 w-4" />
+                          <span>Started {new Date(medication.start_date).toLocaleDateString()}</span>
+                        </div>
+                        {medication.refill_reminder?.enabled && (
+                          <div className="flex items-center gap-2 text-blue-600">
+                            <CheckCircle2 className="h-4 w-4" />
+                            <span className="text-xs">
+                              Refill reminder ({medication.refill_reminder.threshold} days)
+                            </span>
+                          </div>
+                        )}
                       </div>
-                    )}
+                    </div>
                   </CardContent>
                 </Card>
               ))
@@ -477,49 +513,81 @@ export function MedicationsPage() {
 
         <TabsContent value="create" className="space-y-6">
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Pill className="h-5 w-5" />
-                {editingMedication ? 'Edit Medication' : 'Add New Medication'}
-              </CardTitle>
-              <CardDescription>
-                {editingMedication 
-                  ? 'Update your medication details and schedule'
-                  : 'Enter your medication details and set up your schedule'
-                }
-              </CardDescription>
+            <CardHeader className="pb-6">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <Pill className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <CardTitle className="text-2xl">
+                    {editingMedication ? "Edit Medication" : "Add New Medication"}
+                  </CardTitle>
+                  <CardDescription className="text-base">
+                    {editingMedication
+                      ? "Update your medication details and schedule"
+                      : "Enter your medication details and set up your schedule"}
+                  </CardDescription>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                {/* Basic Information */}
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+                {/* Basic Information Section */}
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">Basic Information</h3>
-                  <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="flex items-center gap-2 pb-2">
+                    <Info className="h-5 w-5 text-muted-foreground" />
+                    <h3 className="text-lg font-semibold">Basic Information</h3>
+                    <Separator className="flex-1 ml-4" />
+                  </div>
+                  <div className="grid gap-6 sm:grid-cols-2 pl-7">
                     <div className="space-y-2">
-                      <Label htmlFor="name">Medication Name *</Label>
+                      <Label htmlFor="name" className="text-sm font-medium">
+                        Medication Name *
+                      </Label>
                       <Input
                         id="name"
-                        placeholder="e.g., Lisinopril"
-                        {...register('name')}
-                        aria-invalid={errors.name ? 'true' : 'false'}
+                        placeholder="e.g., Lisinopril, Aspirin, Vitamin D"
+                        {...register("name")}
+                        aria-invalid={errors.name ? "true" : "false"}
+                        className="h-11"
                       />
                       {errors.name && (
-                        <p className="text-sm text-destructive">{errors.name.message}</p>
+                        <p className="text-sm text-destructive flex items-center gap-1">
+                          <AlertTriangle className="h-3 w-3" />
+                          {errors.name.message}
+                        </p>
                       )}
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="medication_type">Type *</Label>
+                      <Label htmlFor="medication_type" className="text-sm font-medium">
+                        Medication Type *
+                      </Label>
                       <Select
-                        value={watch('medication_type')}
-                        onValueChange={(value) => setValue('medication_type', value as any)}
+                        value={watch("medication_type")}
+                        onValueChange={(value) => setValue("medication_type", value as any)}
                       >
-                        <SelectTrigger>
-                          <SelectValue />
+                        <SelectTrigger className="h-11">
+                          <SelectValue placeholder="Select medication type" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="prescription">Prescription</SelectItem>
-                          <SelectItem value="otc">Over-the-Counter</SelectItem>
-                          <SelectItem value="supplement">Supplement</SelectItem>
+                          <SelectItem value="prescription">
+                            <div className="flex items-center gap-2">
+                              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                              Prescription
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="otc">
+                            <div className="flex items-center gap-2">
+                              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                              Over-the-Counter
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="supplement">
+                            <div className="flex items-center gap-2">
+                              <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                              Supplement
+                            </div>
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -528,52 +596,63 @@ export function MedicationsPage() {
 
                 <Separator />
 
-                {/* Dosage Information */}
+                {/* Dosage Information Section */}
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">Dosage Information</h3>
-                  <div className="grid gap-4 sm:grid-cols-3">
+                  <div className="flex items-center gap-2 pb-2">
+                    <Pill className="h-5 w-5 text-muted-foreground" />
+                    <h3 className="text-lg font-semibold">Dosage Information</h3>
+                    <Separator className="flex-1 ml-4" />
+                  </div>
+                  <div className="grid gap-6 sm:grid-cols-3 pl-7">
                     <div className="space-y-2">
-                      <Label htmlFor="dosage_amount">Amount *</Label>
+                      <Label htmlFor="dosage_amount" className="text-sm font-medium">
+                        Amount *
+                      </Label>
                       <Input
                         id="dosage_amount"
                         type="number"
                         step="0.1"
                         placeholder="10"
-                        {...register('dosage_amount', { valueAsNumber: true })}
-                        aria-invalid={errors.dosage_amount ? 'true' : 'false'}
+                        {...register("dosage_amount", { valueAsNumber: true })}
+                        aria-invalid={errors.dosage_amount ? "true" : "false"}
+                        className="h-11"
                       />
                       {errors.dosage_amount && (
-                        <p className="text-sm text-destructive">{errors.dosage_amount.message}</p>
+                        <p className="text-sm text-destructive flex items-center gap-1">
+                          <AlertTriangle className="h-3 w-3" />
+                          {errors.dosage_amount.message}
+                        </p>
                       )}
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="dosage_unit">Unit *</Label>
-                      <Select
-                        value={watch('dosage_unit')}
-                        onValueChange={(value) => setValue('dosage_unit', value)}
-                      >
-                        <SelectTrigger>
+                      <Label htmlFor="dosage_unit" className="text-sm font-medium">
+                        Unit *
+                      </Label>
+                      <Select value={watch("dosage_unit")} onValueChange={(value) => setValue("dosage_unit", value)}>
+                        <SelectTrigger className="h-11">
                           <SelectValue placeholder="Select unit" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="mg">mg</SelectItem>
-                          <SelectItem value="g">g</SelectItem>
-                          <SelectItem value="ml">ml</SelectItem>
-                          <SelectItem value="IU">IU</SelectItem>
-                          <SelectItem value="mcg">mcg</SelectItem>
+                          <SelectItem value="mg">mg (milligrams)</SelectItem>
+                          <SelectItem value="g">g (grams)</SelectItem>
+                          <SelectItem value="ml">ml (milliliters)</SelectItem>
+                          <SelectItem value="IU">IU (International Units)</SelectItem>
+                          <SelectItem value="mcg">mcg (micrograms)</SelectItem>
                         </SelectContent>
                       </Select>
                       {errors.dosage_unit && (
-                        <p className="text-sm text-destructive">{errors.dosage_unit.message}</p>
+                        <p className="text-sm text-destructive flex items-center gap-1">
+                          <AlertTriangle className="h-3 w-3" />
+                          {errors.dosage_unit.message}
+                        </p>
                       )}
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="dosage_form">Form *</Label>
-                      <Select
-                        value={watch('dosage_form')}
-                        onValueChange={(value) => setValue('dosage_form', value)}
-                      >
-                        <SelectTrigger>
+                      <Label htmlFor="dosage_form" className="text-sm font-medium">
+                        Form *
+                      </Label>
+                      <Select value={watch("dosage_form")} onValueChange={(value) => setValue("dosage_form", value)}>
+                        <SelectTrigger className="h-11">
                           <SelectValue placeholder="Select form" />
                         </SelectTrigger>
                         <SelectContent>
@@ -586,7 +665,10 @@ export function MedicationsPage() {
                         </SelectContent>
                       </Select>
                       {errors.dosage_form && (
-                        <p className="text-sm text-destructive">{errors.dosage_form.message}</p>
+                        <p className="text-sm text-destructive flex items-center gap-1">
+                          <AlertTriangle className="h-3 w-3" />
+                          {errors.dosage_form.message}
+                        </p>
                       )}
                     </div>
                   </div>
@@ -594,224 +676,314 @@ export function MedicationsPage() {
 
                 <Separator />
 
-                {/* Frequency & Schedule */}
+                {/* Schedule & Frequency Section */}
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">Frequency & Schedule</h3>
-                  <div className="grid gap-4 sm:grid-cols-3">
-                    <div className="space-y-2">
-                      <Label htmlFor="frequency_type">Frequency Type *</Label>
-                      <Select
-                        value={watch('frequency_type')}
-                        onValueChange={(value) => setValue('frequency_type', value as any)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="daily">Daily</SelectItem>
-                          <SelectItem value="weekly">Weekly</SelectItem>
-                          <SelectItem value="as_needed">As Needed</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {(frequencyType === 'daily' || frequencyType === 'weekly') && (
+                  <div className="flex items-center gap-2 pb-2">
+                    <Clock className="h-5 w-5 text-muted-foreground" />
+                    <h3 className="text-lg font-semibold">Schedule & Frequency</h3>
+                    <Separator className="flex-1 ml-4" />
+                  </div>
+                  <div className="space-y-6 pl-7">
+                    <div className="grid gap-6 sm:grid-cols-3">
                       <div className="space-y-2">
-                        <Label htmlFor="times_per_day">Times per Day *</Label>
+                        <Label htmlFor="frequency_type" className="text-sm font-medium">
+                          Frequency Type *
+                        </Label>
+                        <Select
+                          value={watch("frequency_type")}
+                          onValueChange={(value) => setValue("frequency_type", value as any)}
+                        >
+                          <SelectTrigger className="h-11">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="daily">Daily</SelectItem>
+                            <SelectItem value="weekly">Weekly</SelectItem>
+                            <SelectItem value="as_needed">As Needed</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {(frequencyType === "daily" || frequencyType === "weekly") && (
+                        <div className="space-y-2">
+                          <Label htmlFor="times_per_day" className="text-sm font-medium">
+                            Times per Day *
+                          </Label>
+                          <Input
+                            id="times_per_day"
+                            type="number"
+                            min="1"
+                            max="6"
+                            {...register("times_per_day", { valueAsNumber: true })}
+                            className="h-11"
+                          />
+                        </div>
+                      )}
+
+                      <div className="space-y-2">
+                        <Label htmlFor="frequency_interval" className="text-sm font-medium">
+                          Interval *
+                        </Label>
                         <Input
-                          id="times_per_day"
+                          id="frequency_interval"
                           type="number"
                           min="1"
-                          max="6"
-                          {...register('times_per_day', { valueAsNumber: true })}
+                          placeholder="1"
+                          {...register("frequency_interval", { valueAsNumber: true })}
+                          className="h-11"
                         />
+                      </div>
+                    </div>
+
+                    {/* Weekly: Select specific days */}
+                    {frequencyType === "weekly" && (
+                      <div className="space-y-3">
+                        <Label className="text-sm font-medium">Specific Days</Label>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3">
+                          {["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"].map((day) => (
+                            <label
+                              key={day}
+                              className="flex items-center gap-2 p-3 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
+                            >
+                              <input
+                                type="checkbox"
+                                value={day}
+                                checked={watch("specific_days")?.includes(day)}
+                                onChange={(e) => {
+                                  const checked = e.target.checked
+                                  const prev = watch("specific_days") || []
+                                  const updated = checked ? [...prev, day] : prev.filter((d) => d !== day)
+                                  setValue("specific_days", updated)
+                                }}
+                                className="rounded"
+                              />
+                              <span className="text-sm font-medium">{day.slice(0, 3)}</span>
+                            </label>
+                          ))}
+                        </div>
                       </div>
                     )}
 
-                    <div className="space-y-2">
-                      <Label htmlFor="frequency_interval">Interval *</Label>
-                      <Input
-                        id="frequency_interval"
-                        type="number"
-                        min="1"
-                        placeholder="1"
-                        {...register('frequency_interval', { valueAsNumber: true })}
-                      />
-                    </div>
-                  </div>
-
-                  {/* ✅ Weekly: Select specific days */}
-                  {frequencyType === 'weekly' && (
-                    <div className="space-y-2">
-                      <Label>Specific Days</Label>
-                      <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2">
-                        {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map((day) => (
-                          <label key={day} className="flex items-center gap-2">
-                            <input
-                              type="checkbox"
-                              value={day}
-                              checked={watch('specific_days')?.includes(day)}
-                              onChange={(e) => {
-                                const checked = e.target.checked;
-                                const prev = watch('specific_days') || [];
-                                const updated = checked
-                                  ? [...prev, day]
-                                  : prev.filter((d) => d !== day);
-                                setValue('specific_days', updated);
-                              }}
-                            />
-                            {day.slice(0, 3)}
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* ✅ Daily or Weekly: Scheduled Times */}
-                  {(frequencyType === 'daily' || frequencyType === 'weekly') && (
-                    <div className="space-y-2">
-                      <Label>Scheduled Times</Label>
-                      <div className="grid gap-2 sm:grid-cols-3">
-                        {watch('scheduled_times')?.map((time, index) => (
-                          <div key={index} className="flex items-center gap-2">
-                            <Input
-                              type="time"
-                              value={time}
-                              onChange={(e) => {
-                                const times = [...(watch('scheduled_times') || [])];
-                                times[index] = e.target.value;
-                                setValue('scheduled_times', times);
-                              }}
-                            />
-                            {watch('scheduled_times')?.length > 1 && (
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={() => {
-                                  const times = watch('scheduled_times')?.filter((_, i) => i !== index) || [];
-                                  setValue('scheduled_times', times);
+                    {/* Daily or Weekly: Scheduled Times */}
+                    {(frequencyType === "daily" || frequencyType === "weekly") && (
+                      <div className="space-y-3">
+                        <Label className="text-sm font-medium">Scheduled Times</Label>
+                        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                          {watch("scheduled_times")?.map((time, index) => (
+                            <div key={index} className="flex items-center gap-2 p-3 border rounded-lg">
+                              <Clock className="h-4 w-4 text-muted-foreground" />
+                              <Input
+                                type="time"
+                                value={time}
+                                onChange={(e) => {
+                                  const times = [...(watch("scheduled_times") || [])]
+                                  times[index] = e.target.value
+                                  setValue("scheduled_times", times)
                                 }}
-                              >
-                                <X className="h-4 w-4" />
-                              </Button>
-                            )}
-                          </div>
-                        ))}
+                                className="border-0 p-0 h-auto focus-visible:ring-0"
+                              />
+                              {watch("scheduled_times")?.length > 1 && (
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => {
+                                    const times = watch("scheduled_times")?.filter((_, i) => i !== index) || []
+                                    setValue("scheduled_times", times)
+                                  }}
+                                  className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => {
+                            const current = watch("scheduled_times") || []
+                            setValue("scheduled_times", [...current, "12:00"])
+                          }}
+                          className="w-full sm:w-auto"
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          Add Time Slot
+                        </Button>
                       </div>
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        onClick={() => {
-                          const current = watch('scheduled_times') || [];
-                          setValue('scheduled_times', [...current, '']);
-                        }}
-                      >
-                        + Add Time
-                      </Button>
-                    </div>
-                  )}
-
-                  {/* ✅ Refill Reminder: Supply Amount */}
-                  {watch('refill_reminder_enabled') && (
-                    <div className="space-y-2">
-                      <Label htmlFor="supply_amount">Supply Amount</Label>
-                      <Input
-                        id="supply_amount"
-                        type="number"
-                        min="1"
-                        placeholder="e.g. 30"
-                        {...register('supply_amount', { valueAsNumber: true })}
-                      />
-                    {watch("supply_amount") && watch("times_per_day") ? (
-                  <p className="text-sm text-muted-foreground">
-                    This supply lasts approximately{" "}
-                    {Math.floor(watch("supply_amount")! / watch("times_per_day")!)} day(s)
-                  </p>
-                ) : null}
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
-
 
                 <Separator />
 
-                {/* Additional Information */}
+                {/* Treatment Period Section */}
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">Additional Information</h3>
-                  <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="flex items-center gap-2 pb-2">
+                    <Calendar className="h-5 w-5 text-muted-foreground" />
+                    <h3 className="text-lg font-semibold">Treatment Period</h3>
+                    <Separator className="flex-1 ml-4" />
+                  </div>
+                  <div className="grid gap-6 sm:grid-cols-2 pl-7">
                     <div className="space-y-2">
-                      <Label htmlFor="start_date">Start Date *</Label>
+                      <Label htmlFor="start_date" className="text-sm font-medium">
+                        Start Date *
+                      </Label>
                       <Input
                         id="start_date"
                         type="date"
-                        {...register('start_date')}
-                        aria-invalid={errors.start_date ? 'true' : 'false'}
+                        {...register("start_date")}
+                        aria-invalid={errors.start_date ? "true" : "false"}
+                        className="h-11"
                       />
                       {errors.start_date && (
-                        <p className="text-sm text-destructive">{errors.start_date.message}</p>
+                        <p className="text-sm text-destructive flex items-center gap-1">
+                          <AlertTriangle className="h-3 w-3" />
+                          {errors.start_date.message}
+                        </p>
                       )}
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="end_date">End Date (Optional)</Label>
-                      <Input
-                        id="end_date"
-                        type="date"
-                        {...register('end_date')}
-                      />
+                      <Label htmlFor="end_date" className="text-sm font-medium">
+                        End Date (Optional)
+                      </Label>
+                      <Input id="end_date" type="date" {...register("end_date")} className="h-11" />
+                      <p className="text-xs text-muted-foreground">Leave empty for ongoing treatment</p>
                     </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="instructions">Instructions</Label>
-                    <Textarea
-                      id="instructions"
-                      placeholder="e.g., Take with food, avoid alcohol..."
-                      {...register('instructions')}
-                    />
                   </div>
                 </div>
 
                 <Separator />
 
-                {/* Refill Reminder */}
+                {/* Instructions & Notes Section */}
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">Refill Reminder</h3>
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      id="refill_reminder_enabled"
-                      checked={refillReminderEnabled}
-                      onCheckedChange={(checked) => setValue('refill_reminder_enabled', checked)}
-                    />
-                    <Label htmlFor="refill_reminder_enabled">Enable refill reminders</Label>
+                  <div className="flex items-center gap-2 pb-2">
+                    <Info className="h-5 w-5 text-muted-foreground" />
+                    <h3 className="text-lg font-semibold">Instructions & Notes</h3>
+                    <Separator className="flex-1 ml-4" />
                   </div>
-                  {refillReminderEnabled && (
+                  <div className="space-y-4 pl-7">
                     <div className="space-y-2">
-                      <Label htmlFor="refill_reminder_days">Remind me (days before running out)</Label>
-                      <Input
-                        id="refill_reminder_days"
-                        type="number"
-                        min="1"
-                        max="30"
-                        {...register('refill_reminder_days', { valueAsNumber: true })}
+                      <Label htmlFor="instructions" className="text-sm font-medium">
+                        Special Instructions
+                      </Label>
+                      <Textarea
+                        id="instructions"
+                        placeholder="e.g., Take with food, avoid alcohol, take on empty stomach..."
+                        {...register("instructions")}
+                        className="min-h-[100px] resize-none"
                       />
+                      <p className="text-xs text-muted-foreground">
+                        Include any special instructions from your doctor or pharmacist
+                      </p>
                     </div>
-                  )}
+                  </div>
                 </div>
 
-                <div className="flex justify-end space-x-4 pt-6">
+                <Separator />
+
+                {/* Refill Reminder Section */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 pb-2">
+                    <CheckCircle2 className="h-5 w-5 text-muted-foreground" />
+                    <h3 className="text-lg font-semibold">Refill Reminder</h3>
+                    <Separator className="flex-1 ml-4" />
+                  </div>
+                  <div className="space-y-4 pl-7">
+                    <div className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="space-y-1">
+                        <Label htmlFor="refill_reminder_enabled" className="text-sm font-medium cursor-pointer">
+                          Enable refill reminders
+                        </Label>
+                        <p className="text-xs text-muted-foreground">
+                          Get notified when it's time to refill your medication
+                        </p>
+                      </div>
+                      <Switch
+                        id="refill_reminder_enabled"
+                        checked={refillReminderEnabled}
+                        onCheckedChange={(checked) => setValue("refill_reminder_enabled", checked)}
+                      />
+                    </div>
+
+                    {refillReminderEnabled && (
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <div className="space-y-2">
+                          <Label htmlFor="refill_reminder_days" className="text-sm font-medium">
+                            Reminder Days
+                          </Label>
+                          <Input
+                            id="refill_reminder_days"
+                            type="number"
+                            min="1"
+                            max="30"
+                            {...register("refill_reminder_days", { valueAsNumber: true })}
+                            className="h-11"
+                          />
+                          <p className="text-xs text-muted-foreground">Days before running out</p>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="supply_amount" className="text-sm font-medium">
+                            Supply Amount
+                          </Label>
+                          <Input
+                            id="supply_amount"
+                            type="number"
+                            min="1"
+                            placeholder="e.g. 30"
+                            {...register("supply_amount", { valueAsNumber: true })}
+                            className="h-11"
+                          />
+                          <p className="text-xs text-muted-foreground">Total pills/doses in your supply</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {watch("supply_amount") && watch("times_per_day") && refillReminderEnabled ? (
+                      <div className="p-3 bg-muted/50 rounded-lg">
+                        <p className="text-sm text-muted-foreground">
+                          <strong>Supply Duration:</strong> This supply will last approximately{" "}
+                          <span className="font-semibold text-foreground">
+                            {Math.floor(watch("supply_amount")! / watch("times_per_day")!)} day(s)
+                          </span>
+                        </p>
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+
+                {/* Form Actions */}
+                <div className="flex flex-col sm:flex-row justify-end gap-4 pt-8 border-t">
                   <Button
                     type="button"
                     variant="outline"
                     onClick={() => {
-                      reset();
-                      setEditingMedication(null);
-                      setActiveTab('list');
+                      reset()
+                      setEditingMedication(null)
+                      setActiveTab("list")
                     }}
+                    className="sm:w-auto"
                   >
                     Cancel
                   </Button>
-                  <Button type="submit" disabled={isSubmitting}>
-                    {isSubmitting ? 'Saving...' : editingMedication ? 'Update Medication' : 'Add Medication'}
+                  <Button type="submit" disabled={isSubmitting} className="sm:w-auto">
+                    {isSubmitting ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        Saving...
+                      </>
+                    ) : editingMedication ? (
+                      <>
+                        <Edit className="h-4 w-4 mr-2" />
+                        Update Medication
+                      </>
+                    ) : (
+                      <>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Medication
+                      </>
+                    )}
                   </Button>
                 </div>
               </form>
@@ -840,5 +1012,5 @@ export function MedicationsPage() {
         </DialogContent>
       </Dialog>
     </div>
-  );
+  )
 }

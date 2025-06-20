@@ -12,7 +12,7 @@ export const getAdherenceHistory = async (
 ): Promise<Adherence[]> => {
   const params = date ? { date } : {};
   const response = await apiClient.get("/adherence/history", { params });
-  console.log("adherence api response:", response.data);
+  // NO convertir aquí, solo devolver los datos tal cual
   return response.data;
 };
 

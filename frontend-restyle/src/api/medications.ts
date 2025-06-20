@@ -54,7 +54,12 @@ export const getMedicationById = async (id: string): Promise<Medication> => {
 export const createMedication = async (
   medication: CreateMedicationDto
 ): Promise<Medication> => {
-  const response = await apiClient.post("/medications", medication);
+  const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const payload = {
+    ...medication,
+    user_timezone: userTimezone,
+  };
+  const response = await apiClient.post("/medications", payload);
   return response.data;
 };
 
