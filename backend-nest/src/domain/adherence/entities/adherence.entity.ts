@@ -6,8 +6,7 @@ export class Adherence {
     public readonly id: string,
     public user_id: string,
     public medication_id: string,
-    public scheduled_time: string,
-    public scheduled_date: Date,
+    public scheduled_datetime: Date, // UTC datetime for adherence
     public taken_time?: Date | null,
     public status?: string | null,
     public notes?: string | null,

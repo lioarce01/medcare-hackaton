@@ -7,15 +7,14 @@ import { AdherenceMapper } from '../../../domain/adherence/mappers/adherence.map
 
 @Injectable()
 export class SupabaseAdherenceRepository implements AdherenceRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   async create(adherence: Adherence): Promise<Adherence> {
     const data = {
       id: adherence.id,
       user_id: adherence.user_id,
       medication_id: adherence.medication_id,
-      scheduled_time: adherence.scheduled_time,
-      scheduled_date: adherence.scheduled_date,
+      scheduled_datetime: adherence.scheduled_datetime,
       taken_time: adherence.taken_time,
       status: adherence.status,
       notes: adherence.notes,
@@ -44,8 +43,7 @@ export class SupabaseAdherenceRepository implements AdherenceRepository {
     const data = {
       user_id: adherence.user_id,
       medication_id: adherence.medication_id,
-      scheduled_time: adherence.scheduled_time,
-      scheduled_date: adherence.scheduled_date,
+      scheduled_datetime: adherence.scheduled_datetime,
       taken_time: adherence.taken_time,
       status: adherence.status,
       notes: adherence.notes,
@@ -96,7 +94,7 @@ export class SupabaseAdherenceRepository implements AdherenceRepository {
         reminders: true,
       },
       orderBy: {
-        scheduled_date: 'desc',
+        scheduled_datetime: 'desc',
       },
     });
 
@@ -115,7 +113,7 @@ export class SupabaseAdherenceRepository implements AdherenceRepository {
         reminders: true,
       },
       orderBy: {
-        scheduled_date: 'asc',
+        scheduled_datetime: 'asc',
       },
     });
 
@@ -128,13 +126,10 @@ export class SupabaseAdherenceRepository implements AdherenceRepository {
     };
 
     if (date) {
-      const start = new Date(date);
-      start.setHours(0, 0, 0, 0);
-
-      const end = new Date(date);
-      end.setHours(23, 59, 59, 999);
-
-      whereClause.scheduled_date = {
+      // date is expected as YYYY-MM-DD
+      const start = new Date(date + 'T00:00:00.000Z');
+      const end = new Date(date + 'T23:59:59.999Z');
+      whereClause.scheduled_datetime = {
         gte: start,
         lte: end,
       };
@@ -153,7 +148,7 @@ export class SupabaseAdherenceRepository implements AdherenceRepository {
         },
       },
       orderBy: {
-        scheduled_time: 'asc',
+        scheduled_datetime: 'asc',
       },
     });
 
@@ -211,15 +206,15 @@ export class SupabaseAdherenceRepository implements AdherenceRepository {
     };
 
     if (startDate) {
-      whereClause.scheduled_date = {
-        ...whereClause.scheduled_date,
+      whereClause.scheduled_datetime = {
+        ...whereClause.scheduled_datetime,
         gte: new Date(startDate),
       };
     }
 
     if (endDate) {
-      whereClause.scheduled_date = {
-        ...whereClause.scheduled_date,
+      whereClause.scheduled_datetime = {
+        ...whereClause.scheduled_datetime,
         lte: new Date(endDate),
       };
     }
@@ -252,13 +247,16 @@ export class SupabaseAdherenceRepository implements AdherenceRepository {
     cutoffTime: Date,
   ): Promise<Adherence[]> {
     try {
-      const today = new Date(todayStr);
-
-      // Get pending records from previous days
-      const pendingFromPreviousDays = await this.prisma.adherence.findMany({
+      // Get pending records scheduled before the cutoff datetime and for today
+      const startOfDay = new Date(`${todayStr}T00:00:00.000Z`);
+      const endOfDay = new Date(`${todayStr}T23:59:59.999Z`);
+      const missed = await this.prisma.adherence.findMany({
         where: {
           status: 'pending',
-          scheduled_date: { lt: today },
+          scheduled_datetime: {
+            gte: startOfDay,
+            lte: cutoffTime,
+          },
         },
         include: {
           medication: true,
@@ -266,32 +264,7 @@ export class SupabaseAdherenceRepository implements AdherenceRepository {
           reminders: true,
         },
       });
-
-      // Get pending records from today that passed cutoff time
-      const todayPending = await this.prisma.adherence.findMany({
-        where: {
-          status: 'pending',
-          scheduled_date: today,
-        },
-        include: {
-          medication: true,
-          user: true,
-          reminders: true,
-        },
-      });
-
-      // Filter today's records that passed the cutoff time
-      const skippedToday = todayPending.filter((record) => {
-        const [h, m] = record.scheduled_time.split(':').map(Number);
-        const scheduledDateTime = new Date(record.scheduled_date);
-        scheduledDateTime.setHours(h, m, 0, 0);
-        return scheduledDateTime < cutoffTime;
-      });
-
-      // Combine all records to be marked as missed
-      const allMissedRecords = [...pendingFromPreviousDays, ...skippedToday];
-
-      return allMissedRecords.map(AdherenceMapper.toDomain);
+      return missed.map(AdherenceMapper.toDomain);
     } catch (error) {
       console.error(
         'Error finding pending adherence for missed processing:',
@@ -312,7 +285,7 @@ export class SupabaseAdherenceRepository implements AdherenceRepository {
         where: {
           user_id: userId,
           medication_id: medicationId,
-          scheduled_date: {
+          scheduled_datetime: {
             gte: new Date(startDate),
             lte: new Date(endDate),
           },
@@ -323,7 +296,7 @@ export class SupabaseAdherenceRepository implements AdherenceRepository {
           reminders: true,
         },
         orderBy: {
-          scheduled_date: 'asc',
+          scheduled_datetime: 'asc',
         },
       });
 
@@ -355,16 +328,14 @@ export class SupabaseAdherenceRepository implements AdherenceRepository {
   async exists(
     userId: string,
     medicationId: string,
-    scheduledDate: Date,
-    scheduledTime: string,
+    scheduledDatetime: Date,
   ): Promise<boolean> {
     try {
       const adherence = await this.prisma.adherence.findFirst({
         where: {
           user_id: userId,
           medication_id: medicationId,
-          scheduled_date: scheduledDate,
-          scheduled_time: scheduledTime,
+          scheduled_datetime: scheduledDatetime,
         },
       });
 

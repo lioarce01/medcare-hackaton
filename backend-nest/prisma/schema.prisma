@@ -11,7 +11,7 @@ datasource db {
 }
 
 model users {
-  id                      String         @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id                      String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   email                   String?        @unique
   name                    String?
   password                String?
@@ -38,7 +38,7 @@ model users {
 }
 
 model user_settings {
-  id                       String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id                       String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   user_id                  String    @unique @db.Uuid
   email_enabled            Boolean
   preferred_times          String[]
@@ -53,7 +53,7 @@ model user_settings {
 }
 
 model medications {
-  id                    String      @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id                    String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   user_id               String      @db.Uuid
   name                  String
   dosage                Json        @db.Json
@@ -79,11 +79,10 @@ model medications {
 }
 
 model adherence {
-  id                    String      @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id                    String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   user_id               String      @db.Uuid
   medication_id         String      @db.Uuid
-  scheduled_time        String
-  scheduled_date        DateTime    @db.Date
+  scheduled_datetime    DateTime    @db.Timestamptz(6)
   taken_time            DateTime?   @db.Timestamptz(6)
   status                String?     @default("pending")
   notes                 String?
@@ -103,11 +102,10 @@ model adherence {
 }
 
 model reminders {
-  id             String      @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id             String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   user_id        String      @db.Uuid
   medication_id  String      @db.Uuid
-  scheduled_time String
-  scheduled_date DateTime    @db.Date
+  scheduled_datetime DateTime @db.Timestamptz(6)
   status         String?     @default("pending")
   channels       Json?       @default("{\"email\": {\"enabled\": true, \"sent\": false}, \"sms\": {\"enabled\": false, \"sent\": false}}") @db.Json
   message        String?

@@ -39,11 +39,8 @@ export class CreateReminderDto {
   @IsString()
   medication_id: string;
 
-  @IsString()
-  scheduled_time: string;
-
   @IsDateString()
-  scheduled_date: string;
+  scheduled_datetime: string; // ISO string, UTC
 
   @IsOptional()
   @IsIn(['pending', 'sent', 'failed'])

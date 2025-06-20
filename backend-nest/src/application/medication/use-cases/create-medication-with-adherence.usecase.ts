@@ -15,7 +15,7 @@ export class CreateMedicationWithAdherenceUseCase {
     private readonly adherenceRepository: AdherenceRepository,
     private readonly adherenceGenerationService: AdherenceGenerationService,
     private readonly createRemindersForMedicationUseCase: CreateRemindersForMedicationUseCase,
-  ) {}
+  ) { }
 
   async execute(medicationData: CreateMedicationDto): Promise<Medication> {
     console.log('Creating medication for user_id:', medicationData.user_id);
@@ -24,7 +24,18 @@ export class CreateMedicationWithAdherenceUseCase {
     const medication = await this.medicationRepository.create(medicationData);
 
     // 2. Generate adherence records based on the medication schedule
-    const userTimezone = medicationData.user_timezone || 'UTC';
+    let userTimezone = medicationData.user_timezone;
+    if (
+      !userTimezone &&
+      medication.user &&
+      medication.user.settings &&
+      medication.user.settings.timezone
+    ) {
+      userTimezone = medication.user.settings.timezone;
+    }
+    if (!userTimezone) {
+      userTimezone = 'UTC';
+    }
     const adherenceRecords =
       this.adherenceGenerationService.generateAdherenceRecords(
         medication,

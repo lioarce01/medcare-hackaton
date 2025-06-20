@@ -12,7 +12,7 @@ export class GenerateDailyAdherenceUseCase {
     private readonly adherenceRepository: AdherenceRepository,
     @Inject('AdherenceGenerationService')
     private readonly adherenceGenerationService: AdherenceGenerationService,
-  ) {}
+  ) { }
 
   async execute(): Promise<{ created: number }> {
     // 1. Obtener todas las medicaciones activas con frequency.daily (sin specific_days)
@@ -38,8 +38,7 @@ export class GenerateDailyAdherenceUseCase {
         const exists = await this.adherenceRepository.exists(
           adherence.user_id,
           adherence.medication_id,
-          adherence.scheduled_date,
-          adherence.scheduled_time,
+          adherence.scheduled_datetime,
         );
 
         if (!exists) {

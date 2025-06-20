@@ -141,14 +141,14 @@ export class SendGridNotificationService extends NotificationService {
       const reminders = await this.prisma.reminders.findMany({
         where: {
           user_id: userId,
-          scheduled_date: { gte: oneWeekAgo },
+          scheduled_datetime: { gte: oneWeekAgo },
         },
         include: {
           medication: {
             select: { name: true, dosage: true },
           },
         },
-        orderBy: [{ scheduled_date: 'asc' }, { scheduled_time: 'asc' }],
+        orderBy: [{ scheduled_datetime: 'asc' }],
       });
 
       // Calculate statistics

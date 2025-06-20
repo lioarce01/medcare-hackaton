@@ -3,108 +3,79 @@ import { Adherence } from '../entities/adherence.entity';
 import { Medication } from '../../medication/entities/medication.entity';
 import { DateCalculationService } from './date-calculation.service';
 import { v4 as uuidv4 } from 'uuid';
-
-export interface AdherenceGenerationData {
-  id?: string;
-  user_id: string;
-  medication_id: string;
-  scheduled_time: string; // Hora UTC en formato HH:mm
-  scheduled_date: Date; // Fecha y hora UTC completa
-  user_timezone?: string;
-  status: string;
-}
+import { DateTime } from 'luxon';
 
 @Injectable()
 export class AdherenceGenerationService {
   constructor(
     private readonly dateCalculationService: DateCalculationService,
-  ) {}
+  ) { }
 
   generateAdherenceRecords(
     medication: Medication,
     userTimezone: string = 'UTC',
   ): Adherence[] {
     const adherenceRecords: Adherence[] = [];
-    const now = new Date();
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
 
-    // Aseguramos horario 24h para todos los scheduled_times
+    const startDateStr = typeof medication.start_date === 'string' ? medication.start_date : (medication.start_date instanceof Date ? medication.start_date.toISOString() : undefined);
+    const endDateStr = typeof medication.end_date === 'string' ? medication.end_date : (medication.end_date instanceof Date ? medication.end_date.toISOString() : undefined);
+    if (!startDateStr) {
+      throw new Error('start_date is required and must be a valid date string or Date object');
+    }
+    const userTz = medication.userTimezone || userTimezone || 'UTC';
+    const localStart = DateTime.fromISO(startDateStr, { zone: userTz }).startOf('day');
+    const localEnd = endDateStr ? DateTime.fromISO(endDateStr, { zone: userTz }).startOf('day') : localStart;
+
     const localScheduledTimes = medication.scheduled_times.map((time) =>
       this.dateCalculationService.ensure24HourFormat(time),
     );
 
-    const pushAdherence = (localTime: string, scheduledDateLocal: Date) => {
-      const utcDateTime: Date =
-        this.dateCalculationService.convertLocalTimeToUTC(
-          localTime,
-          userTimezone,
-          scheduledDateLocal,
-        );
+    // LOGS PARA DEPURACIÓN DE FECHA/HORA
+    console.log('--- GENERACIÓN DE ADHERENCIA ---');
+    console.log('startDateStr:', startDateStr);
+    console.log('endDateStr:', endDateStr);
+    console.log('userTimezone:', userTz);
+    console.log('localScheduledTimes:', localScheduledTimes);
 
-      // Extraemos hora en formato HH:mm desde Date UTC
-      const utcTimeStr = new Date(utcDateTime).toISOString().slice(11, 16); // HH:mm
-
-      adherenceRecords.push(
-        this.createAdherenceEntity({
-          user_id: medication.user_id,
-          medication_id: medication.id,
-          scheduled_time: utcTimeStr,
-          scheduled_date: utcDateTime,
-          user_timezone: userTimezone,
-          status: 'pending',
-        }),
-      );
-    };
-
-    if (
-      medication.frequency.specific_days &&
-      medication.frequency.specific_days.length > 0
-    ) {
-      for (const day of medication.frequency.specific_days) {
-        for (const localTime of localScheduledTimes) {
-          const nextDate = this.dateCalculationService.getNextOccurrence(
-            day,
-            localTime,
-          );
-
-          pushAdherence(localTime, nextDate);
-
-          // Verificar si la dosis de hoy no está creada y es válida
-          const todayOccurrence = new Date(today);
-          const [hours, minutes] = localTime.split(':').map(Number);
-          todayOccurrence.setHours(hours, minutes, 0, 0);
-
-          if (
-            nextDate.toDateString() !== today.toDateString() && // nextDate no es hoy
-            todayOccurrence > now && // la hora hoy no pasó aún
-            todayOccurrence.getDay() === today.getDay() // es el mismo día de la semana
-          ) {
-            pushAdherence(localTime, today);
-          }
-        }
+    let currentDay = localStart;
+    const nowLocal = DateTime.now().setZone(userTz);
+    while (currentDay <= localEnd) {
+      // Si el día es en el pasado, saltar
+      if (currentDay < nowLocal.startOf('day')) {
+        currentDay = currentDay.plus({ days: 1 });
+        continue;
       }
-    } else {
       for (const localTime of localScheduledTimes) {
-        const nextDate =
-          this.dateCalculationService.getNextDailyOccurrence(localTime);
-
-        pushAdherence(localTime, nextDate);
+        const [h, m] = localTime.split(':').map(Number);
+        const localDateTime = currentDay.set({ hour: h, minute: m, second: 0, millisecond: 0 });
+        // Si es el primer día, solo generar adherencias para horas >= ahora
+        if (currentDay.hasSame(nowLocal, 'day') && localDateTime < nowLocal) {
+          continue;
+        }
+        const utcDateTime = localDateTime.toUTC();
+        adherenceRecords.push(
+          this.createAdherenceEntity({
+            user_id: medication.user_id,
+            medication_id: medication.id,
+            scheduled_datetime: utcDateTime.toJSDate(),
+            user_timezone: userTz,
+            status: 'pending',
+          })
+        );
       }
+      currentDay = currentDay.plus({ days: 1 });
     }
-
     return adherenceRecords;
   }
 
-  private createAdherenceEntity(data: AdherenceGenerationData): Adherence {
+  private createAdherenceEntity(data: any): Adherence {
     const id = data.id || uuidv4();
 
     return new Adherence(
       id,
       data.user_id,
       data.medication_id,
-      data.scheduled_time,
-      data.scheduled_date,
+      data.scheduled_datetime,
       null, // taken_time
       data.status,
       null, // notes

@@ -4,9 +4,13 @@ import { DateTime } from 'luxon';
 @Injectable()
 export class DateCalculationService {
   /**
-   * Get the next occurrence for a specific day of the week
+   * Get the next occurrence for a specific day of the week, en la zona horaria del usuario
    */
-  getNextOccurrence(targetDay: string, scheduledTime: string): Date {
+  getNextOccurrence(
+    targetDay: string,
+    scheduledTime: string,
+    timezone: string,
+  ): Date {
     const days = [
       'sunday',
       'monday',
@@ -16,51 +20,57 @@ export class DateCalculationService {
       'friday',
       'saturday',
     ];
-    const now = new Date();
+    const now = DateTime.now().setZone(timezone);
     const targetDayIndex = days.indexOf(targetDay.toLowerCase());
-    const currentDayIndex = now.getDay();
+    const currentDayIndex = now.weekday % 7; // Luxon: 1=Monday, JS: 0=Sunday
 
     // Parse the scheduled time (in local time)
     const [hours, minutes] = scheduledTime.split(':').map(Number);
-    const scheduledDate = new Date(now);
-    scheduledDate.setHours(hours, minutes, 0, 0);
+    let scheduledDate = now.set({
+      hour: hours,
+      minute: minutes,
+      second: 0,
+      millisecond: 0,
+    });
 
-    // If it's the same day and the time hasn't passed yet, use today
+    // Si es el mismo día y la hora no pasó, usar hoy
     if (targetDayIndex === currentDayIndex && scheduledDate > now) {
-      return scheduledDate;
+      return scheduledDate.toJSDate();
     }
 
-    // Otherwise, calculate next occurrence
+    // Calcular el próximo día objetivo
     let daysUntilNext = targetDayIndex - currentDayIndex;
     if (daysUntilNext <= 0) {
-      daysUntilNext += 7; // Move to next week
+      daysUntilNext += 7;
     }
-
-    const nextDate = new Date(now);
-    nextDate.setDate(now.getDate() + daysUntilNext);
-    nextDate.setHours(hours, minutes, 0, 0);
-    return nextDate;
+    const nextDate = now
+      .plus({ days: daysUntilNext })
+      .set({ hour: hours, minute: minutes, second: 0, millisecond: 0 });
+    return nextDate.toJSDate();
   }
 
   /**
-   * Get next occurrence for daily medications
+   * Get next occurrence for daily medications en la zona horaria del usuario
    */
-  getNextDailyOccurrence(scheduledTime: string): Date {
-    const now = new Date();
+  getNextDailyOccurrence(scheduledTime: string, timezone: string): Date {
+    const now = DateTime.now().setZone(timezone);
     const [hours, minutes] = scheduledTime.split(':').map(Number);
-    const scheduledDate = new Date(now);
-    scheduledDate.setHours(hours, minutes, 0, 0);
+    let scheduledDate = now.set({
+      hour: hours,
+      minute: minutes,
+      second: 0,
+      millisecond: 0,
+    });
 
-    // If the time hasn't passed yet today, use today
+    // Si la hora no pasó hoy, usar hoy
     if (scheduledDate > now) {
-      return scheduledDate;
+      return scheduledDate.toJSDate();
     }
-
-    // Otherwise, use tomorrow
-    const tomorrow = new Date(now);
-    tomorrow.setDate(now.getDate() + 1);
-    tomorrow.setHours(hours, minutes, 0, 0);
-    return tomorrow;
+    // Si ya pasó, usar mañana
+    const tomorrow = now
+      .plus({ days: 1 })
+      .set({ hour: hours, minute: minutes, second: 0, millisecond: 0 });
+    return tomorrow.toJSDate();
   }
 
   /**
@@ -87,28 +97,17 @@ export class DateCalculationService {
   }
 
   /**
-   * Convert local time to UTC (simplified version)
-   * In a real implementation, you'd use a proper timezone library like date-fns-tz
+   * Convierte una hora local y fecha local (en zona horaria del usuario) a UTC
    */
-
   convertLocalTimeToUTC(
     localTime: string,
     timezone: string,
     localDate: Date,
   ): Date {
     const [hours, minutes] = localTime.split(':').map(Number);
-
-    // Construir DateTime con la fecha y hora local en la zona horaria del usuario
-    const localDateTime = DateTime.fromJSDate(localDate, {
-      zone: timezone,
-    }).set({
-      hour: hours,
-      minute: minutes,
-      second: 0,
-      millisecond: 0,
-    });
-
-    // Convertir a UTC y devolver como objeto Date
+    // Construir DateTime en la zona horaria del usuario, con la fecha y hora correctas
+    const localDateTime = DateTime.fromJSDate(localDate, { zone: timezone })
+      .set({ hour: hours, minute: minutes, second: 0, millisecond: 0 });
     return localDateTime.toUTC().toJSDate();
   }
 

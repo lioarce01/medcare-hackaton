@@ -27,14 +27,13 @@ export interface AdherenceRepository {
   findByUserMedicationDateRange(
     userId: string,
     medicationId: string,
-    startDate: string,
-    endDate: string,
+    startDatetime: string,
+    endDatetime: string,
   ): Promise<Adherence[]>;
   updateStatus(adherenceId: string, status: string): Promise<void>;
   exists(
     userId: string,
     medicationId: string,
-    scheduledDate: Date,
-    scheduledTime: string,
+    scheduledDatetime: string | Date,
   ): Promise<boolean>;
 }

@@ -8,15 +8,14 @@ import { ReminderMapper } from 'src/domain/reminder/mappers/reminder.mapper';
 
 @Injectable()
 export class SupabaseReminderRepository implements ReminderRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   async create(reminder: CreateReminderDto): Promise<Reminder> {
     const created = await this.prisma.reminders.create({
       data: {
         user_id: reminder.user_id,
         medication_id: reminder.medication_id,
-        scheduled_time: reminder.scheduled_time,
-        scheduled_date: new Date(reminder.scheduled_date),
+        scheduled_datetime: new Date(reminder.scheduled_datetime),
         status: reminder.status || 'pending',
         channels: (reminder.channels || {
           email: { enabled: true, sent: false },
@@ -38,10 +37,8 @@ export class SupabaseReminderRepository implements ReminderRepository {
   async update(reminder: UpdateReminderDto): Promise<Reminder> {
     const updateData: any = {};
 
-    if (reminder.scheduled_time !== undefined)
-      updateData.scheduled_time = reminder.scheduled_time;
-    if (reminder.scheduled_date !== undefined)
-      updateData.scheduled_date = new Date(reminder.scheduled_date);
+    if (reminder.scheduled_datetime !== undefined)
+      updateData.scheduled_datetime = new Date(reminder.scheduled_datetime);
     if (reminder.status !== undefined) updateData.status = reminder.status;
     if (reminder.channels !== undefined)
       updateData.channels = reminder.channels;
@@ -85,21 +82,21 @@ export class SupabaseReminderRepository implements ReminderRepository {
 
   async findByUser(
     userId: string,
-    startDate?: string,
-    endDate?: string,
+    startDatetime?: string,
+    endDatetime?: string,
   ): Promise<Reminder[]> {
     const whereClause: any = { user_id: userId };
 
-    if (startDate) {
-      whereClause.scheduled_date = {
-        ...whereClause.scheduled_date,
-        gte: new Date(startDate),
+    if (startDatetime) {
+      whereClause.scheduled_datetime = {
+        ...whereClause.scheduled_datetime,
+        gte: new Date(startDatetime),
       };
     }
-    if (endDate) {
-      whereClause.scheduled_date = {
-        ...whereClause.scheduled_date,
-        lte: new Date(endDate),
+    if (endDatetime) {
+      whereClause.scheduled_datetime = {
+        ...whereClause.scheduled_datetime,
+        lte: new Date(endDatetime),
       };
     }
 
@@ -109,7 +106,7 @@ export class SupabaseReminderRepository implements ReminderRepository {
         medication: true,
         user: true,
       },
-      orderBy: [{ scheduled_date: 'asc' }, { scheduled_time: 'asc' }],
+      orderBy: [{ scheduled_datetime: 'asc' }],
     });
     return ReminderMapper.toDomainList(found);
   }
@@ -119,26 +116,20 @@ export class SupabaseReminderRepository implements ReminderRepository {
     limit: number = 10,
   ): Promise<Reminder[]> {
     const now = new Date();
-    const today = now.toISOString().split('T')[0];
-    const currentTime = now.toTimeString().slice(0, 5);
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+    const nowISO = now.toISOString();
 
     const found = await this.prisma.reminders.findMany({
       where: {
         user_id: userId,
         status: 'pending',
-        OR: [
-          { scheduled_date: { gt: new Date(today) } },
-          {
-            scheduled_date: new Date(today),
-            scheduled_time: { gte: currentTime },
-          },
-        ],
+        scheduled_datetime: { gte: now },
       },
       include: {
         medication: true,
         user: true,
       },
-      orderBy: [{ scheduled_date: 'asc' }, { scheduled_time: 'asc' }],
+      orderBy: [{ scheduled_datetime: 'asc' }],
       take: limit,
     });
     return ReminderMapper.toDomainList(found);
@@ -157,14 +148,21 @@ export class SupabaseReminderRepository implements ReminderRepository {
     }
 
     if (date) {
-      whereClause.scheduled_date = new Date(date);
+      // Filter reminders for a specific day (UTC)
+      const dayStart = new Date(date);
+      const dayEnd = new Date(dayStart);
+      dayEnd.setUTCHours(23, 59, 59, 999);
+      whereClause.scheduled_datetime = { gte: dayStart, lte: dayEnd };
     }
 
-    if (startTime && endTime) {
-      whereClause.scheduled_time = {
-        gte: startTime,
-        lte: endTime,
-      };
+    if (startTime && endTime && date) {
+      // Filter reminders between startTime and endTime on a specific date
+      const day = new Date(date);
+      const [startHour, startMinute] = startTime.split(':').map(Number);
+      const [endHour, endMinute] = endTime.split(':').map(Number);
+      const startDateTime = new Date(Date.UTC(day.getUTCFullYear(), day.getUTCMonth(), day.getUTCDate(), startHour, startMinute || 0));
+      const endDateTime = new Date(Date.UTC(day.getUTCFullYear(), day.getUTCMonth(), day.getUTCDate(), endHour, endMinute || 0));
+      whereClause.scheduled_datetime = { gte: startDateTime, lte: endDateTime };
     }
 
     const found = await this.prisma.reminders.findMany({
@@ -173,25 +171,16 @@ export class SupabaseReminderRepository implements ReminderRepository {
         medication: true,
         user: true,
       },
-      orderBy: [{ scheduled_date: 'asc' }, { scheduled_time: 'asc' }],
+      orderBy: [{ scheduled_datetime: 'asc' }],
     });
     return ReminderMapper.toDomainList(found);
   }
 
   async findOverdueReminders(userId?: string): Promise<Reminder[]> {
     const now = new Date();
-    const today = now.toISOString().split('T')[0];
-    const currentTime = now.toTimeString().slice(0, 5);
-
     const whereClause: any = {
       status: 'pending',
-      OR: [
-        { scheduled_date: { lt: new Date(today) } },
-        {
-          scheduled_date: new Date(today),
-          scheduled_time: { lt: currentTime },
-        },
-      ],
+      scheduled_datetime: { lt: now },
     };
 
     if (userId) {
@@ -204,7 +193,7 @@ export class SupabaseReminderRepository implements ReminderRepository {
         medication: true,
         user: true,
       },
-      orderBy: [{ scheduled_date: 'desc' }, { scheduled_time: 'desc' }],
+      orderBy: [{ scheduled_datetime: 'asc' }],
     });
     return ReminderMapper.toDomainList(found);
   }
@@ -216,7 +205,7 @@ export class SupabaseReminderRepository implements ReminderRepository {
         medication: true,
         user: true,
       },
-      orderBy: [{ scheduled_date: 'asc' }, { scheduled_time: 'asc' }],
+      orderBy: [{ scheduled_datetime: 'asc' }],
     });
     return ReminderMapper.toDomainList(found);
   }
@@ -266,8 +255,7 @@ export class SupabaseReminderRepository implements ReminderRepository {
       data: reminders.map((reminder) => ({
         user_id: reminder.user_id,
         medication_id: reminder.medication_id,
-        scheduled_time: reminder.scheduled_time,
-        scheduled_date: new Date(reminder.scheduled_date),
+        scheduled_datetime: new Date(reminder.scheduled_datetime),
         status: reminder.status || 'pending',
         channels: (reminder.channels || {
           email: { enabled: true, sent: false },
@@ -306,7 +294,7 @@ export class SupabaseReminderRepository implements ReminderRepository {
     };
 
     if (fromDate) {
-      whereClause.scheduled_date = { gte: fromDate };
+      whereClause.scheduled_datetime = { gte: fromDate };
     }
 
     const result = await this.prisma.reminders.deleteMany({

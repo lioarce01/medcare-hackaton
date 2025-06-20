@@ -7,8 +7,7 @@ export class ReminderPresenter {
       id: reminder.id,
       user_id: reminder.user_id,
       medication_id: reminder.medication_id,
-      scheduled_time: reminder.scheduled_time,
-      scheduled_date: reminder.scheduled_date.toISOString().split('T')[0],
+      scheduled_datetime: reminder.scheduled_datetime.toISOString(),
       status: reminder.status,
       channels: reminder.channels,
       message: reminder.message,
@@ -19,7 +18,6 @@ export class ReminderPresenter {
       updated_at: reminder.updated_at?.toISOString() || null,
       medication: reminder.medication ? MedicationPresenter.toHttp(reminder.medication) : null,
       is_overdue: reminder.isOverdue(),
-      scheduled_datetime: reminder.getScheduledDateTime().toISOString(),
     };
   }
 
@@ -31,8 +29,7 @@ export class ReminderPresenter {
     return {
       id: reminder.id,
       medication_name: reminder.medication?.name || 'Unknown',
-      scheduled_time: reminder.scheduled_time,
-      scheduled_date: reminder.scheduled_date.toISOString().split('T')[0],
+      scheduled_datetime: reminder.scheduled_datetime.toISOString(),
       status: reminder.status,
       is_overdue: reminder.isOverdue(),
     };

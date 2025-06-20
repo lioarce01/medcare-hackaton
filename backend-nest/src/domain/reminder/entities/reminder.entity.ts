@@ -19,8 +19,7 @@ export class Reminder {
     public readonly id: string,
     public user_id: string,
     public medication_id: string,
-    public scheduled_time: string,
-    public scheduled_date: Date,
+    public scheduled_datetime: Date, // single UTC datetime
     public status: 'pending' | 'sent' | 'failed' = 'pending',
     public channels: ReminderChannels = {
       email: { enabled: true, sent: false },
@@ -34,12 +33,11 @@ export class Reminder {
     public updated_at?: Date | null,
     public medication?: Medication,
     public user?: UserAggregate,
-  ) {}
+  ) { }
 
   public isOverdue(): boolean {
     const now = new Date();
-    const scheduledDateTime = new Date(`${this.scheduled_date.toISOString().split('T')[0]}T${this.scheduled_time}`);
-    return now > scheduledDateTime && this.status === 'pending';
+    return now > this.scheduled_datetime && this.status === 'pending';
   }
 
   public canRetry(): boolean {
@@ -61,11 +59,11 @@ export class Reminder {
 
   public isScheduledForToday(): boolean {
     const today = new Date().toISOString().split('T')[0];
-    const scheduledDate = this.scheduled_date.toISOString().split('T')[0];
+    const scheduledDate = this.scheduled_datetime.toISOString().split('T')[0];
     return today === scheduledDate;
   }
 
   public getScheduledDateTime(): Date {
-    return new Date(`${this.scheduled_date.toISOString().split('T')[0]}T${this.scheduled_time}`);
+    return this.scheduled_datetime;
   }
 }

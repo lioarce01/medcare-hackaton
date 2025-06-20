@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Medication } from 'src/domain/medication/entities/medication.entity';
 import { CreateReminderDto } from 'src/interfaces/reminder/dtos/create-reminder.dto';
+import { DateTime } from 'luxon';
 
 @Injectable()
 export class ReminderGenerationService {
@@ -10,21 +11,32 @@ export class ReminderGenerationService {
     daysAhead: number = 7,
   ): CreateReminderDto[] {
     const reminders: CreateReminderDto[] = [];
-    const startDate = new Date();
+    // Use the user's local day as the reference, not UTC
+    const startLocal = DateTime.now().setZone(userTimezone).startOf('day');
 
     for (let dayOffset = 0; dayOffset < daysAhead; dayOffset++) {
-      const currentDate = new Date(startDate);
-      currentDate.setDate(startDate.getDate() + dayOffset);
+      // For each day, get the local date in the user's timezone
+      const currentLocal = startLocal.plus({ days: dayOffset });
+      const currentDate = currentLocal.toJSDate();
 
       // Check if medication should be taken on this day
       if (this.shouldTakeMedicationOnDay(medication, currentDate)) {
         // Generate reminders for each scheduled time
         for (const scheduledTime of medication.scheduled_times) {
+          // Use Luxon to interpret scheduledTime as local time in userTimezone, then convert to UTC
+          const [hours, minutes] = scheduledTime.split(':').map(Number);
+          const localDateTime = currentLocal.set({
+            hour: hours,
+            minute: minutes || 0,
+            second: 0,
+            millisecond: 0,
+          });
+          const utcDateTime = localDateTime.toUTC();
+
           const reminder: CreateReminderDto = {
             user_id: medication.user_id,
             medication_id: medication.id,
-            scheduled_time: scheduledTime,
-            scheduled_date: currentDate.toISOString().split('T')[0],
+            scheduled_datetime: utcDateTime.toISO() || utcDateTime.toString(),
             status: 'pending',
             channels: {
               email: { enabled: true, sent: false },
@@ -84,15 +96,13 @@ export class ReminderGenerationService {
   generateSingleReminder(
     userId: string,
     medicationId: string,
-    scheduledTime: string,
-    scheduledDate: string,
+    scheduledDatetime: string,
     message?: string,
   ): CreateReminderDto {
     return {
       user_id: userId,
       medication_id: medicationId,
-      scheduled_time: scheduledTime,
-      scheduled_date: scheduledDate,
+      scheduled_datetime: scheduledDatetime,
       status: 'pending',
       channels: {
         email: { enabled: true, sent: false },

@@ -8,8 +8,7 @@ export class ReminderMapper {
       prismaReminder.id,
       prismaReminder.user_id,
       prismaReminder.medication_id,
-      prismaReminder.scheduled_time,
-      new Date(prismaReminder.scheduled_date),
+      new Date(prismaReminder.scheduled_datetime), // single UTC datetime
       prismaReminder.status,
       prismaReminder.channels as ReminderChannels,
       prismaReminder.message,
@@ -23,9 +22,9 @@ export class ReminderMapper {
         : undefined,
       prismaReminder.user
         ? UserMapper.toDomain(
-            prismaReminder.user,
-            prismaReminder.user.auth_user_id || prismaReminder.user.id,
-          )
+          prismaReminder.user,
+          prismaReminder.user.auth_user_id || prismaReminder.user.id,
+        )
         : undefined,
     );
   }

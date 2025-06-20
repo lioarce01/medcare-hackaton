@@ -36,12 +36,8 @@ export class UpdateReminderDto {
   id: string;
 
   @IsOptional()
-  @IsString()
-  scheduled_time?: string;
-
-  @IsOptional()
   @IsDateString()
-  scheduled_date?: string;
+  scheduled_datetime?: string; // ISO string, UTC
 
   @IsOptional()
   @IsIn(['pending', 'sent', 'failed'])
