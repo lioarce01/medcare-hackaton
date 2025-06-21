@@ -10,8 +10,6 @@ import {
 } from "./useAdherence";
 import { useUpcomingReminders } from "./useReminders";
 import { useAuth } from "./useAuth";
-import { AdherenceTimelineData } from "@/api/analytics";
-import { useAdherenceTimeline } from "./useAnalytics";
 import { useMemo } from "react";
 import { DateTime } from "luxon";
 
@@ -110,13 +108,11 @@ export const useDashboardAlerts = () => {
   const { data: medications } = useActiveMedications();
   const { data: upcomingReminders } = useUpcomingReminders();
   const { data: todaySchedule } = useTodaySchedule();
-  const { data: timelineData, isLoading: timelineLoading } =
-    useAdherenceTimeline(30);
+
 
   console.log("User:", user);
   console.log("Medications:", medications);
   console.log("Schedule:", todaySchedule);
-  console.log("Timeline Loading:", timelineLoading);
 
   return useQuery({
     queryKey: ["dashboard", "alerts"],
@@ -214,18 +210,18 @@ export const useDashboardAlerts = () => {
       }
 
       // Adherence streak (positive alert)
-      if (timelineData) {
-        const streak = calculateStreakFromTimeline(timelineData);
-        if (streak >= 7) {
-          alerts.push({
-            id: "streak",
-            type: "achievement",
-            priority: "success",
-            title: "Great Progress!",
-            message: `${streak}-day streak of perfect adherence`,
-          });
-        }
-      }
+      // if (timelineData) {
+      //   const streak = calculateStreakFromTimeline(timelineData);
+      //   if (streak >= 7) {
+      //     alerts.push({
+      //       id: "streak",
+      //       type: "achievement",
+      //       priority: "success",
+      //       title: "Great Progress!",
+      //       message: `${streak}-day streak of perfect adherence`,
+      //     });
+      //   }
+      // }
 
       return alerts;
     },
@@ -270,24 +266,24 @@ export const useDashboardActions = () => {
   };
 };
 
-function calculateStreakFromTimeline(
-  timelineData: AdherenceTimelineData[]
-): number {
-  let streak = 0;
-  const today = new Date();
+// function calculateStreakFromTimeline(
+//   timelineData: AdherenceTimelineData[]
+// ): number {
+//   let streak = 0;
+//   const today = new Date();
 
-  for (let i = 0; i < 30; i++) {
-    const date = new Date(today);
-    date.setDate(today.getDate() - i);
-    const dateStr = date.toISOString().slice(0, 10);
+//   for (let i = 0; i < 30; i++) {
+//     const date = new Date(today);
+//     date.setDate(today.getDate() - i);
+//     const dateStr = date.toISOString().slice(0, 10);
 
-    const dayData = timelineData.find((d) => d.date === dateStr);
-    if (!dayData) break; // Sin datos para este día, termina racha
+//     const dayData = timelineData.find((d) => d.date === dateStr);
+//     if (!dayData) break; // Sin datos para este día, termina racha
 
-    if (dayData.percentage < 100) break; // No hubo adherencia perfecta, termina racha
+//     if (dayData.percentage < 100) break; // No hubo adherencia perfecta, termina racha
 
-    streak++;
-  }
+//     streak++;
+//   }
 
-  return streak;
-}
+//   return streak;
+// }

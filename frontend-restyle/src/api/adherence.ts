@@ -12,7 +12,7 @@ export const getAdherenceHistory = async (
 ): Promise<Adherence[]> => {
   const params = date ? { date } : {};
   const response = await apiClient.get("/adherence/history", { params });
-  // NO convertir aquí, solo devolver los datos tal cual
+  console.log('Adherence History Response:', response.data); // Log for debugging
   return response.data;
 };
 
@@ -33,5 +33,17 @@ export const getAdherenceStats = async (): Promise<AdherenceStats> => {
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const response = await apiClient.get("/adherence/stats", { params: { timezone } });
   console.log('Adherence Stats Response:', response.data); // Log para depuración
+  return response.data;
+};
+
+// Get adherence timeline
+export const getAdherenceTimeline = async (
+  startDate: string,
+  endDate: string
+): Promise<Adherence[]> => {
+  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const params = { startDate, endDate, timezone };
+  const response = await apiClient.get("/adherence/timeline", { params });
+  console.log('Adherence Timeline Response:', response.data); // Log for debugging
   return response.data;
 };

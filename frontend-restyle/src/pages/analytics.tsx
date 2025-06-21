@@ -39,9 +39,10 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { PremiumGuard } from '@/components/premium/premium-guard';
-import { useAnalyticsOverview, useAnalyticsInsights } from '@/hooks/useAnalyticsData';
+import { useAnalyticsOverview, useAnalyticsInsights, TimelineDataType } from '@/hooks/useAnalyticsData';
 import { useActiveMedications } from '@/hooks/useMedications';
+import { DateTime } from 'luxon';
+import { useRiskHistoryByMedicationWithRange } from '@/hooks/useAnalytics';
 
 // Register Chart.js components
 ChartJS.register(
@@ -66,13 +67,21 @@ export function AnalyticsPage() {
   const { data: insights } = useAnalyticsInsights();
   const { data: medications } = useActiveMedications();
 
+  console.log('Analytics Data:', analyticsData);
+  console.log('Insights Data:', insights);
+  console.log('Medications Data:', medications);
+
   // Combine insights with analytics data
   const combinedAnalyticsData = analyticsData ? {
     ...analyticsData,
     insights: insights || [],
   } : null;
 
+  // Use backend-provided ranking color and text if available
   const getRankingColor = (rank: string) => {
+    if (analyticsData?.rankingColor) {
+      return `text-${analyticsData.rankingColor} bg-${analyticsData.rankingColor.replace('600', '100')}`;
+    }
     switch (rank) {
       case 'S': return 'text-purple-600 bg-purple-100';
       case 'A': return 'text-green-600 bg-green-100';
@@ -81,6 +90,20 @@ export function AnalyticsPage() {
       case 'D': return 'text-orange-600 bg-orange-100';
       case 'E': return 'text-red-600 bg-red-100';
       default: return 'text-gray-600 bg-gray-100';
+    }
+  };
+
+  const getRankingText = (rank: string) => {
+    if (analyticsData?.rankingText) {
+      return analyticsData.rankingText;
+    }
+    switch (rank) {
+      case 'S': return 'Perfect';
+      case 'A': return 'Excellent';
+      case 'B': return 'Good';
+      case 'C': return 'Fair';
+      case 'D': return 'Needs Improvement';
+      default: return 'Poor';
     }
   };
 
@@ -118,7 +141,7 @@ export function AnalyticsPage() {
         beginAtZero: true,
         max: 100,
         ticks: {
-          callback: function(value: any) {
+          callback: function (value: any) {
             return value + '%';
           },
         },
@@ -134,6 +157,16 @@ export function AnalyticsPage() {
       },
     },
   };
+
+  // Fetch medication-specific risk history for selected medication and time range
+  const riskHistoryQuery = useRiskHistoryByMedicationWithRange(
+    selectedMedication !== 'all' ? selectedMedication : '',
+    timeRange
+  );
+  const medicationRiskHistory = selectedMedication !== 'all' ? riskHistoryQuery.data : null;
+
+  // Get user timezone at the top before any usage
+  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
   if (isLoading) {
     return <DashboardSkeleton />;
@@ -152,6 +185,80 @@ export function AnalyticsPage() {
       </div>
     );
   }
+
+  // --- Summary statistics from real data ---
+  const monthlyAdherenceWithMeds = combinedAnalyticsData?.monthlyAdherence?.filter((d: any) => d.total > 0) || [];
+  const monthlyPercentages = monthlyAdherenceWithMeds.map((d: any) => d.percentage);
+  const averageAdherence = monthlyPercentages.length > 0 ? Math.round(monthlyPercentages.reduce((a, b) => a + b, 0) / monthlyPercentages.length) : 0;
+  const bestDay = monthlyPercentages.length > 0 ? Math.max(...monthlyPercentages) : 0;
+  const consistencyScore = monthlyPercentages.length > 0 ? Math.round(monthlyPercentages.filter((p: number) => p >= 80).length / monthlyPercentages.length * 100) : 0;
+
+  // --- Time of day analysis ---
+  const timeOfDayBuckets = [0, 6, 12, 18, 24];
+  const timeOfDayLabels = ['Night (0-6)', 'Morning (6-12)', 'Afternoon (12-18)', 'Evening (18-24)'];
+  const timeOfDayData = [0, 0, 0, 0];
+  const timeOfDayCounts = [0, 0, 0, 0];
+  if (combinedAnalyticsData?.monthlyAdherence) {
+    // Only count days with at least one medication (total > 0)
+    for (const d of combinedAnalyticsData.monthlyAdherence) {
+      if (d.total > 0) {
+        const hour = DateTime.fromISO(d.date, { zone: 'utc' }).setZone(timezone).hour;
+        for (let i = 0; i < timeOfDayBuckets.length - 1; i++) {
+          if (hour >= timeOfDayBuckets[i] && hour < timeOfDayBuckets[i + 1]) {
+            timeOfDayData[i] += d.percentage;
+            timeOfDayCounts[i]++;
+            break;
+          }
+        }
+      }
+    }
+  }
+  const timeOfDayAverages = timeOfDayData.map((sum, i) => timeOfDayCounts[i] > 0 ? Math.round(sum / timeOfDayCounts[i]) : 0);
+
+  // --- Day of week analysis ---
+  const dayOfWeekLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const dayOfWeekData = [0, 0, 0, 0, 0, 0, 0];
+  const dayOfWeekCounts = [0, 0, 0, 0, 0, 0, 0];
+  if (combinedAnalyticsData?.monthlyAdherence) {
+    // Only count days with at least one medication (total > 0)
+    for (const d of combinedAnalyticsData.monthlyAdherence) {
+      if (d.total > 0) {
+        const weekday = DateTime.fromISO(d.date, { zone: 'utc' }).setZone(timezone).weekday % 7; // 0=Sun, 1=Mon, ...
+        dayOfWeekData[weekday] += d.percentage;
+        dayOfWeekCounts[weekday]++;
+      }
+    }
+  }
+  const dayOfWeekAverages = dayOfWeekData.map((sum, i) => dayOfWeekCounts[i] > 0 ? Math.round(sum / dayOfWeekCounts[i]) : 0);
+
+  // --- 30-Day Trend Analysis Data Preparation ---
+  // Always include today as the last day in the range
+  const days = 30;
+  const today = DateTime.now().setZone(timezone).startOf('day');
+  const start = today.minus({ days: days - 1 });
+  const allDays: string[] = [];
+  for (let i = 0; i < days; i++) {
+    allDays.push(start.plus({ days: i }).toISODate()!);
+  }
+  // Map adherence data by date for quick lookup
+  const adherenceByDate: Record<string, TimelineDataType> = {};
+  for (const d of combinedAnalyticsData?.monthlyAdherence || []) {
+    adherenceByDate[d.date] = d;
+  }
+  // Build chart data for all days in range
+  const trendLabels = allDays.map(dateStr =>
+    DateTime.fromISO(dateStr, { zone: 'utc' }).setZone(timezone).toFormat('MMM d')
+  );
+  const trendPercentages = allDays.map(dateStr =>
+    adherenceByDate[dateStr]?.total > 0 ? adherenceByDate[dateStr].percentage : 0
+  );
+  // 7-day moving average, only for days in range
+  const trendMovingAvg = trendPercentages.map((_, i, arr) => {
+    const start = Math.max(0, i - 3);
+    const end = Math.min(arr.length, i + 4);
+    const slice = arr.slice(start, end);
+    return slice.length > 0 ? Math.round(slice.reduce((sum, v) => sum + v, 0) / slice.length) : 0;
+  });
 
   return (
     <div className="space-y-6">
@@ -195,16 +302,13 @@ export function AnalyticsPage() {
             {getRankingIcon(combinedAnalyticsData.performanceRanking)}
           </CardHeader>
           <CardContent>
-            <div className={`text-4xl font-bold ${getRankingColor(combinedAnalyticsData.performanceRanking)} w-16 h-16 rounded-full flex items-center justify-center mb-2`}>
-              {combinedAnalyticsData.performanceRanking}
+            <div className="flex justify-center">
+              <div className={`text-4xl font-bold ${getRankingColor(combinedAnalyticsData.performanceRanking)} w-16 h-16 rounded-full flex items-center justify-center mb-2`}>
+                {combinedAnalyticsData.performanceRanking}
+              </div>
             </div>
-            <p className="text-xs text-muted-foreground">
-              {combinedAnalyticsData.performanceRanking === 'S' ? 'Perfect' :
-               combinedAnalyticsData.performanceRanking === 'A' ? 'Excellent' :
-               combinedAnalyticsData.performanceRanking === 'B' ? 'Good' :
-               combinedAnalyticsData.performanceRanking === 'C' ? 'Fair' :
-               combinedAnalyticsData.performanceRanking === 'D' ? 'Needs Improvement' :
-               'Poor'} adherence
+            <p className="text-xs text-muted-foreground text-center">
+              {getRankingText(combinedAnalyticsData.performanceRanking)} adherence
             </p>
           </CardContent>
         </Card>
@@ -322,23 +426,23 @@ export function AnalyticsPage() {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium">Average Adherence</span>
-                    <span className="text-2xl font-bold text-blue-600">87%</span>
+                    <span className="text-2xl font-bold text-blue-600">{averageAdherence}%</span>
                   </div>
-                  <Progress value={87} className="h-2" />
+                  <Progress value={averageAdherence} className="h-2" />
                 </div>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium">Best Day</span>
-                    <span className="text-2xl font-bold text-green-600">100%</span>
+                    <span className="text-2xl font-bold text-green-600">{bestDay}%</span>
                   </div>
-                  <Progress value={100} className="h-2" />
+                  <Progress value={bestDay} className="h-2" />
                 </div>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium">Consistency Score</span>
-                    <span className="text-2xl font-bold text-purple-600">92%</span>
+                    <span className="text-2xl font-bold text-purple-600">{consistencyScore}%</span>
                   </div>
-                  <Progress value={92} className="h-2" />
+                  <Progress value={consistencyScore} className="h-2" />
                 </div>
               </div>
             </CardContent>
@@ -346,9 +450,8 @@ export function AnalyticsPage() {
         </TabsContent>
 
         <TabsContent value="trends" className="space-y-6">
-          <PremiumGuard feature="advancedAnalytics">
-            {/* Time-based Analysis */}
-            <div className="grid gap-6 lg:grid-cols-2">
+          {/* Time-based Analysis */}
+          <div className="grid gap-6 lg:grid-cols-2">
             <Card>
               <CardHeader>
                 <CardTitle>Time of Day Analysis</CardTitle>
@@ -358,16 +461,16 @@ export function AnalyticsPage() {
               </CardHeader>
               <CardContent>
                 <div className="h-80">
-                  <Doughnut 
+                  <Doughnut
                     data={{
-                      labels: ['Morning (6-12)', 'Afternoon (12-18)', 'Evening (18-24)', 'Night (0-6)'],
+                      labels: timeOfDayLabels,
                       datasets: [{
-                        data: [95, 88, 75, 82],
+                        data: timeOfDayAverages,
                         backgroundColor: [
-                          'rgba(34, 197, 94, 0.8)',
-                          'rgba(59, 130, 246, 0.8)',
-                          'rgba(249, 115, 22, 0.8)',
-                          'rgba(139, 92, 246, 0.8)',
+                          'rgba(139, 92, 246, 0.8)', // Night
+                          'rgba(34, 197, 94, 0.8)',  // Morning
+                          'rgba(59, 130, 246, 0.8)', // Afternoon
+                          'rgba(249, 115, 22, 0.8)', // Evening
                         ],
                         borderWidth: 2,
                       }]
@@ -381,7 +484,7 @@ export function AnalyticsPage() {
                         },
                         tooltip: {
                           callbacks: {
-                            label: function(context) {
+                            label: function (context) {
                               return context.label + ': ' + context.parsed + '%';
                             }
                           }
@@ -402,12 +505,12 @@ export function AnalyticsPage() {
               </CardHeader>
               <CardContent>
                 <div className="h-80">
-                  <Bar 
+                  <Bar
                     data={{
-                      labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                      labels: dayOfWeekLabels,
                       datasets: [{
                         label: 'Adherence %',
-                        data: [92, 89, 91, 88, 85, 78, 82],
+                        data: dayOfWeekAverages,
                         backgroundColor: [
                           'rgba(34, 197, 94, 0.8)',
                           'rgba(34, 197, 94, 0.8)',
@@ -437,13 +540,13 @@ export function AnalyticsPage() {
             </CardHeader>
             <CardContent>
               <div className="h-96">
-                <Line 
+                <Line
                   data={{
-                    labels: combinedAnalyticsData.monthlyAdherence.map(d => format(new Date(d.date), 'MMM d')),
+                    labels: trendLabels,
                     datasets: [
                       {
                         label: 'Daily Adherence %',
-                        data: combinedAnalyticsData.monthlyAdherence.map(d => d.percentage),
+                        data: trendPercentages,
                         borderColor: 'rgb(59, 130, 246)',
                         backgroundColor: 'rgba(59, 130, 246, 0.1)',
                         fill: true,
@@ -451,12 +554,7 @@ export function AnalyticsPage() {
                       },
                       {
                         label: '7-Day Moving Average',
-                        data: combinedAnalyticsData.monthlyAdherence.map((d, i) => {
-                          const start = Math.max(0, i - 3);
-                          const end = Math.min(combinedAnalyticsData.monthlyAdherence.length, i + 4);
-                          const slice = combinedAnalyticsData.monthlyAdherence.slice(start, end);
-                          return slice.reduce((sum, item) => sum + item.percentage, 0) / slice.length;
-                        }),
+                        data: trendMovingAvg,
                         borderColor: 'rgb(239, 68, 68)',
                         backgroundColor: 'transparent',
                         borderWidth: 3,
@@ -470,7 +568,6 @@ export function AnalyticsPage() {
               </div>
             </CardContent>
           </Card>
-          </PremiumGuard>
         </TabsContent>
 
         <TabsContent value="medications" className="space-y-6">
@@ -495,8 +592,8 @@ export function AnalyticsPage() {
                         med.adherenceRate >= 90
                           ? 'bg-green-600 text-white hover:bg-green-700'
                           : med.adherenceRate >= 70
-                          ? 'bg-yellow-600 text-white hover:bg-yellow-700'
-                          : 'bg-red-600 text-white hover:bg-red-700'
+                            ? 'bg-yellow-600 text-white hover:bg-yellow-700'
+                            : 'bg-red-600 text-white hover:bg-red-700'
                       }
                     >
                       {med.adherenceRate}%
@@ -512,15 +609,23 @@ export function AnalyticsPage() {
                       </div>
                       <Progress value={med.adherenceRate} className="h-2" />
                     </div>
-                    
-                    <div className="grid gap-4 sm:grid-cols-3">
+
+                    <div className="grid gap-4 sm:grid-cols-5">
                       <div className="text-center">
                         <div className="text-2xl font-bold text-green-600">{med.takenDoses}</div>
                         <div className="text-xs text-muted-foreground">Doses Taken</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-orange-600">{med.totalDoses - med.takenDoses}</div>
+                        <div className="text-2xl font-bold text-orange-600">{med.missedDoses}</div>
                         <div className="text-xs text-muted-foreground">Doses Missed</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-blue-600">{med.pendingDoses}</div>
+                        <div className="text-xs text-muted-foreground">Doses Pending</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-gray-600">{med.skippedDoses}</div>
+                        <div className="text-xs text-muted-foreground">Doses Skipped</div>
                       </div>
                       <div className="text-center">
                         <div className="text-2xl font-bold text-blue-600">{med.adherenceRate}%</div>
@@ -535,27 +640,25 @@ export function AnalyticsPage() {
         </TabsContent>
 
         <TabsContent value="insights" className="space-y-6">
-          <PremiumGuard feature="riskPredictions">
-            {/* AI-Generated Insights */}
-            <div className="grid gap-4">
+          {/* AI-Generated Insights */}
+          <div className="grid gap-4">
             {combinedAnalyticsData.insights.map((insight, index) => (
               <Card key={index} className={
                 insight.type === 'positive' ? 'border-green-200 bg-green-50 dark:bg-green-950' :
-                insight.type === 'warning' ? 'border-yellow-200 bg-yellow-50 dark:bg-yellow-950' :
-                'border-blue-200 bg-blue-50 dark:bg-blue-950'
+                  insight.type === 'warning' ? 'border-yellow-200 bg-yellow-50 dark:bg-yellow-950' :
+                    'border-blue-200 bg-blue-50 dark:bg-blue-950'
               }>
                 <CardHeader>
-                  <CardTitle className={`flex items-center gap-2 ${
-                    insight.type === 'positive' ? 'text-green-800 dark:text-green-200' :
+                  <CardTitle className={`flex items-center gap-2 ${insight.type === 'positive' ? 'text-green-800 dark:text-green-200' :
                     insight.type === 'warning' ? 'text-yellow-800 dark:text-yellow-200' :
-                    'text-blue-800 dark:text-blue-200'
-                  }`}>
+                      'text-blue-800 dark:text-blue-200'
+                    }`}>
                     {typeof insight.icon === 'string' ? (
                       insight.icon === 'Clock' ? <Clock className="h-4 w-4" /> :
-                      insight.icon === 'TrendingUp' ? <TrendingUp className="h-4 w-4" /> :
-                      insight.icon === 'Calendar' ? <Calendar className="h-4 w-4" /> :
-                      insight.icon === 'AlertTriangle' ? <AlertTriangle className="h-4 w-4" /> :
-                      <Activity className="h-4 w-4" />
+                        insight.icon === 'TrendingUp' ? <TrendingUp className="h-4 w-4" /> :
+                          insight.icon === 'Calendar' ? <Calendar className="h-4 w-4" /> :
+                            insight.icon === 'AlertTriangle' ? <AlertTriangle className="h-4 w-4" /> :
+                              <Activity className="h-4 w-4" />
                     ) : insight.icon}
                     {insight.title}
                   </CardTitle>
@@ -563,8 +666,8 @@ export function AnalyticsPage() {
                 <CardContent>
                   <p className={
                     insight.type === 'positive' ? 'text-green-700 dark:text-green-300' :
-                    insight.type === 'warning' ? 'text-yellow-700 dark:text-yellow-300' :
-                    'text-blue-700 dark:text-blue-300'
+                      insight.type === 'warning' ? 'text-yellow-700 dark:text-yellow-300' :
+                        'text-blue-700 dark:text-blue-300'
                   }>
                     {insight.description}
                   </p>
@@ -595,7 +698,7 @@ export function AnalyticsPage() {
                     </p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-start gap-3 p-3 rounded-lg bg-green-50 dark:bg-green-950">
                   <div className="w-2 h-2 rounded-full bg-green-600 mt-2"></div>
                   <div>
@@ -605,7 +708,7 @@ export function AnalyticsPage() {
                     </p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-start gap-3 p-3 rounded-lg bg-purple-50 dark:bg-purple-950">
                   <div className="w-2 h-2 rounded-full bg-purple-600 mt-2"></div>
                   <div>
@@ -642,7 +745,7 @@ export function AnalyticsPage() {
                     <Progress value={40} className="w-24 h-2" />
                   </div>
                 </div>
-                
+
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <Medal className="h-5 w-5 text-blue-600" />
@@ -653,7 +756,7 @@ export function AnalyticsPage() {
                     <Progress value={97} className="w-24 h-2" />
                   </div>
                 </div>
-                
+
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <Star className="h-5 w-5 text-purple-600" />
@@ -667,7 +770,6 @@ export function AnalyticsPage() {
               </div>
             </CardContent>
           </Card>
-          </PremiumGuard>
         </TabsContent>
       </Tabs>
     </div>
