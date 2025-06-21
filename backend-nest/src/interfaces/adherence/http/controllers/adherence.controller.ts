@@ -11,7 +11,6 @@ import { GetAdherenceHistoryDto } from 'src/interfaces/adherence/dtos/get-adhere
 import { SkipDoseDto } from 'src/interfaces/adherence/dtos/skip-dose.dto';
 import { GetAdherenceStatsDto } from 'src/interfaces/adherence/dtos/get-adherence-stats.dto';
 import { SubscriptionGuard } from 'src/interfaces/common/guards/subscription.guard';
-import { get } from 'http';
 
 @Controller('adherence')
 export class AdherenceController {
