@@ -208,7 +208,7 @@ export function AdherencePage() {
             <Target className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{monthlyStats ? `${monthlyStats.adherenceRate}%` : '-'}</div>
+            <div className="text-2xl font-bold">{monthlyStats ? `${(monthlyStats.adherenceRate).toFixed()}%` : '-'}</div>
             <Progress value={monthlyStats?.adherenceRate ?? 0} className="mt-2" />
             <p className="text-xs text-muted-foreground mt-2">
               {monthlyStats?.taken} of {monthlyStats?.total} doses
