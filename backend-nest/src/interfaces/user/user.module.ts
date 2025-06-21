@@ -20,5 +20,6 @@ import { PrismaService } from '../../infrastructure/prisma/prisma.service';
       useClass: SupabaseUserRepository,
     },
   ],
+  exports: ['UserRepository'],
 })
-export class UserModule {}
+export class UserModule { }

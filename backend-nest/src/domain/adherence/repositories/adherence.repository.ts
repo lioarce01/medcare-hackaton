@@ -20,6 +20,7 @@ export interface AdherenceRepository {
     endDate: DateTime, // Cambiado a DateTime
     timezone: string, // Agregado timezone
   ): Promise<AdherenceStatsRaw[]>;
+  getTimeline(userId: string, startDate: string, endDate: string): Promise<Adherence[]>;
 
   // Methods for cron jobs
   findPendingForMissedProcessing(

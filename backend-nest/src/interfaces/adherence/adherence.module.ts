@@ -3,6 +3,7 @@ import { GetAdherenceHistoryUseCase } from '../../application/adherence/use-case
 import { ConfirmDoseUseCase } from '../../application/adherence/use-cases/confirm-dose.usecase';
 import { SkipDoseUseCase } from '../../application/adherence/use-cases/skip-dose.usecase';
 import { GetAdherenceStatsUseCase } from '../../application/adherence/use-cases/get-adherence-stats.usecase';
+import { GetAdherenceTimelineUseCase } from '../../application/adherence/use-cases/get-adherence-timeline.usecase';
 import { AdherenceStatsService } from '../../domain/adherence/services/adherence-stats.service';
 import { AdherenceValidationService } from '../../domain/adherence/services/adherence-validation.service';
 import { PrismaService } from '../../infrastructure/prisma/prisma.service';
@@ -18,6 +19,7 @@ import { AdherenceController } from './http/controllers/adherence.controller';
     ConfirmDoseUseCase,
     SkipDoseUseCase,
     GetAdherenceStatsUseCase,
+    GetAdherenceTimelineUseCase,
     AdherenceStatsService,
     AdherenceValidationService,
     {
@@ -29,5 +31,6 @@ import { AdherenceController } from './http/controllers/adherence.controller';
       useClass: SupabaseSubscriptionRepository,
     },
   ],
+  exports: ['AdherenceRepository'],
 })
-export class AdherenceModule {}
+export class AdherenceModule { }

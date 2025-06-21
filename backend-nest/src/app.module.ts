@@ -8,6 +8,7 @@ import { ReminderModule } from './interfaces/reminder/reminder.module';
 import { SubscriptionModule } from './interfaces/subscription/subscription.module';
 import { SchedulerModule } from './interfaces/scheduler/scheduler.module';
 import { AuthModule } from './infrastructure/auth/auth.module';
+import { AnalyticsModule } from './interfaces/analytics/analytics.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { AuthModule } from './infrastructure/auth/auth.module';
     ReminderModule,
     SubscriptionModule,
     SchedulerModule,
+    AnalyticsModule
   ],
 })
-export class AppModule {}
+export class AppModule { }

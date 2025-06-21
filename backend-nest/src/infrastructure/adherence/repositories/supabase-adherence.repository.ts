@@ -342,4 +342,39 @@ export class SupabaseAdherenceRepository implements AdherenceRepository {
       throw error;
     }
   }
+
+  async getTimeline(userId: string, startDate: string, endDate: string): Promise<Adherence[]> {
+    // Defensive: Only create Date if string is valid
+    const start = Date.parse(startDate) ? new Date(startDate) : null;
+    const end = Date.parse(endDate) ? new Date(endDate) : null;
+    if (!start || !end) {
+      throw new Error('Invalid startDate or endDate for adherence timeline');
+    }
+    const whereClause: any = {
+      user_id: userId,
+      scheduled_datetime: {
+        gte: start,
+        lte: end,
+      },
+    };
+
+    const adherences = await this.prisma.adherence.findMany({
+      where: whereClause,
+      include: {
+        medication: {
+          select: {
+            id: true,
+            name: true,
+            dosage: true,
+            instructions: true,
+          },
+        },
+      },
+      orderBy: {
+        scheduled_datetime: 'asc',
+      },
+    });
+
+    return adherences.map(AdherenceMapper.toDomain);
+  }
 }

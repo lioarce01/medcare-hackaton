@@ -44,5 +44,6 @@ import { ReminderGenerationService } from '../../domain/reminder/services/remind
       useClass: SupabaseReminderRepository,
     },
   ],
+  exports: ['MedicationRepository', 'AdherenceRepository'],
 })
-export class MedicationModule {}
+export class MedicationModule { }

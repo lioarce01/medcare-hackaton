@@ -16,9 +16,10 @@ import { ScheduleRemindersUseCase } from '../../application/reminder/use-cases/s
 import { PrismaService } from '../../infrastructure/prisma/prisma.service';
 import { SupabaseUserRepository } from '../../infrastructure/user/repositories/supabase-user.repository';
 import { SubscriptionModule } from '../subscription/subscription.module';
+import { UserModule } from '../user/user.module';
 
 @Module({
-  imports: [ScheduleModule.forRoot(), SubscriptionModule],
+  imports: [ScheduleModule.forRoot(), SubscriptionModule, UserModule],
   controllers: [ReminderController],
   providers: [
     PrismaService,
@@ -40,10 +41,6 @@ import { SubscriptionModule } from '../subscription/subscription.module';
       provide: 'NotificationService',
       useClass: SendGridNotificationService,
     },
-    {
-      provide: 'UserRepository',
-      useClass: SupabaseUserRepository,
-    },
   ],
   exports: [
     ReminderGenerationService,
@@ -51,4 +48,4 @@ import { SubscriptionModule } from '../subscription/subscription.module';
     'NotificationService',
   ],
 })
-export class ReminderModule {}
+export class ReminderModule { }
