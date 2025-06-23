@@ -1,8 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { format } from "date-fns";
 import { useActiveMedications } from "./useMedications";
 import {
-  useAdherenceHistory,
   useAdherenceStats,
   useConfirmDose,
   useSkipDose,
@@ -14,16 +12,23 @@ import { useMemo } from "react";
 import { DateTime } from "luxon";
 
 // Hook for today's adherence schedule
-export const useTodaySchedule = () => {
+export const useTodaySchedule = (page = 1, limit = 10) => {
   const { user } = useAuth();
-  const { data: todayAdherence, isLoading: adherenceLoading } = useTodayAdherence();
-  const { data: medications, isLoading: medicationsLoading } = useActiveMedications();
+  const {
+    data: todayAdherence,
+    isLoading: adherenceLoading,
+  } = useTodayAdherence(page, limit);
+  const {
+    data: medications,
+    isLoading: medicationsLoading,
+  } = useActiveMedications(page, limit);
 
   const isLoading = adherenceLoading || medicationsLoading;
 
   const schedule = useMemo(() => {
     if (!user || !todayAdherence || !medications) return [];
-    const normalizedMedications = medications.map((med) => ({
+
+    const normalizedMedications = medications.data.map((med) => ({
       ...med,
       refill_reminder:
         med.refill_reminder && !Array.isArray(med.refill_reminder)
@@ -37,36 +42,57 @@ export const useTodaySchedule = () => {
             supply_unit: "days",
           },
     }));
-    // Relacionar adherencia con medicación y hora local
-    return todayAdherence
+
+    const mapped = todayAdherence.data
       .map((adh) => {
         const medication = normalizedMedications.find(
           (med) => med.id === adh.medication_id
         );
-        // Convert scheduled_datetime to local time for display and sorting
-        const scheduledLocal = DateTime.fromISO(adh.scheduled_datetime, { zone: 'utc' }).setZone(user?.settings?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone);
+        const scheduledLocal = DateTime.fromISO(adh.scheduled_datetime, {
+          zone: "utc",
+        }).setZone(
+          user?.settings?.timezone ||
+          Intl.DateTimeFormat().resolvedOptions().timeZone
+        );
         return {
           id: adh.id,
           medication,
           scheduled_datetime: adh.scheduled_datetime,
           scheduled_local: scheduledLocal,
-          scheduled_local_time: scheduledLocal.toFormat('HH:mm'),
-          scheduled_local_date: scheduledLocal.toLocaleString(DateTime.DATE_MED),
+          scheduled_local_time: scheduledLocal.toFormat("HH:mm"),
+          scheduled_local_date: scheduledLocal.toLocaleString(
+            DateTime.DATE_MED
+          ),
           status: adh.status,
           taken_time: adh.taken_time,
           notes: adh.notes,
           adherenceId: adh.id,
         };
       })
-      .sort((a, b) => a.scheduled_datetime.localeCompare(b.scheduled_datetime));
+      .sort((a, b) =>
+        a.scheduled_datetime.localeCompare(b.scheduled_datetime)
+      );
+
+    return mapped;
   }, [todayAdherence, medications, user]);
 
-  return { data: schedule, isLoading };
+  return {
+    data: schedule,
+    meta: {
+      total: todayAdherence?.total || 0,
+      page: todayAdherence?.page || page,
+      limit: todayAdherence?.limit || limit,
+      totalPages: todayAdherence
+        ? Math.ceil(todayAdherence.total / todayAdherence.limit)
+        : 1,
+    },
+    isLoading,
+  };
 };
+
 
 // Hook for dashboard statistics
 export const useDashboardStats = () => {
-  const { user } = useAuth();
   const { data: adherenceStats, isLoading: statsLoading } = useAdherenceStats();
   const { data: medications, isLoading: medicationsLoading } =
     useActiveMedications();
@@ -91,7 +117,7 @@ export const useDashboardStats = () => {
     },
     week: adherenceStats?.week ?? { taken: 0, total: 0, adherenceRate: 0 },
     month: adherenceStats?.month ?? { taken: 0, total: 0, adherenceRate: 0 },
-    activeMedications: medications?.length ?? 0,
+    activeMedications: medications?.data.length ?? 0,
     ranking: adherenceStats?.ranking ?? {
       grade: "E",
       color: "orange-600",
@@ -109,23 +135,14 @@ export const useDashboardAlerts = () => {
   const { data: upcomingReminders } = useUpcomingReminders();
   const { data: todaySchedule } = useTodaySchedule();
 
-
-  console.log("User:", user);
-  console.log("Medications:", medications);
-  console.log("Schedule:", todaySchedule);
-
   return useQuery({
     queryKey: ["dashboard", "alerts"],
     queryFn: () => {
-      console.log("[queryFn] Dashboard is loading...");
-
       const alerts = [];
 
       // Refill reminders
       if (medications) {
-        medications?.forEach((medication) => {
-          console.log("↪️ Checking medication:", medication.name);
-          console.log("  ➤ RefillReminder:", medication.refill_reminder);
+        medications?.data.forEach((medication) => {
           if (medication.refill_reminder?.enabled) {
             const { last_refill, supply_amount, threshold } =
               medication.refill_reminder;

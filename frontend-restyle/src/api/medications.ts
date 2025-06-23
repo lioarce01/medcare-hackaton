@@ -1,5 +1,5 @@
 import apiClient from "../config/api";
-import { Medication } from "../types";
+import { Medication, PaginationResult } from "../types";
 
 export interface CreateMedicationDto {
   user_id: string;
@@ -33,14 +33,46 @@ export interface CreateMedicationDto {
 }
 
 // Get all medications for the current user
-export const getMedications = async (): Promise<Medication[]> => {
-  const response = await apiClient.get("/medications");
-  return response.data;
+export const getMedications = async (
+  page?: number,
+  limit?: number,
+  searchTerm?: string,
+  filterType?: string
+): Promise<PaginationResult<Medication>> => {
+  try {
+    const params: Record<string, string | number> = {}
+
+    // Always include page and limit with defaults if not provided
+    params.page = page || 1
+    params.limit = limit || 10
+
+    // Only add search and filter params if they have meaningful values
+    if (searchTerm && searchTerm.trim() !== '') {
+      params.searchTerm = searchTerm.trim()
+    }
+
+    if (filterType && filterType !== 'all' && filterType.trim() !== '') {
+      params.filterType = filterType.trim()
+    }
+
+    const response = await apiClient.get("/medications", { params });
+    console.log("Medications Response:", response.data)
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching medications:", error);
+    throw error; // Re-throw to let the calling component handle it
+  }
 };
 
 // Get active medications for the current user
-export const getActiveMedications = async (): Promise<Medication[]> => {
-  const response = await apiClient.get("/medications/active");
+export const getActiveMedications = async (
+  page?: number,
+  limit?: number
+): Promise<PaginationResult<Medication>> => {
+  const params: any = {}
+  if (page) params.page = page
+  if (limit) params.limit = limit
+  const response = await apiClient.get("/medications/active", { params });
   return response.data;
 };
 

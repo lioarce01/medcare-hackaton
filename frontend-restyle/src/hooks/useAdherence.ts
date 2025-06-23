@@ -9,16 +9,18 @@ import {
 import { toast } from "sonner";
 import { useAuth } from "./useAuth";
 import { format, startOfMonth, endOfMonth } from "date-fns";
+import { Adherence, PaginationResult } from "@/types";
 
 // Get adherence history
-export const useAdherenceHistory = (date?: string) => {
+export const useAdherenceHistory = (page?: number, limit?: number, date?: string) => {
   const { user } = useAuth();
 
-  return useQuery({
-    queryKey: ["adherence", "history", date],
-    queryFn: () => getAdherenceHistory(date),
+  return useQuery<PaginationResult<Adherence>>({
+    queryKey: ["adherence", "history", page, limit, date],
+    queryFn: () => getAdherenceHistory(page, limit, date),
+    placeholderData: (previousData) => previousData, // reemplaza keepPreviousData
     enabled: !!user,
-    staleTime: 1 * 60 * 1000, // 1 minute
+    staleTime: 1 * 60 * 1000, // 1 minuto
   });
 };
 
@@ -37,7 +39,7 @@ export const useAdherenceHistoryRange = (
     select: (data) => {
       if (!data || !startDate || !endDate) return [];
 
-      return data.filter((item) => {
+      return data.data.filter((item) => {
         const itemDate = item.scheduled_datetime;
         return itemDate >= startDate && itemDate <= endDate;
       });
@@ -101,26 +103,28 @@ export const useSkipDose = () => {
 };
 
 // Hook para obtener adherencias de hoy en la zona horaria del usuario
-export const useTodayAdherence = () => {
+export const useTodayAdherence = (page?: number, limit?: number) => {
   const { user } = useAuth();
   const userTimezone =
     user?.settings?.timezone ||
     Intl.DateTimeFormat().resolvedOptions().timeZone;
 
   return useQuery({
-    queryKey: ["adherence", "today", userTimezone],
-    queryFn: () => getAdherenceHistory(),
+    queryKey: ["adherence", "today", userTimezone, page, limit],
+    queryFn: () => getAdherenceHistory(page, limit),
     enabled: !!user,
     select: (data) => {
-      if (!data) return [];
+      if (!data) return undefined;
       const todayLocal = DateTime.now().setZone(userTimezone).toISODate();
-      const result = data.filter((item) => {
-        // Use scheduled_datetime (UTC ISO string)
+      const filtered = data.data.filter((item) => {
         const scheduledUTC = DateTime.fromISO(item.scheduled_datetime, { zone: "utc" });
         const local = scheduledUTC.setZone(userTimezone);
         return local.toISODate() === todayLocal;
       });
-      return result;
-    },
+      return {
+        ...data,
+        data: filtered,
+      };
+    }
   });
 };

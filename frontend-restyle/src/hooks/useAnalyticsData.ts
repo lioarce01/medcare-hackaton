@@ -44,12 +44,19 @@ export interface AnalyticsData {
 }
 
 // Hook for analytics overview data
-export const useAnalyticsOverview = (timeRange: '7d' | '30d' | '90d' = '30d') => {
+export const useAnalyticsOverview = (
+  timeRange: '7d' | '30d' | '90d' = '30d', page: number = 1, limit: number = 10
+) => {
   const { user } = useAuth();
   const days = timeRange === '7d' ? 7 : timeRange === '30d' ? 30 : 90;
   const { data: adherenceStats } = useAdherenceStats();
   // UseAdherenceTimeline now uses correct date range
-  const { data: timelineRaw } = useAdherenceTimeline(days);
+  const { data: timelineResult } = useAdherenceTimeline(days, page, limit);
+
+  const timelineRaw = timelineResult?.data ?? []
+  const timelinePage = timelineResult?.page ?? 1
+  const timelineLimit = timelineResult?.limit ?? 10
+  const timelineTotal = timelineResult?.total ?? 0
 
   // DEBUG: Log timeline entries with local date conversion
   if (timelineRaw) {
@@ -84,7 +91,11 @@ export const useAnalyticsOverview = (timeRange: '7d' | '30d' | '90d' = '30d') =>
     refetchOnMount: true,
   });
   // Fetch latest risk score for each medication
-  const { data: medications } = useActiveMedications();
+  const { data: medicationsResult } = useActiveMedications();
+  const medications = medicationsResult?.data ?? [];
+  const medicationsPage = medicationsResult?.page ?? 1;
+  const medicationsTotal = medicationsResult?.total ?? 0;
+
   const { data: latestRiskScores } = useQuery<{ medicationId: string; riskScore: number | null }[]>({
     queryKey: ["analytics", "risk-score", "latest", (medications || []).map(m => m.id)],
     queryFn: async () => {
@@ -140,7 +151,7 @@ export const useAnalyticsOverview = (timeRange: '7d' | '30d' | '90d' = '30d') =>
     return daysArray;
   }, [timelineRaw, timezone, days]);
 
-  return useQuery<AnalyticsData | null>({
+  const analyticsQuery = useQuery<AnalyticsData | null>({
     queryKey: ["analytics", "overview", timeRange],
     queryFn: () => {
       if (!adherenceStats || !timelineData || !medications) return null;
@@ -307,6 +318,24 @@ export const useAnalyticsOverview = (timeRange: '7d' | '30d' | '90d' = '30d') =>
     enabled: !!user && !!adherenceStats && !!timelineData && !!medications,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
+
+  return {
+    ...analyticsQuery,
+    timelinePage,
+    timelineLimit,
+    timelineTotal,
+    timelineRaw,
+    timelineData,
+    medications,
+    medicationsPage,
+    medicationsTotal,
+    riskHistory,
+    latestRiskScores,
+    adherenceStats, // optional, for advanced stats
+    startDate,      // optional, for UI
+    endDate,        // optional, for UI
+    timezone,       // optional, for UI or further queries
+  };
 };
 
 // Hook for analytics insights
@@ -366,7 +395,7 @@ export const useAnalyticsInsights = () => {
       // Consistency analysis
       // Transform timelineData (Adherence[]) to TimelineDataType[]
       const grouped: { [date: string]: { taken: number; missed: number; skipped: number; total: number } } = {};
-      for (const entry of timelineData) {
+      for (const entry of timelineData.data) {
         const date = entry.scheduled_datetime.slice(0, 10);
         if (!grouped[date]) grouped[date] = { taken: 0, missed: 0, skipped: 0, total: 0 };
         grouped[date].total++;

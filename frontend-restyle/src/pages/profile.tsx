@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,114 +9,202 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Progress } from '@/components/ui/progress';
-import { 
+import {
   User,
   Mail,
   Phone,
-  Calendar,
-  MapPin,
   Bell,
   Clock,
-  Crown,
   Shield,
   Download,
   Edit3,
   Save,
   X,
   AlertTriangle,
-  CheckCircle2,
-  Settings,
+
+  Loader2,
 } from 'lucide-react';
-import { format } from 'date-fns';
-import { mockUserSettings } from '@/lib/mock-data';
-import { useAuth } from '@/contexts/auth-context';
-import { UserSettings } from '@/types';
+import { User as UserType, UserSettings } from '@/types';
 import { SubscriptionStatus } from '@/components/premium/subscription-status';
+import {
+  useUserProfile,
+  useUpdateUserProfile,
+  useUpdateUserSettings,
+  useDeleteUser
+} from '@/hooks/useUser'
+import { toast } from 'sonner';
+import ExportUserDataCall from '@/components/pdf/ExportUserDataCall';
+
+interface EditedProfile {
+  name: string;
+  email: string;
+  phone_number: string;
+  date_of_birth: string;
+  gender: string;
+  allergies: string[];
+  conditions: string[];
+  emergency_contact: {
+    name: string;
+    phone_number: string;
+    relationship: string;
+  };
+}
+
+interface NotificationPreferences {
+  email: boolean;
+  sms: boolean;
+  push: boolean;
+  reminder_before: number;
+}
 
 export function ProfilePage() {
-  const { user } = useAuth();
-  const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('profile');
-  const [userSettings, setUserSettings] = useState<UserSettings | null>(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [editedProfile, setEditedProfile] = useState({
+  const [editedProfile, setEditedProfile] = useState<EditedProfile>({
     name: '',
     email: '',
     phone_number: '',
     date_of_birth: '',
     gender: '',
-    allergies: [] as string[],
-    conditions: [] as string[],
+    allergies: [],
+    conditions: [],
     emergency_contact: {
       name: '',
-      phone: '',
+      phone_number: '',
       relationship: ''
     }
   });
 
+  // API hooks
+  const { data: userProfile, isLoading: isLoadingProfile, error: profileError } = useUserProfile();
+  const updateProfileMutation = useUpdateUserProfile();
+  const updateSettingsMutation = useUpdateUserSettings();
+  const deleteUserMutation = useDeleteUser();
+
+  console.log("user profile:", userProfile)
+
+  // Initialize form data when user profile loads
   useEffect(() => {
-    // Simulate loading
-    const timer = setTimeout(() => {
-      setUserSettings(mockUserSettings);
-      if (user) {
-        setEditedProfile({
-          name: user.name || '',
-          email: user.email || '',
-          phone_number: user.phone_number || '',
-          date_of_birth: user.date_of_birth || '',
-          gender: user.gender || '',
-          allergies: user.allergies || [],
-          conditions: user.conditions || [],
-          emergency_contact: user.emergency_contact || {
-            name: '',
-            phone: '',
-            relationship: ''
-          }
-        });
-      }
-      setIsLoading(false);
-    }, 1000);
+    if (userProfile) {
+      setEditedProfile({
+        name: userProfile.name || '',
+        email: userProfile.email || '',
+        phone_number: userProfile.phone_number || '',
+        date_of_birth: userProfile.date_of_birth || '',
+        gender: userProfile.gender || '',
+        allergies: userProfile.allergies || [],
+        conditions: userProfile.conditions || [],
+        emergency_contact: {
+          name: userProfile.emergency_contact?.name || '',
+          phone_number: userProfile.emergency_contact?.phone_number || '',
+          relationship: userProfile.emergency_contact?.relationship || ''
+        }
+      });
+    }
+  }, [userProfile]);
 
-    return () => clearTimeout(timer);
-  }, [user]);
+  const handleSaveProfile = async () => {
+    if (!userProfile?.id) {
+      toast.error('User ID not found');
+      return;
+    }
 
-  const handleSaveProfile = () => {
-    // In a real app, this would make an API call
-    console.log('Saving profile:', editedProfile);
-    setIsEditing(false);
+    try {
+      await updateProfileMutation.mutateAsync({
+        id: userProfile.id,
+        ...editedProfile
+      });
+      setIsEditing(false);
+    } catch (error) {
+      // Error handling is done in the mutation
+      console.error('Failed to save profile:', error);
+    }
   };
 
   const handleCancelEdit = () => {
-    if (user) {
+    if (userProfile) {
       setEditedProfile({
-        name: user.name || '',
-        email: user.email || '',
-        phone_number: user.phone_number || '',
-        date_of_birth: user.date_of_birth || '',
-        gender: user.gender || '',
-        allergies: user.allergies || [],
-        conditions: user.conditions || [],
-        emergency_contact: user.emergency_contact || {
-          name: '',
-          phone: '',
-          relationship: ''
+        name: userProfile.name || '',
+        email: userProfile.email || '',
+        phone_number: userProfile.phone_number || '',
+        date_of_birth: userProfile.date_of_birth || '',
+        gender: userProfile.gender || '',
+        allergies: userProfile.allergies || [],
+        conditions: userProfile.conditions || [],
+        emergency_contact: {
+          name: userProfile.emergency_contact?.name || '',
+          phone_number: userProfile.emergency_contact?.phone_number || '',
+          relationship: userProfile.emergency_contact?.relationship || ''
         }
       });
     }
     setIsEditing(false);
   };
 
-  const handleUpdateSettings = (newSettings: Partial<UserSettings>) => {
-    if (userSettings) {
-      setUserSettings({ ...userSettings, ...newSettings });
+  const handleUpdateNotificationSettings = async (newSettings: Partial<NotificationPreferences>) => {
+    if (!userProfile?.id) {
+      toast.error('User ID not found');
+      return;
+    }
+
+    try {
+      await updateSettingsMutation.mutateAsync({
+        userId: userProfile.id,
+        settings: {
+          notification_preferences: {
+            ...userProfile.settings?.notification_preferences,
+            ...newSettings
+          }
+        }
+      });
+    } catch (error) {
+      // Error handling is done in the mutation
+      console.error('Failed to update notification settings:', error);
+    }
+  };
+
+  const handleUpdateGeneralSettings = async (newSettings: Partial<UserSettings>) => {
+    if (!userProfile?.id) {
+      toast.error('User ID not found');
+      return;
+    }
+
+    try {
+      await updateSettingsMutation.mutateAsync({
+        userId: userProfile.id,
+        settings: newSettings
+      });
+    } catch (error) {
+      // Error handling is done in the mutation
+      console.error('Failed to update settings:', error);
     }
   };
 
   const handleExportData = () => {
-    // In a real app, this would generate and download a PDF
-    console.log('Exporting user data...');
-    alert('Data export feature will be available soon. You will receive an email with your data within 30 days.');
+    // In a real app, this would trigger a backend job to generate and email the data
+    toast.info('Data export requested. You will receive an email with your data within 30 days.');
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!userProfile?.id) {
+      toast.error('User ID not found');
+      return;
+    }
+
+    const confirmed = window.confirm(
+      'Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently removed.'
+    );
+
+    if (confirmed) {
+      try {
+        await deleteUserMutation.mutateAsync(userProfile.id);
+        // Redirect to login or home page after successful deletion
+        window.location.href = '/';
+      } catch (error) {
+        // Error handling is done in the mutation
+        console.error('Failed to delete account:', error);
+      }
+    }
   };
 
   const getInitials = (name: string) => {
@@ -128,20 +215,34 @@ export function ProfilePage() {
       .toUpperCase();
   };
 
-  const getSubscriptionColor = (plan: string) => {
-    switch (plan) {
-      case 'premium':
-        return 'bg-gradient-to-r from-yellow-400 to-orange-500';
-      case 'family':
-        return 'bg-gradient-to-r from-blue-400 to-purple-500';
-      default:
-        return 'bg-gradient-to-r from-gray-400 to-gray-500';
-    }
-  };
-
-  if (isLoading) {
+  // Handle loading state
+  if (isLoadingProfile) {
     return <LoadingSkeleton />;
   }
+
+  // Handle error state
+  if (profileError) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <h2 className="text-lg font-semibold mb-2">Failed to load profile</h2>
+          <p className="text-muted-foreground mb-4">Please try refreshing the page</p>
+          <Button onClick={() => window.location.reload()}>
+            Refresh Page
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Safe access to notification preferences
+  const notificationPreferences: NotificationPreferences = {
+    email: userProfile?.settings?.notification_preferences?.email || false,
+    sms: userProfile?.settings?.notification_preferences?.sms || false,
+    push: userProfile?.settings?.notification_preferences?.push || false,
+    reminder_before: userProfile?.settings?.notification_preferences?.reminder_before || 0,
+  };
 
   return (
     <div className="space-y-6">
@@ -155,12 +256,12 @@ export function ProfilePage() {
         <div className="flex items-center gap-2">
           <Avatar className="h-12 w-12">
             <AvatarFallback className="text-lg">
-              {user ? getInitials(user.name) : 'U'}
+              {userProfile ? getInitials(userProfile.name || 'User') : 'U'}
             </AvatarFallback>
           </Avatar>
           <div>
-            <p className="font-medium">{user?.name}</p>
-            <p className="text-sm text-muted-foreground">{user?.email}</p>
+            <p className="font-medium">{userProfile?.name}</p>
+            <p className="text-sm text-muted-foreground">{userProfile?.email}</p>
           </div>
         </div>
       </div>
@@ -193,11 +294,24 @@ export function ProfilePage() {
                   </Button>
                 ) : (
                   <div className="flex gap-2">
-                    <Button onClick={handleSaveProfile} className="flex items-center gap-2">
-                      <Save className="h-4 w-4" />
+                    <Button
+                      onClick={handleSaveProfile}
+                      className="flex items-center gap-2"
+                      disabled={updateProfileMutation.isPending}
+                    >
+                      {updateProfileMutation.isPending ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Save className="h-4 w-4" />
+                      )}
                       Save
                     </Button>
-                    <Button variant="outline" onClick={handleCancelEdit} className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={handleCancelEdit}
+                      className="flex items-center gap-2"
+                      disabled={updateProfileMutation.isPending}
+                    >
                       <X className="h-4 w-4" />
                       Cancel
                     </Button>
@@ -252,8 +366,8 @@ export function ProfilePage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="gender">Gender</Label>
-                  <Select 
-                    value={editedProfile.gender} 
+                  <Select
+                    value={editedProfile.gender}
                     onValueChange={(value) => setEditedProfile(prev => ({ ...prev, gender: value }))}
                     disabled={!isEditing}
                   >
@@ -280,9 +394,9 @@ export function ProfilePage() {
                       id="allergies"
                       placeholder="List your allergies (comma-separated)"
                       value={editedProfile.allergies.join(', ')}
-                      onChange={(e) => setEditedProfile(prev => ({ 
-                        ...prev, 
-                        allergies: e.target.value.split(',').map(a => a.trim()).filter(a => a) 
+                      onChange={(e) => setEditedProfile(prev => ({
+                        ...prev,
+                        allergies: e.target.value.split(',').map(a => a.trim()).filter(a => a)
                       }))}
                       disabled={!isEditing}
                       rows={3}
@@ -295,9 +409,9 @@ export function ProfilePage() {
                       id="conditions"
                       placeholder="List your medical conditions (comma-separated)"
                       value={editedProfile.conditions.join(', ')}
-                      onChange={(e) => setEditedProfile(prev => ({ 
-                        ...prev, 
-                        conditions: e.target.value.split(',').map(c => c.trim()).filter(c => c) 
+                      onChange={(e) => setEditedProfile(prev => ({
+                        ...prev,
+                        conditions: e.target.value.split(',').map(c => c.trim()).filter(c => c)
                       }))}
                       disabled={!isEditing}
                       rows={3}
@@ -315,8 +429,8 @@ export function ProfilePage() {
                     <Input
                       id="emergency-name"
                       value={editedProfile.emergency_contact.name}
-                      onChange={(e) => setEditedProfile(prev => ({ 
-                        ...prev, 
+                      onChange={(e) => setEditedProfile(prev => ({
+                        ...prev,
                         emergency_contact: { ...prev.emergency_contact, name: e.target.value }
                       }))}
                       disabled={!isEditing}
@@ -327,10 +441,10 @@ export function ProfilePage() {
                     <Label htmlFor="emergency-phone">Phone</Label>
                     <Input
                       id="emergency-phone"
-                      value={editedProfile.emergency_contact.phone}
-                      onChange={(e) => setEditedProfile(prev => ({ 
-                        ...prev, 
-                        emergency_contact: { ...prev.emergency_contact, phone: e.target.value }
+                      value={editedProfile.emergency_contact.phone_number}
+                      onChange={(e) => setEditedProfile(prev => ({
+                        ...prev,
+                        emergency_contact: { ...prev.emergency_contact, phone_number: e.target.value }
                       }))}
                       disabled={!isEditing}
                     />
@@ -341,8 +455,8 @@ export function ProfilePage() {
                     <Input
                       id="emergency-relationship"
                       value={editedProfile.emergency_contact.relationship}
-                      onChange={(e) => setEditedProfile(prev => ({ 
-                        ...prev, 
+                      onChange={(e) => setEditedProfile(prev => ({
+                        ...prev,
                         emergency_contact: { ...prev.emergency_contact, relationship: e.target.value }
                       }))}
                       disabled={!isEditing}
@@ -381,15 +495,9 @@ export function ProfilePage() {
                       </div>
                     </div>
                     <Switch
-                      checked={userSettings?.notification_preferences.email}
-                      onCheckedChange={(checked) =>
-                        handleUpdateSettings({
-                          notification_preferences: {
-                            ...userSettings?.notification_preferences!,
-                            email: checked
-                          }
-                        })
-                      }
+                      checked={notificationPreferences.email}
+                      onCheckedChange={(checked) => handleUpdateNotificationSettings({ email: checked })}
+                      disabled={updateSettingsMutation.isPending}
                     />
                   </div>
 
@@ -404,15 +512,9 @@ export function ProfilePage() {
                       </div>
                     </div>
                     <Switch
-                      checked={userSettings?.notification_preferences.sms}
-                      onCheckedChange={(checked) =>
-                        handleUpdateSettings({
-                          notification_preferences: {
-                            ...userSettings?.notification_preferences!,
-                            sms: checked
-                          }
-                        })
-                      }
+                      checked={notificationPreferences.sms}
+                      onCheckedChange={(checked) => handleUpdateNotificationSettings({ sms: checked })}
+                      disabled={updateSettingsMutation.isPending}
                     />
                   </div>
 
@@ -427,15 +529,9 @@ export function ProfilePage() {
                       </div>
                     </div>
                     <Switch
-                      checked={userSettings?.notification_preferences.push}
-                      onCheckedChange={(checked) =>
-                        handleUpdateSettings({
-                          notification_preferences: {
-                            ...userSettings?.notification_preferences!,
-                            push: checked
-                          }
-                        })
-                      }
+                      checked={notificationPreferences.push}
+                      onCheckedChange={(checked) => handleUpdateNotificationSettings({ push: checked })}
+                      disabled={updateSettingsMutation.isPending}
                     />
                   </div>
                 </div>
@@ -448,15 +544,9 @@ export function ProfilePage() {
                   <div className="space-y-2">
                     <Label htmlFor="reminder-before">Remind me before</Label>
                     <Select
-                      value={userSettings?.notification_preferences.reminder_before.toString()}
-                      onValueChange={(value) =>
-                        handleUpdateSettings({
-                          notification_preferences: {
-                            ...userSettings?.notification_preferences!,
-                            reminder_before: parseInt(value)
-                          }
-                        })
-                      }
+                      value={notificationPreferences.reminder_before.toString()}
+                      onValueChange={(value) => handleUpdateNotificationSettings({ reminder_before: parseInt(value) })}
+                      disabled={updateSettingsMutation.isPending}
                     >
                       <SelectTrigger>
                         <SelectValue />
@@ -475,8 +565,9 @@ export function ProfilePage() {
                   <div className="space-y-2">
                     <Label htmlFor="timezone">Timezone</Label>
                     <Select
-                      value={userSettings?.timezone}
-                      onValueChange={(value) => handleUpdateSettings({ timezone: value })}
+                      value={userProfile?.settings?.timezone || 'UTC'}
+                      onValueChange={(value) => handleUpdateGeneralSettings({ timezone: value })}
+                      disabled={updateSettingsMutation.isPending}
                     >
                       <SelectTrigger>
                         <SelectValue />
@@ -500,17 +591,19 @@ export function ProfilePage() {
                   Set your preferred times for medication reminders. These will be suggested when creating new medications.
                 </p>
                 <div className="grid gap-2 md:grid-cols-4">
-                  {userSettings?.preferred_times.map((time, index) => (
+                  {(userProfile?.settings?.preferred_times || ['08:00', '12:00', '18:00', '22:00']).map((time, index) => (
                     <div key={index} className="flex items-center gap-2">
                       <Clock className="h-4 w-4 text-muted-foreground" />
                       <Input
                         type="time"
                         value={time}
                         onChange={(e) => {
-                          const newTimes = [...userSettings.preferred_times];
+                          const currentTimes = userProfile?.settings?.preferred_times || ['08:00', '12:00', '18:00', '22:00'];
+                          const newTimes = [...currentTimes];
                           newTimes[index] = e.target.value;
-                          handleUpdateSettings({ preferred_times: newTimes });
+                          handleUpdateGeneralSettings({ preferred_times: newTimes });
                         }}
+                        disabled={updateSettingsMutation.isPending}
                       />
                     </div>
                   ))}
@@ -524,7 +617,7 @@ export function ProfilePage() {
           <SubscriptionStatus />
         </TabsContent>
 
-        <TabsContent value="privacy" className="space-y-6"> 
+        <TabsContent value="privacy" className="space-y-6">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -539,57 +632,18 @@ export function ProfilePage() {
               {/* Data Export */}
               <div className="space-y-4 w-full max-w-2xl">
                 <h3 className="text-lg font-semibold">Data Export</h3>
-                <div className="p-4 border rounded-lg bg-info-light">
+                <div className="p-4 border rounded-lg bg-blue-50 dark:bg-blue-900/20">
                   <div className="flex items-start gap-4">
-                    <Download className="h-6 w-6 mt-1" />
+                    <Download className="h-6 w-6 mt-1 text-blue-600" />
                     <div className="flex-1">
                       <h4 className="font-medium">Export Your Data</h4>
-                      <p className="text-sm mb-4 opacity-90">
+                      <p className="text-sm mb-4 text-muted-foreground">
                         Download a comprehensive report of your medication data, adherence history,
                         and account information in PDF format. This report will be generated and
                         sent to your email within 30 days.
                       </p>
-                      <Button onClick={handleExportData} className="flex items-center gap-2">
-                        <Download className="h-4 w-4" />
-                        Request Data Export
-                      </Button>
+                      <ExportUserDataCall />
                     </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Privacy Settings */}
-              <div className="space-y-4 w-full max-w-2xl">
-                <h3 className="text-lg font-semibold">Privacy Settings</h3>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex-1 pr-4">
-                      <p className="font-medium">Analytics & Usage Data</p>
-                      <p className="text-sm text-muted-foreground">
-                        Allow us to collect anonymous usage data to improve the app
-                      </p>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex-1 pr-4">
-                      <p className="font-medium">Marketing Communications</p>
-                      <p className="text-sm text-muted-foreground">
-                        Receive emails about new features and health tips
-                      </p>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex-1 pr-4">
-                      <p className="font-medium">Data Sharing with Healthcare Providers</p>
-                      <p className="text-sm text-muted-foreground">
-                        Allow sharing of adherence data with your healthcare team
-                      </p>
-                    </div>
-                    <Switch />
                   </div>
                 </div>
               </div>
@@ -598,14 +652,14 @@ export function ProfilePage() {
               <div className="space-y-4 w-full max-w-2xl">
                 <h3 className="text-lg font-semibold">Account Actions</h3>
                 <div className="space-y-4">
-                  <div className="p-4 bg-warning-light border rounded-lg">
+                  <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 rounded-lg">
                     <div className="flex items-start gap-3">
-                      <AlertTriangle className="h-5 w-5 mt-0.5" />
+                      <AlertTriangle className="h-5 w-5 mt-0.5 text-yellow-600" />
                       <div>
-                        <h4 className="font-medium">
+                        <h4 className="font-medium text-yellow-800 dark:text-yellow-200">
                           Data Retention Policy
                         </h4>
-                        <p className="text-sm mt-1 opacity-90">
+                        <p className="text-sm mt-1 text-yellow-700 dark:text-yellow-300">
                           Your medication data is stored securely and retained for as long as your account
                           is active. You can request deletion of your data at any time by contacting support.
                         </p>
@@ -623,8 +677,20 @@ export function ProfilePage() {
                         <p className="text-sm text-red-700 dark:text-red-300 mt-1 mb-3">
                           Permanently delete your account and all associated data. This action cannot be undone.
                         </p>
-                        <Button variant="destructive" size="sm">
-                          Delete Account
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={handleDeleteAccount}
+                          disabled={deleteUserMutation.isPending}
+                        >
+                          {deleteUserMutation.isPending ? (
+                            <>
+                              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                              Deleting...
+                            </>
+                          ) : (
+                            'Delete Account'
+                          )}
                         </Button>
                       </div>
                     </div>
@@ -635,11 +701,11 @@ export function ProfilePage() {
               {/* Contact Information */}
               <div className="space-y-4 w-full max-w-2xl">
                 <h3 className="text-lg font-semibold">Privacy Contact</h3>
-                <div className="p-4 border rounded-lg bg-purple-light">
-                  <p className="text-sm opacity-90">
+                <div className="p-4 border rounded-lg bg-purple-50 dark:bg-purple-900/20">
+                  <p className="text-sm text-muted-foreground">
                     If you have any questions about your privacy or data handling, please contact our
                     privacy team at{' '}
-                    <a href="mailto:privacy@meditrack.com" className="font-medium hover:underline">
+                    <a href="mailto:privacy@meditrack.com" className="font-medium hover:underline text-purple-600">
                       privacy@meditrack.com
                     </a>
                     {' '}or review our{' '}

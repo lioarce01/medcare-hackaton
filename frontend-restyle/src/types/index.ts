@@ -1,4 +1,4 @@
-import { Session, WeakPassword } from "@supabase/supabase-js";
+import { Session } from "@supabase/supabase-js";
 
 // types/index.ts (or wherever your types are defined)
 
@@ -229,4 +229,11 @@ export interface AuthContextType {
   isSigningIn: boolean;
   isSigningUp: boolean;
   isSigningOut: boolean;
+}
+
+export interface PaginationResult<T> {
+  data: T[],
+  page: number,
+  limit: number,
+  total: number
 }

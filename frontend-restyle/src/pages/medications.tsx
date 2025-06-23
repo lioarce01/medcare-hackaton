@@ -36,6 +36,7 @@ import {
 } from "@/hooks/useMedications"
 import { useAuth } from "@/hooks/useAuth"
 import { DateTime } from "luxon"
+import Pagination from "@/components/Pagination"
 
 const medicationSchema = z.object({
   name: z.string().min(1, "Medication name is required"),
@@ -66,16 +67,33 @@ export function MedicationsPage() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [medicationToDelete, setMedicationToDelete] = useState<Medication | null>(null)
   const [activeTab, setActiveTab] = useState("list")
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10)
 
   // Use real data hooks
-  const { data: filteredMedications = [], isLoading, originalData } = useMedicationsWithFilters(searchTerm, filterType)
+  const { data: medicationsResult, isLoading } = useMedicationsWithFilters(searchTerm, filterType, page, limit)
   const createMedicationMutation = useCreateMedication()
   const updateMedicationMutation = useUpdateMedication()
   const deleteMedicationMutation = useDeleteMedication()
 
-  const { canAdd, maxMedications, currentCount } = useMedicationLimits(originalData?.length || 0)
+  const { canAdd, maxMedications, currentCount } = useMedicationLimits(medicationsResult?.data.length || 0)
 
   const { user } = useAuth()
+
+  console.log("medications result:", medicationsResult)
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage)
+  }
+
+  const handleLimitChange = (newLimit: number) => {
+    setLimit(newLimit)
+    setPage(1) // Reset to first page when changing limit
+  }
+
+  useEffect(() => {
+    setPage(1) // Reset to first page when search/filter changes
+  }, [searchTerm, filterType])
 
   const {
     register,
@@ -103,7 +121,7 @@ export function MedicationsPage() {
   const timesPerDay = watch("times_per_day") || 1
   const refillReminderEnabled = watch("refill_reminder_enabled")
 
-  console.log("filteredMedications:", filteredMedications, Array.isArray(filteredMedications))
+  console.log("filteredMedications:", medicationsResult?.data, Array.isArray(medicationsResult?.data))
 
   const onSubmit = async (data: MedicationFormData) => {
     try {
@@ -359,7 +377,7 @@ export function MedicationsPage() {
 
           {/* Medications List */}
           <div className="grid gap-3">
-            {filteredMedications.length === 0 ? (
+            {medicationsResult?.data.length === 0 ? (
               <Card>
                 <CardContent className="flex flex-col items-center justify-center py-12">
                   <Pill className="h-12 w-12 text-muted-foreground mb-4" />
@@ -376,139 +394,182 @@ export function MedicationsPage() {
                 </CardContent>
               </Card>
             ) : (
-              filteredMedications?.map((medication) => (
-                <Card key={medication.id} className="hover:shadow-md transition-shadow">
-                  <CardHeader className="pb-4">
-                    <div className="flex items-start justify-between">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-3">
-                          <CardTitle className="text-xl">{medication.name}</CardTitle>
-                          <Badge
-                            variant={
-                              medication.medication_type === "prescription"
-                                ? "default"
-                                : medication.medication_type === "otc"
-                                  ? "secondary"
-                                  : "outline"
-                            }
-                          >
-                            {medication.medication_type === "prescription"
-                              ? "Prescription"
-                              : medication.medication_type === "otc"
-                                ? "OTC"
-                                : "Supplement"}
-                          </Badge>
-                        </div>
-                        <CardDescription className="text-base font-medium">
-                          {medication.dosage.amount}
-                          {medication.dosage.unit} {medication.dosage.form}
-                        </CardDescription>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Button variant="outline" size="sm" onClick={() => handleEdit(medication)}>
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDelete(medication)}
-                          className="text-destructive hover:text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardHeader>
-
-                  <CardContent className="space-y-4">
-                    {/* Schedule Section */}
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-muted-foreground" />
-                        <span className="font-semibold text-sm">Daily Schedule</span>
-                        <Separator className="flex-1" />
-                        <span className="text-xs text-muted-foreground">
-                          {medication.frequency.times_per_day} time(s) {medication.frequency.type}
-                        </span>
-                      </div>
-                      <div className="flex flex-wrap gap-1.5">
-                        {medication.scheduled_times.map((time, index) => {
-                          const userTz = user?.settings?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone
-                          const refDate = medication.start_date
-                            ? DateTime.fromISO(medication.start_date, { zone: "utc" })
-                            : DateTime.now()
-                          const utcDateTime = refDate
-                            .set({
-                              hour: Number(time.split(":")[0]),
-                              minute: Number(time.split(":")[1] || 0),
-                              second: 0,
-                              millisecond: 0,
-                            })
-                            .setZone("utc")
-                          const localDateTime = utcDateTime.setZone(userTz)
-                          return (
-                            <Badge key={index} variant="outline" className="px-2 py-0.5 font-mono text-xs">
-                              {localDateTime.toFormat("HH:mm")}
-                            </Badge>
-                          )
-                        })}
-                      </div>
-                    </div>
-
-                    {/* Instructions Section */}
-                    {medication.instructions && (
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                          <Info className="h-4 w-4 text-muted-foreground" />
-                          <span className="font-semibold text-sm">Instructions</span>
-                        </div>
-                        <p className="text-sm text-muted-foreground pl-6 leading-relaxed">{medication.instructions}</p>
-                      </div>
-                    )}
-
-                    {/* Side Effects Section */}
-                    {medication.side_effects_to_watch.length > 0 && (
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                          <AlertTriangle className="h-4 w-4 text-amber-500" />
-                          <span className="font-semibold text-sm">Side Effects to Monitor</span>
-                        </div>
-                        <div className="flex flex-wrap gap-1.5 pl-6">
-                          {medication.side_effects_to_watch.map((effect, index) => (
+              <>
+                {medicationsResult?.data.map((medication) => (
+                  <Card key={medication.id} className="hover:shadow-md transition-shadow">
+                    <CardHeader className="pb-4">
+                      <div className="flex items-start justify-between">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-3">
+                            <CardTitle className="text-xl">{medication.name}</CardTitle>
                             <Badge
-                              key={index}
-                              variant="outline"
-                              className="text-xs bg-amber-50 border-amber-200 text-amber-800 px-2 py-0.5"
+                              variant={
+                                medication.medication_type === "prescription"
+                                  ? "default"
+                                  : medication.medication_type === "otc"
+                                    ? "secondary"
+                                    : "outline"
+                              }
                             >
-                              {effect}
+                              {medication.medication_type === "prescription"
+                                ? "Prescription"
+                                : medication.medication_type === "otc"
+                                  ? "OTC"
+                                  : "Supplement"}
                             </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Footer Section */}
-                    <div className="pt-2 border-t">
-                      <div className="flex items-center justify-between text-sm">
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                          <Calendar className="h-4 w-4" />
-                          <span>Started {new Date(medication.start_date).toLocaleDateString()}</span>
-                        </div>
-                        {medication.refill_reminder?.enabled && (
-                          <div className="flex items-center gap-2 text-blue-600">
-                            <CheckCircle2 className="h-4 w-4" />
-                            <span className="text-xs">
-                              Refill reminder ({medication.refill_reminder.threshold} days)
-                            </span>
                           </div>
-                        )}
+                          <CardDescription className="text-base font-medium">
+                            {medication.dosage.amount}
+                            {medication.dosage.unit} {medication.dosage.form}
+                          </CardDescription>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button variant="outline" size="sm" onClick={() => handleEdit(medication)}>
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDelete(medication)}
+                            className="text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))
+                    </CardHeader>
+
+                    <CardContent className="space-y-4">
+                      {/* Schedule Section */}
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2">
+                          <Clock className="h-4 w-4 text-muted-foreground" />
+                          <span className="font-semibold text-sm">Daily Schedule</span>
+                          <Separator className="flex-1" />
+                          <span className="text-xs text-muted-foreground">
+                            {medication.frequency.times_per_day} time(s) {medication.frequency.type}
+                          </span>
+                        </div>
+                        <div className="flex flex-wrap gap-1.5">
+                          {medication.scheduled_times.map((time, index) => {
+                            const userTz = user?.settings?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone
+                            const refDate = medication.start_date
+                              ? DateTime.fromISO(medication.start_date, { zone: "utc" })
+                              : DateTime.now()
+                            const utcDateTime = refDate
+                              .set({
+                                hour: Number(time.split(":")[0]),
+                                minute: Number(time.split(":")[1] || 0),
+                                second: 0,
+                                millisecond: 0,
+                              })
+                              .setZone("utc")
+                            const localDateTime = utcDateTime.setZone(userTz)
+                            return (
+                              <Badge key={index} variant="outline" className="px-2 py-0.5 font-mono text-xs">
+                                {localDateTime.toFormat("HH:mm")}
+                              </Badge>
+                            )
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Instructions Section */}
+                      {medication.instructions && (
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <Info className="h-4 w-4 text-muted-foreground" />
+                            <span className="font-semibold text-sm">Instructions</span>
+                          </div>
+                          <p className="text-sm text-muted-foreground pl-6 leading-relaxed">{medication.instructions}</p>
+                        </div>
+                      )}
+
+                      {/* Side Effects Section */}
+                      {medication.side_effects_to_watch.length > 0 && (
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <AlertTriangle className="h-4 w-4 text-amber-500" />
+                            <span className="font-semibold text-sm">Side Effects to Monitor</span>
+                          </div>
+                          <div className="flex flex-wrap gap-1.5 pl-6">
+                            {medication.side_effects_to_watch.map((effect, index) => (
+                              <Badge
+                                key={index}
+                                variant="outline"
+                                className="text-xs bg-amber-50 border-amber-200 text-amber-800 px-2 py-0.5"
+                              >
+                                {effect}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Footer Section */}
+                      <div className="pt-2 border-t">
+                        <div className="flex items-center justify-between text-sm">
+                          <div className="flex items-center gap-2 text-muted-foreground">
+                            <Calendar className="h-4 w-4" />
+                            <span>Started {new Date(medication.start_date).toLocaleDateString()}</span>
+                          </div>
+                          {medication.refill_reminder?.enabled && (
+                            <div className="flex items-center gap-2 text-blue-600">
+                              <CheckCircle2 className="h-4 w-4" />
+                              <span className="text-xs">
+                                Refill reminder ({medication.refill_reminder.threshold} days)
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+                {medicationsResult && medicationsResult.total > medicationsResult.limit && (
+                  <Card className="mt-6">
+                    <CardContent className="flex justify-center py-4">
+                      <Pagination
+                        page={medicationsResult.page}
+                        limit={medicationsResult.limit}
+                        total={medicationsResult.total}
+                        onPageChange={(newPage) => setPage(newPage)}
+                        className=""
+                      />
+                    </CardContent>
+                  </Card>
+                )}
+              </>
             )}
           </div>
+          {medicationsResult && medicationsResult.data.length > 0 && (
+            <Card>
+              <CardContent className="flex justify-between items-center py-4">
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="limit-select" className="text-sm">
+                    Items per page:
+                  </Label>
+                  <Select value={limit.toString()} onValueChange={(value) => setLimit(Number(value))}>
+                    <SelectTrigger className="w-20" id="limit-select">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="5">5</SelectItem>
+                      <SelectItem value="10">10</SelectItem>
+                      <SelectItem value="20">20</SelectItem>
+                      <SelectItem value="50">50</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="text-sm text-muted-foreground">
+                  Showing {((medicationsResult.page - 1) * medicationsResult.limit) + 1} to{" "}
+                  {Math.min(medicationsResult.page * medicationsResult.limit, medicationsResult.total)} of{" "}
+                  {medicationsResult.total} medications
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
 
         <TabsContent value="create" className="space-y-6">
@@ -1011,6 +1072,6 @@ export function MedicationsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </div >
   )
 }

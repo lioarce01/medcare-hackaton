@@ -85,17 +85,21 @@ export const useRiskPredictions = () => {
 };
 
 // Adherence timeline
-export const useAdherenceTimeline = (days: number = 30) => {
+export const useAdherenceTimeline = (
+  days: number = 30,
+  page?: number,
+  limit?: number
+) => {
   const { user } = useAuth();
   return useQuery({
-    queryKey: ["adherence", "timeline", days],
+    queryKey: ["adherence", "timeline", days, page, limit],
     queryFn: async () => {
       const endDate = new Date();
       const startDate = new Date();
       startDate.setDate(endDate.getDate() - days + 1);
       const startStr = startDate.toISOString().slice(0, 10);
       const endStr = endDate.toISOString().slice(0, 10);
-      return getAdherenceTimeline(startStr, endStr);
+      return getAdherenceTimeline(startStr, endStr, page, limit);
     },
     enabled: !!user,
     staleTime: 1 * 60 * 1000,

@@ -18,6 +18,8 @@ import { useTodaySchedule, useDashboardStats, useDashboardAlerts, useDashboardAc
 import { useAuth } from '@/hooks/useAuth';
 import { DateTime } from 'luxon';
 import { useRealtimeMedications, useRealtimeAdherence, useRealtimeReminders } from '@/hooks/useRealtime';
+import { useState } from 'react';
+import Pagination from '@/components/Pagination';
 
 export function DashboardPage() {
   const { user } = useAuth();
@@ -27,8 +29,11 @@ export function DashboardPage() {
   useRealtimeAdherence();
   useRealtimeReminders();
 
+  const [page, setPage] = useState(1);
+  const limit = 10
+
   // Fetch real data using custom hooks
-  const { data: todaySchedule, isLoading: scheduleLoading } = useTodaySchedule();
+  const { data: todaySchedule, meta, isLoading: scheduleLoading } = useTodaySchedule(page, limit);
   const { data: stats, isLoading: statsLoading } = useDashboardStats();
   const { data: alerts, isLoading: alertsLoading } = useDashboardAlerts();
   const { handleMedicationAction, isLoading: actionLoading } = useDashboardActions();
@@ -211,6 +216,13 @@ export function DashboardPage() {
                 </div>
               </div>
             ))}
+            {/* <Pagination
+              page={meta.page}
+              limit={meta.limit}
+              total={meta.total}
+              onPageChange={setPage}
+              className='mt-4'
+            /> */}
           </CardContent>
         </Card>
 

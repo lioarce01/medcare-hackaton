@@ -3,16 +3,22 @@ import {
   Adherence,
   AdherenceStats,
   ConfirmDoseDto,
+  PaginationResult,
   SkipDoseDto,
 } from "../types";
 
 // Get adherence history
 export const getAdherenceHistory = async (
+  page?: number,
+  limit?: number,
   date?: string
-): Promise<Adherence[]> => {
-  const params = date ? { date } : {};
+): Promise<PaginationResult<Adherence>> => {
+  const params: any = {}
+  if (page) params.page = page;
+  if (limit) params.limit = limit;
+  if (date) params.date = date
   const response = await apiClient.get("/adherence/history", { params });
-  console.log('Adherence History Response:', response.data); // Log for debugging
+  console.log('Adherence History Response:', response.data);
   return response.data;
 };
 
@@ -39,10 +45,14 @@ export const getAdherenceStats = async (): Promise<AdherenceStats> => {
 // Get adherence timeline
 export const getAdherenceTimeline = async (
   startDate: string,
-  endDate: string
-): Promise<Adherence[]> => {
+  endDate: string,
+  page?: number,
+  limit?: number
+): Promise<PaginationResult<Adherence>> => {
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  const params = { startDate, endDate, timezone };
+  const params: any = { startDate, endDate, timezone };
+  if (page) params.page = page;
+  if (limit) params.limit = limit;
   const response = await apiClient.get("/adherence/timeline", { params });
   console.log('Adherence Timeline Response:', response.data); // Log for debugging
   return response.data;

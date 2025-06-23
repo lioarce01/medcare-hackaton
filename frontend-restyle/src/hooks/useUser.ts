@@ -5,7 +5,7 @@ import {
   updateUserSettings,
   deleteUser,
 } from "../api/users";
-import { User, UserSettings } from "../types";
+import { UserSettings } from "../types";
 import { toast } from "sonner";
 
 // Get user profile
@@ -40,12 +40,11 @@ export const useUpdateUserSettings = () => {
 
   return useMutation({
     mutationFn: ({
-      userId,
       settings,
     }: {
       userId: string;
       settings: Partial<UserSettings>;
-    }) => updateUserSettings(userId, settings),
+    }) => updateUserSettings(settings),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["userSettings"] });
       queryClient.invalidateQueries({ queryKey: ["userProfile"] });

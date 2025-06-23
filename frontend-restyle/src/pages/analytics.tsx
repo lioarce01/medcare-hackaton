@@ -77,6 +77,8 @@ export function AnalyticsPage() {
     insights: insights || [],
   } : null;
 
+  console.log("combined analytics:", combinedAnalyticsData)
+
   // Use backend-provided ranking color and text if available
   const getRankingColor = (rank: string) => {
     if (analyticsData?.rankingColor) {
@@ -286,7 +288,7 @@ export function AnalyticsPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Medications</SelectItem>
-              {medications?.map(med => (
+              {medications?.data.map(med => (
                 <SelectItem key={med.id} value={med.id}>{med.name}</SelectItem>
               )) || []}
             </SelectContent>
@@ -677,7 +679,7 @@ export function AnalyticsPage() {
           </div>
 
           {/* Recommendations */}
-          <Card>
+          {/* <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Target className="h-5 w-5" />
@@ -720,10 +722,10 @@ export function AnalyticsPage() {
                 </div>
               </div>
             </CardContent>
-          </Card>
+          </Card> */}
 
           {/* Goals and Achievements */}
-          <Card>
+          {/* <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Award className="h-5 w-5" />
@@ -769,7 +771,7 @@ export function AnalyticsPage() {
                 </div>
               </div>
             </CardContent>
-          </Card>
+          </Card> */}
         </TabsContent>
       </Tabs>
     </div>

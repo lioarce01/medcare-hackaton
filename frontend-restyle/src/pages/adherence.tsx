@@ -55,7 +55,9 @@ export function AdherencePage() {
   const { data: adherenceStats, isLoading: isStatsLoading } = useAdherenceStats();
   const { data: adherenceData = [], isLoading: isCalendarLoading } = useAdherenceCalendar(selectedMonth);
   // Fetch active medications
-  const { data: activeMedications = [], isLoading: isMedicationsLoading } = useActiveMedications();
+  const { data: activeMedications, isLoading: isMedicationsLoading } = useActiveMedications();
+
+  console.log('active meds:', activeMedications)
 
 
   // Update isLoading to include medications loading state
@@ -434,6 +436,7 @@ export function AdherencePage() {
                     Select a date to view adherence details
                   </p>
                 )}
+
               </CardContent>
             </Card>
           </div>
@@ -459,7 +462,7 @@ export function AdherencePage() {
                     <SelectContent>
                       <SelectItem value="all">All Medications</SelectItem>
                       {/* Use activeMedications data here */}
-                      {activeMedications.map((med: Medication) => (
+                      {activeMedications?.data.map((med: Medication) => (
                         <SelectItem key={med.id} value={med.id}>{med.name}</SelectItem>
                       ))}
                     </SelectContent>
@@ -503,6 +506,8 @@ export function AdherencePage() {
                   .slice(0, 14) // Show last 14 days
                   .map((dayData, dayIndex) => {
                     const filteredMeds = filteredMedications(dayData.medications);
+
+                    console.log("filtered meds:", filteredMeds)
 
                     if (filteredMeds.length === 0) return null;
 

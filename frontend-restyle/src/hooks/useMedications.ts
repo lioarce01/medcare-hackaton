@@ -11,81 +11,82 @@ import {
 } from "../api/medications";
 import { toast } from "sonner";
 import { useAuth } from "./useAuth";
-import { useMemo } from "react";
-import { format } from "date-fns";
+import { useEffect, useMemo, useState } from "react";
+import { Medication, PaginationResult } from "@/types";
 
 // Get all medications
-export const useMedications = () => {
+export const useMedications = (page?: number, limit?: number) => {
   const { user } = useAuth();
 
-  return useQuery({
-    queryKey: ["medications"],
-    queryFn: getMedications,
+  return useQuery<PaginationResult<Medication>>({
+    queryKey: ["medications", page, limit],
+    queryFn: () => getMedications(page, limit),
+    placeholderData: (prev) => prev, //keep prev data
     enabled: !!user,
     staleTime: 2 * 60 * 1000, // 2 minutes
   });
 };
 
-// Get medications with filtering and search
 export const useMedicationsWithFilters = (
   searchTerm?: string,
-  filterType?: string
+  filterType?: string,
+  page = 1,
+  limit = 10,
+  debounceMs = 500
 ) => {
-  const { data: medications, ...rest } = useMedications();
+  const { user } = useAuth();
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
 
-  const filteredMedications = useMemo(() => {
-    if (!medications) return [];
+  // Debounce search term
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, debounceMs);
 
-    let filtered = medications;
+    return () => clearTimeout(timer);
+  }, [searchTerm, debounceMs]);
 
-    // Search filter (protegiendo campos nullable)
-    if (searchTerm) {
-      const search = searchTerm.toLowerCase();
-      filtered = filtered.filter(
-        (med) =>
-          med.name.toLowerCase().includes(search) ||
-          (med.instructions?.toLowerCase().includes(search) ?? false) ||
-          (med.medication_type?.toLowerCase().includes(search) ?? false)
-      );
-    }
+  return useQuery<PaginationResult<Medication>>({
+    queryKey: ["medications", page, limit, debouncedSearchTerm, filterType],
+    queryFn: () => getMedications(page, limit, debouncedSearchTerm, filterType),
+    placeholderData: (prev) => prev,
+    enabled: !!user,
+    staleTime: 2 * 60 * 1000,
+  });
+};
 
-    // Type filter
-    if (filterType && filterType !== "all") {
-      filtered = filtered.filter((med) => {
-        switch (filterType) {
-          case "prescription":
-            return med.medication_type === "prescription";
-          case "otc":
-            return med.medication_type === "otc";
-          case "supplement":
-            return med.medication_type === "supplement";
-          case "active":
-            return med.active === true;
-          case "inactive":
-            return med.active === false;
-          default:
-            return true;
-        }
-      });
-    }
-
-    return filtered;
-  }, [medications, searchTerm, filterType]);
+export const useMedicationsList = (
+  searchTerm?: string,
+  filterType?: string,
+  page = 1,
+  limit = 10
+) => {
+  const queryResult = useMedicationsWithFilters(searchTerm, filterType, page, limit);
 
   return {
-    data: filteredMedications,
-    originalData: medications,
-    ...rest,
+    medications: queryResult.data?.data || [],
+    pagination: {
+      page: queryResult.data?.page || page,
+      limit: queryResult.data?.limit || limit,
+      total: queryResult.data?.total || 0,
+      totalPages: Math.ceil((queryResult.data?.total || 0) / limit),
+    },
+    isLoading: queryResult.isLoading,
+    isError: queryResult.isError,
+    error: queryResult.error,
+    refetch: queryResult.refetch,
+    isFetching: queryResult.isFetching,
   };
 };
 
 // Get active medications
-export const useActiveMedications = () => {
+export const useActiveMedications = (page?: number, limit?: number) => {
   const { user } = useAuth();
 
   return useQuery({
-    queryKey: ["medications", "active"],
-    queryFn: getActiveMedications,
+    queryKey: ["medications", "active", page, limit],
+    queryFn: () => getActiveMedications(page, limit),
+    placeholderData: (prev) => prev, // keep previous data
     enabled: !!user,
     staleTime: 2 * 60 * 1000, // 2 minutes
   });
