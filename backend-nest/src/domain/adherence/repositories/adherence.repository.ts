@@ -7,11 +7,26 @@ export interface AdherenceRepository {
   update(adherence: Adherence): Promise<Adherence>;
   delete(id: string): Promise<void>;
   findById(id: string): Promise<Adherence | null>;
-  findByUser(userId: string): Promise<Adherence[]>;
-  findActiveByUser(userId: string): Promise<Adherence[]>;
+  findByUser(userId: string, page?: number, limit?: number): Promise<{
+    data: Adherence[];
+    page: number;
+    limit: number;
+    total: number;
+  }>;
+  findActiveByUser(userId: string, page?: number, limit?: number): Promise<{
+    data: Adherence[];
+    page: number;
+    limit: number;
+    total: number;
+  }>;
 
   // New methods based on frontend requirements
-  getHistory(userId: string, date?: string): Promise<Adherence[]>;
+  getHistory(userId: string, page?: number, limit?: number, date?: string): Promise<{
+    data: Adherence[];
+    page: number;
+    limit: number;
+    total: number;
+  }>;
   confirmDose(adherenceId: string, userId: string): Promise<Adherence>;
   skipDose(adherenceId: string, userId: string): Promise<Adherence>;
   getStats(
@@ -20,7 +35,12 @@ export interface AdherenceRepository {
     endDate: DateTime, // Cambiado a DateTime
     timezone: string, // Agregado timezone
   ): Promise<AdherenceStatsRaw[]>;
-  getTimeline(userId: string, startDate: string, endDate: string): Promise<Adherence[]>;
+  getTimeline(userId: string, startDate: string, endDate: string, page?: number, limit?: number): Promise<{
+    data: Adherence[];
+    page: number;
+    limit: number;
+    total: number;
+  }>;
 
   // Methods for cron jobs
   findPendingForMissedProcessing(

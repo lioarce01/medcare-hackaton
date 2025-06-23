@@ -5,7 +5,7 @@ export class User {
     public name: string | null,
     public email: string | null,
     public password?: string | null,
-    public date_of_birth?: Date | null,
+    public date_of_birth?: string | null,
     public gender?: string | null,
     public allergies?: string[] | null,
     public conditions?: string[] | null,
@@ -26,5 +26,5 @@ export class User {
       custom_notifications: boolean;
       risk_analytics: boolean;
     } | null,
-  ) {}
+  ) { }
 }

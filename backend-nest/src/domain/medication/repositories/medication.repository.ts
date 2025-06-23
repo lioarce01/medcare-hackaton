@@ -4,10 +4,20 @@ import { CreateMedicationDto } from 'src/interfaces/medication/dtos/create-medic
 
 export interface MedicationRepository {
   create(medication: CreateMedicationDto): Promise<Medication>;
-  update(medication: UpdateMedicationDto): Promise<Medication>;
+  update(userId: string, id: string, medication: UpdateMedicationDto): Promise<Medication>;
   delete(id: string): Promise<{ message: string }>;
   findById(id: string): Promise<Medication | null>;
-  findByUser(userId: string): Promise<Medication[]>;
-  findActiveByUser(userId: string): Promise<Medication[]>;
+  findByUser(userId: string, page?: number, limit?: number, searchTerm?: string, filterType?: string): Promise<{
+    data: Medication[],
+    page: number,
+    limit: number,
+    total: number
+  }>;
+  findActiveByUser(userId: string, page?: number, limit?: number): Promise<{
+    data: Medication[],
+    page: number,
+    limit: number,
+    total: number
+  }>;
   findActiveDailyMedications(): Promise<Medication[]>;
 }

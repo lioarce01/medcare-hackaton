@@ -45,10 +45,10 @@ export class CalculateDailyRiskScoresUseCase {
           }
 
           const medications = await this.medicationRepository.findActiveByUser(
-            user.id,
+            user.id
           );
 
-          for (const medication of medications) {
+          for (const medication of medications.data) {
             try {
               medicationsProcessed++;
 

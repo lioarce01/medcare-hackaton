@@ -9,7 +9,12 @@ export class GetAdherenceTimelineUseCase {
     private readonly adherenceRepository: AdherenceRepository,
   ) { }
 
-  async execute(userId: string, startDate: string, endDate: string): Promise<Adherence[]> {
-    return this.adherenceRepository.getTimeline(userId, startDate, endDate);
+  async execute(userId: string, startDate: string, endDate: string, page?: number, limit?: number): Promise<{
+    data: Adherence[],
+    page: number,
+    limit: number,
+    total: number
+  }> {
+    return this.adherenceRepository.getTimeline(userId, startDate, endDate, page, limit);
   }
 }

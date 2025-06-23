@@ -7,10 +7,27 @@ export class FindMedicationByUserUseCase {
   constructor(
     @Inject('MedicationRepository')
     private readonly medicationRepository: MedicationRepository,
-  ) {}
+  ) { }
 
-  async execute(userId: string): Promise<Medication[]> {
-    const medications = await this.medicationRepository.findByUser(userId);
+  async execute(
+    userId: string,
+    page?: number,
+    limit?: number,
+    searchTerm?: string,
+    filterType?: string
+  ): Promise<{
+    data: Medication[],
+    page: number,
+    limit: number,
+    total: number
+  }> {
+    const medications = await this.medicationRepository.findByUser(
+      userId,
+      page,
+      limit,
+      searchTerm,
+      filterType
+    );
     return medications;
   }
 }

@@ -57,12 +57,6 @@ class RefillReminderDto {
 }
 
 export class UpdateMedicationDto {
-  @IsString()
-  id: string;
-
-  @IsString()
-  user_id: string;
-
   @IsOptional()
   @IsString()
   name?: string;

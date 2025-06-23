@@ -13,6 +13,7 @@ import { SkipDoseDto } from 'src/interfaces/adherence/dtos/skip-dose.dto';
 import { GetAdherenceStatsDto } from 'src/interfaces/adherence/dtos/get-adherence-stats.dto';
 import { SubscriptionGuard } from 'src/interfaces/common/guards/subscription.guard';
 import { DateTime } from 'luxon';
+import { PaginationDto } from 'src/interfaces/common/dto/pagination.dto';
 
 @Controller('adherence')
 export class AdherenceController {
@@ -27,25 +28,32 @@ export class AdherenceController {
   @Get('history')
   @UseGuards(JwtAuthGuard)
   async getHistory(
-    @Query() query: GetAdherenceHistoryDto,
     @GetUserId() userId: string,
+    @Query() query: GetAdherenceHistoryDto,
+    @Query() pagination?: PaginationDto,
   ) {
-    console.log('UserId:', userId);
-    console.log('Query date:', query.date);
-
-    const adherences = await this.getAdherenceHistoryUseCase.execute(
+    const { page = 1, limit = 10 } = pagination ?? {}
+    const result = await this.getAdherenceHistoryUseCase.execute(
       userId,
+      page,
+      limit,
       query.date,
     );
-    console.log('Adherences found:', adherences.length);
 
-    return AdherencePresenter.toHttpList(adherences);
+    return {
+      data: AdherencePresenter.toHttpList(result.data),
+      page: result.page,
+      limit: result.limit,
+      total: result.total,
+    }
   }
 
   @Post('confirm')
   @UseGuards(JwtAuthGuard)
-  async confirmDose(@Body() body: ConfirmDoseDto, @GetUserId() userId: string) {
-    console.log('confirmDose body:', body);
+  async confirmDose(
+    @GetUserId() userId: string,
+    @Body() body: ConfirmDoseDto,
+  ) {
 
     const adherence = await this.confirmDoseUseCase.execute(
       body.adherenceId,
@@ -56,7 +64,10 @@ export class AdherenceController {
 
   @Post('skip')
   @UseGuards(JwtAuthGuard)
-  async skipDose(@Body() body: SkipDoseDto, @GetUserId() userId: string) {
+  async skipDose(
+    @GetUserId() userId: string,
+    @Body() body: SkipDoseDto,
+  ) {
     const adherence = await this.skipDoseUseCase.execute(
       body.adherenceId,
       userId,
@@ -67,8 +78,8 @@ export class AdherenceController {
   @Get('stats')
   @UseGuards(JwtAuthGuard) // todo: addcheck subscription guard
   async getStats(
-    @Query() query: GetAdherenceStatsDto,
     @GetUserId() userId: string,
+    @Query() query: GetAdherenceStatsDto,
   ) {
     // Pasar timezone al usecase
     return await this.getAdherenceStatsUseCase.execute(userId, query.timezone);
@@ -77,22 +88,31 @@ export class AdherenceController {
   @Get('timeline')
   @UseGuards(JwtAuthGuard)
   async getTimeline(
-    @Query() query: GetAdherenceHistoryDto,
     @GetUserId() userId: string,
+    @Query() query: GetAdherenceHistoryDto,
+    @Query() pagination?: PaginationDto,
   ) {
     if (!query.startDate || !query.endDate) {
       throw new Error('startDate and endDate are required');
     }
+    const { page = 1, limit = 10 } = pagination ?? {}
     const timezone: string = (query as any).timezone || 'UTC';
     // Inclusive: start of first local day to start of day after last local day
     const startUtc = DateTime.fromISO(query.startDate, { zone: timezone }).startOf('day').toUTC().toISO() || '';
     const endUtc = DateTime.fromISO(query.endDate, { zone: timezone }).plus({ days: 1 }).startOf('day').toUTC().toISO() || '';
 
-    const adherences = await this.getAdherenceTimelineUseCase.execute(
+    const result = await this.getAdherenceTimelineUseCase.execute(
       userId,
       startUtc,
       endUtc,
+      page,
+      limit
     );
-    return AdherencePresenter.toHttpList(adherences);
+    return {
+      data: AdherencePresenter.toHttpList(result.data),
+      page: result.page,
+      limit: result.limit,
+      total: result.total
+    }
   }
 }

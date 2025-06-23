@@ -8,6 +8,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { CreateMedicationUseCase } from 'src/application/medication/use-cases/create-medication.usecase';
@@ -22,6 +23,7 @@ import { JwtAuthGuard } from 'src/interfaces/common/guards/jwt-auth.guard';
 import { MedicationPresenter } from 'src/domain/medication/presenters/medication.presenter';
 import { CreateMedicationDto } from 'src/interfaces/medication/dtos/create-medication.dto';
 import { UpdateMedicationDto } from 'src/interfaces/medication/dtos/update-medication.dto';
+import { PaginationDto } from 'src/interfaces/common/dto/pagination.dto';
 
 @Controller('medications')
 export class MedicationController {
@@ -33,26 +35,56 @@ export class MedicationController {
     private readonly getMedicationByIdUseCase: FindMedicationByIdUseCase,
     private readonly getMedicationsByUserUseCase: FindMedicationByUserUseCase,
     private readonly getActiveMedicationsByUserUseCase: FindActiveMedicationByUserUseCase,
-  ) {}
+  ) { }
 
   @Get()
-  // @UseGuards(JwtAuthGuard)
-  async getAll(@GetUserId() userId: string) {
-    const medications = await this.getMedicationsByUserUseCase.execute(userId);
-    return MedicationPresenter.toHttpList(medications);
+  @UseGuards(JwtAuthGuard)
+  async getAll(
+    @GetUserId() userId: string,
+    @Query() pagination?: PaginationDto,
+    @Query('searchTerm') searchTerm?: string,
+    @Query('filterType') filterType?: string,
+  ) {
+    const { page = 1, limit = 10 } = pagination ?? {}
+    const result = await this.getMedicationsByUserUseCase.execute(
+      userId,
+      page,
+      limit,
+      searchTerm,
+      filterType
+    );
+    return {
+      data: MedicationPresenter.toHttpList(result.data),
+      page: result.page,
+      limit: result.limit,
+      total: result.total
+    }
   }
 
   @Get('active')
   @UseGuards(JwtAuthGuard)
-  async getActive(@GetUserId() userId: string) {
-    const medications =
-      await this.getActiveMedicationsByUserUseCase.execute(userId);
-    return MedicationPresenter.toHttpList(medications);
+  async getActive(
+    @GetUserId() userId: string,
+    @Query() pagination?: PaginationDto
+  ) {
+    console.log('getActive called with userId:', userId, 'pagination:', pagination);
+
+    const { page = 1, limit = 10 } = pagination ?? {}
+    const result =
+      await this.getActiveMedicationsByUserUseCase.execute(userId, page, limit);
+    return {
+      data: MedicationPresenter.toHttpList(result.data),
+      page: result.page,
+      limit: result.limit,
+      total: result.total
+    }
   }
 
   @Get(':id')
   @UseGuards(JwtAuthGuard)
-  async get(@Param('id') id: string) {
+  async get(
+    @Param('id') id: string
+  ) {
     const medication = await this.getMedicationByIdUseCase.execute(id);
     return MedicationPresenter.toHttp(medication);
   }
@@ -60,8 +92,8 @@ export class MedicationController {
   @Post()
   @UseGuards(JwtAuthGuard)
   async create(
-    @Body() medication: CreateMedicationDto,
     @GetUserId() userId: string,
+    @Body() medication: CreateMedicationDto,
   ) {
     const created = await this.createMedicationWithAdherenceUseCase.execute({
       ...medication,
@@ -73,8 +105,8 @@ export class MedicationController {
   @Post('simple')
   @UseGuards(JwtAuthGuard)
   async createSimple(
-    @Body() medication: CreateMedicationDto,
     @GetUserId() userId: string,
+    @Body() medication: CreateMedicationDto,
   ) {
     const created = await this.createMedicationUseCase.execute({
       ...medication,
@@ -90,19 +122,10 @@ export class MedicationController {
     @GetUserId() userId: string,
     @Body() medication: UpdateMedicationDto,
   ) {
-    const updated = await this.updateMedicationUseCase.execute({
-      ...medication,
-      id,
-    });
+    const updated = await this.updateMedicationUseCase.execute(userId, id, medication)
 
     if (!updated) {
       throw new NotFoundException('Medication not found');
-    }
-
-    if (medication.user_id !== userId) {
-      throw new ForbiddenException(
-        'You are not allowed to update this medication',
-      );
     }
 
     return MedicationPresenter.toHttp(updated);
@@ -110,7 +133,10 @@ export class MedicationController {
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
-  async delete(@Param('id') id: string, @GetUserId() userId: string) {
+  async delete(
+    @Param('id') id: string,
+    @GetUserId() userId: string
+  ) {
     const medication = await this.getMedicationByIdUseCase.execute(id);
 
     if (!medication) {

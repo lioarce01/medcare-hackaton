@@ -86,42 +86,87 @@ export class SupabaseAdherenceRepository implements AdherenceRepository {
     return adherence ? AdherenceMapper.toDomain(adherence) : null;
   }
 
-  async findByUser(userId: string): Promise<Adherence[]> {
-    const adherences = await this.prisma.adherence.findMany({
-      where: { user_id: userId },
-      include: {
-        medication: true,
-        user: true,
-        reminders: true,
-      },
-      orderBy: {
-        scheduled_datetime: 'desc',
-      },
-    });
+  async findByUser(userId: string, page = 1, limit = 10): Promise<{
+    data: Adherence[],
+    page: number,
+    limit: number,
+    total: number
+  }> {
+    const skip = (page - 1) * limit;
+    const [adherences, total] = await Promise.all([
+      await this.prisma.adherence.findMany({
+        where: { user_id: userId },
+        skip,
+        take: limit,
+        include: {
+          medication: true,
+          user: true,
+          reminders: true,
+        },
+        orderBy: {
+          scheduled_datetime: 'desc',
+        },
+      }),
+      await this.prisma.adherence.count({ where: { user_id: userId } })
+    ])
 
-    return adherences.map(AdherenceMapper.toDomain);
+    return {
+      data: adherences.map(AdherenceMapper.toDomain),
+      page,
+      limit,
+      total,
+    }
   }
 
-  async findActiveByUser(userId: string): Promise<Adherence[]> {
-    const adherences = await this.prisma.adherence.findMany({
-      where: {
-        user_id: userId,
-        status: 'pending',
-      },
-      include: {
-        medication: true,
-        user: true,
-        reminders: true,
-      },
-      orderBy: {
-        scheduled_datetime: 'asc',
-      },
-    });
+  async findActiveByUser(userId: string, page = 1, limit = 10): Promise<{
+    data: Adherence[],
+    page: number,
+    limit: number,
+    total: number
+  }> {
+    const skip = (page - 1) * limit;
+    const whereClause = {
+      user_id: userId,
+      status: 'pending',
+    }
 
-    return adherences.map(AdherenceMapper.toDomain);
+    const [adherences, total] = await Promise.all([
+      await this.prisma.adherence.findMany({
+        where: whereClause,
+        skip,
+        take: limit,
+        include: {
+          medication: true,
+          user: true,
+          reminders: true,
+        },
+        orderBy: {
+          scheduled_datetime: 'asc',
+        },
+      }),
+      await this.prisma.adherence.count({
+        where: {
+          user_id: userId,
+          status: 'pending',
+        },
+      }),
+    ])
+
+    return {
+      data: adherences.map(AdherenceMapper.toDomain),
+      page,
+      limit,
+      total,
+    }
   }
 
-  async getHistory(userId: string, date?: string): Promise<Adherence[]> {
+  async getHistory(userId: string, page = 1, limit = 10, date?: string): Promise<{
+    data: Adherence[],
+    page: number,
+    limit: number,
+    total: number
+  }> {
+    const skip = (page - 1) * limit;
     const whereClause: any = {
       user_id: userId,
     };
@@ -136,24 +181,32 @@ export class SupabaseAdherenceRepository implements AdherenceRepository {
       };
     }
 
-    const adherences = await this.prisma.adherence.findMany({
-      where: whereClause,
-      include: {
-        medication: {
-          select: {
-            id: true,
-            name: true,
-            dosage: true,
-            instructions: true,
+    const [adherences, total] = await Promise.all([
+      this.prisma.adherence.findMany({
+        where: whereClause,
+        skip,
+        take: limit,
+        include: {
+          medication: {
+            select: {
+              id: true,
+              name: true,
+              dosage: true,
+              instructions: true,
+            },
           },
         },
-      },
-      orderBy: {
-        scheduled_datetime: 'asc',
-      },
-    });
+        orderBy: { scheduled_datetime: 'asc' },
+      }),
+      this.prisma.adherence.count({ where: whereClause }),
+    ]);
 
-    return adherences.map(AdherenceMapper.toDomain);
+    return {
+      data: adherences.map(AdherenceMapper.toDomain),
+      page,
+      limit,
+      total,
+    }
   }
 
   async confirmDose(adherenceId: string, userId: string): Promise<Adherence> {
@@ -206,7 +259,6 @@ export class SupabaseAdherenceRepository implements AdherenceRepository {
     const whereClause: any = {
       user_id: userId,
     };
-
     // Calculate a wider UTC range for DB query based on local range
     const startUtcQuery = startDate.startOf('day').toUTC().toJSDate();
     const endUtcQuery = endDate.endOf('day').toUTC().toJSDate();
@@ -227,15 +279,15 @@ export class SupabaseAdherenceRepository implements AdherenceRepository {
           },
         },
       },
-    });
+    })
 
-    return adherences.map((adherence: any) => ({
-      status: adherence.status || 'pending',
+    return adherences.map(adherence => ({
+      status: adherence.status ?? '',
       medication: {
         id: adherence.medication.id,
         name: adherence.medication.name,
       },
-    }));
+    }))
   }
 
   // Methods for cron jobs
@@ -343,10 +395,17 @@ export class SupabaseAdherenceRepository implements AdherenceRepository {
     }
   }
 
-  async getTimeline(userId: string, startDate: string, endDate: string): Promise<Adherence[]> {
+  async getTimeline(userId: string, startDate: string, endDate: string, page = 1, limit = 10): Promise<{
+    data: Adherence[],
+    page: number,
+    limit: number,
+    total: number
+  }> {
     // Defensive: Only create Date if string is valid
     const start = Date.parse(startDate) ? new Date(startDate) : null;
     const end = Date.parse(endDate) ? new Date(endDate) : null;
+    const skip = (page - 1) * limit;
+
     if (!start || !end) {
       throw new Error('Invalid startDate or endDate for adherence timeline');
     }
@@ -358,23 +417,35 @@ export class SupabaseAdherenceRepository implements AdherenceRepository {
       },
     };
 
-    const adherences = await this.prisma.adherence.findMany({
-      where: whereClause,
-      include: {
-        medication: {
-          select: {
-            id: true,
-            name: true,
-            dosage: true,
-            instructions: true,
+    const [adherences, total] = await Promise.all([
+      this.prisma.adherence.findMany({
+        where: whereClause,
+        skip,
+        take: limit,
+        include: {
+          medication: {
+            select: {
+              id: true,
+              name: true,
+              dosage: true,
+              instructions: true,
+            },
           },
         },
-      },
-      orderBy: {
-        scheduled_datetime: 'asc',
-      },
-    });
+        orderBy: {
+          scheduled_datetime: 'asc',
+        },
+      }),
+      this.prisma.adherence.count({
+        where: whereClause
+      })
+    ])
 
-    return adherences.map(AdherenceMapper.toDomain);
+    return {
+      data: adherences.map(AdherenceMapper.toDomain),
+      page,
+      limit,
+      total
+    }
   }
 }

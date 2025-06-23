@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query, Req, UseGuards } from "@nestjs/common";
+import { BadRequestException, Controller, Get, Param, Query, Req, UseGuards } from "@nestjs/common";
 import { GetLatestRiskScoreUseCase } from "src/application/analytics/use-cases/get-latest-risk-score.usecase";
 import { GetRiskHistoryByUserMedicationUseCase } from "src/application/analytics/use-cases/get-risk-history-by-user-medication.usecase";
 import { GetRiskHistoryByUserUseCase } from "src/application/analytics/use-cases/get-risk-history-by-user.usecase";
@@ -8,6 +8,7 @@ import { AnalyticsPresenter } from 'src/domain/analytics/presenters/analytics.pr
 import { JwtAuthGuard } from "src/interfaces/common/guards/jwt-auth.guard";
 import { GetUserId } from "src/interfaces/common/decorators/get-user-id.decorator";
 import { validate as isUuid } from 'uuid';
+import { PaginationDto } from "src/interfaces/common/dto/pagination.dto";
 
 @Controller('analytics')
 export class AnalyticsController {
@@ -21,38 +22,54 @@ export class AnalyticsController {
   @Get('risk-history/user')
   @UseGuards(JwtAuthGuard)
   async getRiskHistoryByUser(
-    @Req() req: Request,
     @GetUserId() userId: string,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
+    @Query() pagination?: PaginationDto,
   ) {
-    console.log('getRiskHistoryByUser', { userId, startDate, endDate });
-    const result = await this.getRiskHistoryByUserUseCase.execute(userId, startDate, endDate);
-    return AnalyticsPresenter.toHttpList(result);
+    const { page = 1, limit = 10 } = pagination ?? {}
+
+    if (!startDate || !endDate) {
+      throw new BadRequestException('startDate and endDate are required');
+    }
+
+    const result = await this.getRiskHistoryByUserUseCase.execute(userId, startDate, endDate, page, limit);
+    return {
+      data: AnalyticsPresenter.toHttpList(result.data),
+      page: result.page,
+      limit: result.limit,
+      total: result.total
+    }
   }
 
   @Get('risk-history/:medicationId')
   @UseGuards(JwtAuthGuard)
   async getRiskHistoryByUserMedication(
-    @Req() req: Request,
     @GetUserId() userId: string,
     @Param('medicationId') medicationId: string,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
+    @Query() pagination?: PaginationDto
   ) {
+    const { page = 1, limit = 10 } = pagination ?? {}
+
     // Backend-side UUID validation
     if (!isUuid(medicationId)) {
       return { error: 'Invalid medicationId' };
     }
-    console.log('getRiskHistoryByUserMedication', { userId, medicationId, startDate, endDate });
-    const result = await this.getRiskHistoryByUserMedicationUseCase.execute(userId, medicationId, startDate, endDate);
-    return AnalyticsPresenter.toHttpList(result);
+
+    const result = await this.getRiskHistoryByUserMedicationUseCase.execute(userId, medicationId, startDate, endDate, page, limit);
+    return {
+      data: AnalyticsPresenter.toHttpList(result.data),
+      page: result.page,
+      limit: result.limit,
+      total: result.total
+    }
   }
 
   @Get('risk-score/latest/:medicationId')
   @UseGuards(JwtAuthGuard)
   async getLatestRiskScore(
-    @Req() req: Request,
     @GetUserId() userId: string,
     @Param('medicationId') medicationId: string,
   ) {

@@ -8,7 +8,7 @@ import { MedicationMapper } from 'src/domain/medication/mappers/medication.mappe
 
 @Injectable()
 export class SupabaseMedicationRepository implements MedicationRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   async create(medication: CreateMedicationDto): Promise<Medication> {
     const refillReminderDefault = {
@@ -23,13 +23,13 @@ export class SupabaseMedicationRepository implements MedicationRepository {
     const rr = medication.refill_reminder;
     const refillReminder = rr
       ? {
-          enabled: rr.enabled ?? false,
-          threshold: rr.threshold ?? rr.days_before ?? 7,
-          last_refill: rr.last_refill ?? null,
-          next_refill: rr.next_refill ?? null,
-          supply_amount: rr.supply_amount ?? 0,
-          supply_unit: rr.supply_unit ?? '',
-        }
+        enabled: rr.enabled ?? false,
+        threshold: rr.threshold ?? rr.days_before ?? 7,
+        last_refill: rr.last_refill ?? null,
+        next_refill: rr.next_refill ?? null,
+        supply_amount: rr.supply_amount ?? 0,
+        supply_unit: rr.supply_unit ?? '',
+      }
       : null;
 
     const created = await this.prisma.medications.create({
@@ -59,7 +59,7 @@ export class SupabaseMedicationRepository implements MedicationRepository {
     return MedicationMapper.toDomain(created);
   }
 
-  async update(medication: UpdateMedicationDto): Promise<Medication> {
+  async update(userId: string, id: string, medication: UpdateMedicationDto): Promise<Medication> {
     const updateData: any = { ...medication };
     if (updateData.dosage) updateData.dosage = updateData.dosage as any;
     if (updateData.frequency)
@@ -68,7 +68,7 @@ export class SupabaseMedicationRepository implements MedicationRepository {
       updateData.refill_reminder = updateData.refill_reminder as any;
 
     const updated = await this.prisma.medications.update({
-      where: { id: medication.id },
+      where: { id, user_id: userId },
       data: {
         ...updateData,
         start_date: updateData.start_date
@@ -97,18 +97,71 @@ export class SupabaseMedicationRepository implements MedicationRepository {
     return MedicationMapper.toDomain(found);
   }
 
-  async findByUser(userId: string): Promise<Medication[]> {
-    const found = await this.prisma.medications.findMany({
-      where: { user_id: userId },
-    });
-    return found.map((med: any) => MedicationMapper.toDomain(med));
+  async findByUser(userId: string, page = 1, limit = 10, searchTerm?: string, filterType?: string): Promise<{
+    data: Medication[],
+    page: number,
+    limit: number,
+    total: number
+  }> {
+    const skip = (page - 1) * limit
+    const where: any = {
+      user_id: userId
+    }
+
+    if (searchTerm) {
+      where.OR = [
+        { name: { contains: searchTerm, mode: 'insensitive' } },
+        { instructions: { contains: searchTerm, mode: 'insensitive' } }
+      ]
+    }
+
+    if (filterType && filterType !== 'all') {
+      where.medication_type = filterType;
+    }
+
+    const [found, total] = await Promise.all([
+      this.prisma.medications.findMany({
+        where, // Use the combined where clause
+        skip,
+        take: limit
+      }),
+      this.prisma.medications.count({
+        where // Use the same where clause for count
+      })
+    ])
+    return {
+      data: found.map((med: any) => MedicationMapper.toDomain(med)),
+      page,
+      limit,
+      total
+    }
   }
 
-  async findActiveByUser(userId: string): Promise<Medication[]> {
-    const found = await this.prisma.medications.findMany({
-      where: { user_id: userId, active: true },
-    });
-    return found.map((med: any) => MedicationMapper.toDomain(med));
+  async findActiveByUser(userId: string, page = 1, limit = 10): Promise<{
+    data: Medication[],
+    page: number,
+    limit: number,
+    total: number
+  }> {
+    const skip = (page - 1) * limit
+    const whereClause = {
+      user_id: userId,
+      active: true,
+    }
+    const [found, total] = await Promise.all([
+      this.prisma.medications.findMany({
+        where: whereClause,
+        skip,
+        take: limit
+      }),
+      this.prisma.medications.count({ where: whereClause })
+    ])
+    return {
+      data: found.map((med: any) => MedicationMapper.toDomain(med)),
+      page,
+      limit,
+      total
+    }
   }
 
   async findActiveDailyMedications(): Promise<Medication[]> {

@@ -7,9 +7,14 @@ export class GetRiskHistoryByUserMedicationUseCase {
   constructor(
     @Inject('RiskHistoryRepository')
     private readonly riskHistoryRepository: RiskHistoryRepository,
-  ) {}
+  ) { }
 
-  async execute(userId: string, medicationId: string, startDate?: string, endDate?: string): Promise<RiskHistory[]> {
-    return this.riskHistoryRepository.findByUserMedication(userId, medicationId, startDate, endDate);
+  async execute(userId: string, medicationId: string, startDate?: string, endDate?: string, page?: number, limit?: number): Promise<{
+    data: RiskHistory[],
+    page: number,
+    limit: number,
+    total: number
+  }> {
+    return this.riskHistoryRepository.findByUserMedication(userId, medicationId, startDate, endDate, page, limit);
   }
 }
