@@ -8,7 +8,7 @@ import { PrismaService } from 'src/infrastructure/prisma/prisma.service';
 
 @Injectable()
 export class SupabaseUserRepository implements UserRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   async getMyProfile(id: string): Promise<UserAggregate | null> {
     const prismaUser = await this.prisma.users.findUnique({ where: { id } });
@@ -166,10 +166,10 @@ export class SupabaseUserRepository implements UserRepository {
       // Get users with email notifications enabled in their settings
       const usersWithSettings = await this.prisma.users.findMany({
         include: {
-          settings: true,
+          user_settings: true,
         },
         where: {
-          settings: {
+          user_settings: {
             email_enabled: true,
           },
         },

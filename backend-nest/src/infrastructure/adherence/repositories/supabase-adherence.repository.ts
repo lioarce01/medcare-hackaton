@@ -29,8 +29,8 @@ export class SupabaseAdherenceRepository implements AdherenceRepository {
     const created = await this.prisma.adherence.create({
       data,
       include: {
-        medication: true,
-        user: true,
+        medications: true,
+        users: true,
         reminders: true,
       },
     });
@@ -58,8 +58,8 @@ export class SupabaseAdherenceRepository implements AdherenceRepository {
       where: { id: adherence.id },
       data,
       include: {
-        medication: true,
-        user: true,
+        medications: true,
+        users: true,
         reminders: true,
       },
     });
@@ -77,8 +77,8 @@ export class SupabaseAdherenceRepository implements AdherenceRepository {
     const adherence = await this.prisma.adherence.findUnique({
       where: { id },
       include: {
-        medication: true,
-        user: true,
+        medications: true,
+        users: true,
         reminders: true,
       },
     });
@@ -99,8 +99,8 @@ export class SupabaseAdherenceRepository implements AdherenceRepository {
         skip,
         take: limit,
         include: {
-          medication: true,
-          user: true,
+          medications: true,
+          users: true,
           reminders: true,
         },
         orderBy: {
@@ -136,8 +136,8 @@ export class SupabaseAdherenceRepository implements AdherenceRepository {
         skip,
         take: limit,
         include: {
-          medication: true,
-          user: true,
+          medications: true,
+          users: true,
           reminders: true,
         },
         orderBy: {
@@ -187,7 +187,7 @@ export class SupabaseAdherenceRepository implements AdherenceRepository {
         skip,
         take: limit,
         include: {
-          medication: {
+          medications: {
             select: {
               id: true,
               name: true,
@@ -221,8 +221,8 @@ export class SupabaseAdherenceRepository implements AdherenceRepository {
         updated_at: new Date(),
       },
       include: {
-        medication: true,
-        user: true,
+        medications: true,
+        users: true,
         reminders: true,
       },
     });
@@ -241,8 +241,8 @@ export class SupabaseAdherenceRepository implements AdherenceRepository {
         updated_at: new Date(),
       },
       include: {
-        medication: true,
-        user: true,
+        medications: true,
+        users: true,
         reminders: true,
       },
     });
@@ -272,7 +272,7 @@ export class SupabaseAdherenceRepository implements AdherenceRepository {
       where: whereClause,
       select: {
         status: true,
-        medication: {
+        medications: {
           select: {
             id: true,
             name: true,
@@ -284,8 +284,8 @@ export class SupabaseAdherenceRepository implements AdherenceRepository {
     return adherences.map(adherence => ({
       status: adherence.status ?? '',
       medication: {
-        id: adherence.medication.id,
-        name: adherence.medication.name,
+        id: adherence.medications.id,
+        name: adherence.medications.name,
       },
     }))
   }
@@ -308,8 +308,8 @@ export class SupabaseAdherenceRepository implements AdherenceRepository {
           },
         },
         include: {
-          medication: true,
-          user: true,
+          medications: true,
+          users: true,
           reminders: true,
         },
       });
@@ -340,8 +340,8 @@ export class SupabaseAdherenceRepository implements AdherenceRepository {
           },
         },
         include: {
-          medication: true,
-          user: true,
+          medications: true,
+          users: true,
           reminders: true,
         },
         orderBy: {
@@ -423,7 +423,7 @@ export class SupabaseAdherenceRepository implements AdherenceRepository {
         skip,
         take: limit,
         include: {
-          medication: {
+          medications: {
             select: {
               id: true,
               name: true,

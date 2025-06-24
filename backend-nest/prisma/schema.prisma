@@ -127,10 +127,10 @@ model users {
   emergency_contact       Json?
   created_at              DateTime?      @default(now()) @db.Timestamp(6)
   updated_at              DateTime?      @default(now()) @db.Timestamp(6)
-  subscription_status     String?
-  subscription_plan       String?
+  subscription_status     String?        @default("free")
+  subscription_plan       String?        @default("free")
   subscription_expires_at DateTime?      @db.Timestamp(6)
-  subscription_features   Json?
+  subscription_features   Json?          @default("{\"data_export\": false, \"basic reminders\": true, \"custom_reminders\": false, \"risk_predictions\": false, \"advanced_analytics\": false, \"medication_tracking\": true}")
   adherence               adherence[]
   medications             medications[]
   reminders               reminders[]

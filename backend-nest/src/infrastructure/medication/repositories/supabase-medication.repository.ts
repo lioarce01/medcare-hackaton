@@ -50,7 +50,7 @@ export class SupabaseMedicationRepository implements MedicationRepository {
         active: medication.active,
         medication_type: medication.medication_type,
         image_url: medication.image_url,
-        user: {
+        users: {
           connect: { id: medication.user_id },
         },
       },

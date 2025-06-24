@@ -22,9 +22,12 @@ export class User {
     public subscription_plan?: string | null,
     public subscription_expires_at?: Date | null,
     public subscription_features?: {
-      custom_reminders: boolean;
-      custom_notifications: boolean;
-      risk_analytics: boolean;
+      data_export: false,
+      basic_reminders: true,
+      custom_reminders: false,
+      risk_predictions: false,
+      advanced_analytics: false,
+      medication_tracking: true
     } | null,
   ) { }
 }

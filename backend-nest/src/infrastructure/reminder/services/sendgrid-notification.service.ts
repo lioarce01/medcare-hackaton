@@ -144,7 +144,7 @@ export class SendGridNotificationService extends NotificationService {
           scheduled_datetime: { gte: oneWeekAgo },
         },
         include: {
-          medication: {
+          medications: {
             select: { name: true, dosage: true },
           },
         },

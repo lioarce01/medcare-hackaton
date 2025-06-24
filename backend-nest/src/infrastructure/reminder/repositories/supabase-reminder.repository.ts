@@ -27,8 +27,8 @@ export class SupabaseReminderRepository implements ReminderRepository {
         adherence_id: reminder.adherence_id,
       },
       include: {
-        medication: true,
-        user: true,
+        medications: true,
+        users: true,
       },
     });
     return ReminderMapper.toDomain(created);
@@ -54,8 +54,8 @@ export class SupabaseReminderRepository implements ReminderRepository {
       where: { id: reminder.id },
       data: updateData,
       include: {
-        medication: true,
-        user: true,
+        medications: true,
+        users: true,
       },
     });
     return ReminderMapper.toDomain(updated);
@@ -72,8 +72,8 @@ export class SupabaseReminderRepository implements ReminderRepository {
     const found = await this.prisma.reminders.findUnique({
       where: { id },
       include: {
-        medication: true,
-        user: true,
+        medications: true,
+        users: true,
       },
     });
     if (!found) return null;
@@ -103,8 +103,8 @@ export class SupabaseReminderRepository implements ReminderRepository {
     const found = await this.prisma.reminders.findMany({
       where: whereClause,
       include: {
-        medication: true,
-        user: true,
+        medications: true,
+        users: true,
       },
       orderBy: [{ scheduled_datetime: 'asc' }],
     });
@@ -126,8 +126,8 @@ export class SupabaseReminderRepository implements ReminderRepository {
         scheduled_datetime: { gte: now },
       },
       include: {
-        medication: true,
-        user: true,
+        medications: true,
+        users: true,
       },
       orderBy: [{ scheduled_datetime: 'asc' }],
       take: limit,
@@ -168,8 +168,8 @@ export class SupabaseReminderRepository implements ReminderRepository {
     const found = await this.prisma.reminders.findMany({
       where: whereClause,
       include: {
-        medication: true,
-        user: true,
+        medications: true,
+        users: true,
       },
       orderBy: [{ scheduled_datetime: 'asc' }],
     });
@@ -190,8 +190,8 @@ export class SupabaseReminderRepository implements ReminderRepository {
     const found = await this.prisma.reminders.findMany({
       where: whereClause,
       include: {
-        medication: true,
-        user: true,
+        medications: true,
+        users: true,
       },
       orderBy: [{ scheduled_datetime: 'asc' }],
     });
@@ -202,8 +202,8 @@ export class SupabaseReminderRepository implements ReminderRepository {
     const found = await this.prisma.reminders.findMany({
       where: { medication_id: medicationId },
       include: {
-        medication: true,
-        user: true,
+        medications: true,
+        users: true,
       },
       orderBy: [{ scheduled_datetime: 'asc' }],
     });
@@ -214,8 +214,8 @@ export class SupabaseReminderRepository implements ReminderRepository {
     const found = await this.prisma.reminders.findFirst({
       where: { adherence_id: adherenceId },
       include: {
-        medication: true,
-        user: true,
+        medications: true,
+        users: true,
       },
     });
     if (!found) return null;
@@ -276,8 +276,8 @@ export class SupabaseReminderRepository implements ReminderRepository {
         created_at: { gte: new Date(Date.now() - 5000) }, // Last 5 seconds
       },
       include: {
-        medication: true,
-        user: true,
+        medications: true,
+        users: true,
       },
     });
 
