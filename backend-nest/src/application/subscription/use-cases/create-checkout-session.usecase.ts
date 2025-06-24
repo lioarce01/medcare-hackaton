@@ -14,7 +14,7 @@ export class CreateCheckoutSessionUseCase {
   constructor(
     @Inject('StripePaymentProvider') private readonly stripeProvider: PaymentProvider,
     @Inject('MercadoPagoPaymentProvider') private readonly mercadoPagoProvider: PaymentProvider,
-  ) {}
+  ) { }
 
   async execute(command: CreateCheckoutSessionCommand): Promise<CheckoutSessionResponse> {
     if (!command.userId) {
@@ -26,7 +26,7 @@ export class CreateCheckoutSessionUseCase {
     }
 
     const provider = this.getPaymentProvider(command.paymentProvider);
-    
+
     const request: CreateCheckoutSessionRequest = {
       userId: command.userId,
       email: command.email,
@@ -34,9 +34,14 @@ export class CreateCheckoutSessionUseCase {
       currency: command.currency || 'ARS',
     };
 
+    console.log('🧾 CheckoutSessionRequest:', request);
+
     try {
-      return await provider.createCheckoutSession(request);
+      const result = await provider.createCheckoutSession(request);
+      console.log('✅ MercadoPago response:', result);
+      return result
     } catch (error) {
+      console.error('❌ MercadoPago error:', error?.response?.data || error.message || error);
       throw new BadRequestException(`Error creating checkout session: ${error.message}`);
     }
   }

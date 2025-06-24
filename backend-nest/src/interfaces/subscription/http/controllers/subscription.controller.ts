@@ -28,7 +28,7 @@ export class SubscriptionController {
     private readonly getSubscriptionStatusUseCase: GetSubscriptionStatusUseCase,
     private readonly handleWebhookUseCase: HandleWebhookUseCase,
     private readonly handleSuccessRedirectUseCase: HandleSuccessRedirectUseCase,
-  ) {}
+  ) { }
 
   @Post('create-checkout-session')
   @UseGuards(JwtAuthGuard)
@@ -36,6 +36,10 @@ export class SubscriptionController {
     @GetUserId() userId: string,
     @Body() createCheckoutSessionDto: CreateCheckoutSessionDto,
   ) {
+    console.log('📦 Checkout Session Request:', {
+      userId,
+      ...createCheckoutSessionDto,
+    });
     return await this.createCheckoutSessionUseCase.execute({
       userId,
       ...createCheckoutSessionDto,
@@ -91,7 +95,7 @@ export class SubscriptionController {
     @Query('external_reference') externalReference: string,
     @Res() res: Response,
   ) {
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
     res.redirect(
       `${frontendUrl}/subscription/failure?userId=${externalReference}`,
     );
@@ -102,7 +106,7 @@ export class SubscriptionController {
     @Query('external_reference') externalReference: string,
     @Res() res: Response,
   ) {
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
     res.redirect(
       `${frontendUrl}/subscription/pending?userId=${externalReference}`,
     );

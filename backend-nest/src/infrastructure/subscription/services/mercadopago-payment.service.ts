@@ -25,6 +25,10 @@ export class MercadoPagoPaymentService implements PaymentProvider {
     request: CreateCheckoutSessionRequest,
   ): Promise<CheckoutSessionResponse> {
     try {
+      if (!this.configService.get<string>('MERCADOPAGO_ACCESS_TOKEN')) {
+        throw new Error('MercadoPago access token is missing');
+      }
+
       if (!request.userId) {
         throw new Error('User ID is required');
       }
@@ -36,7 +40,7 @@ export class MercadoPagoPaymentService implements PaymentProvider {
           {
             id: 'premium-subscription',
             title: 'Premium Subscription',
-            unit_price: Number(request.priceId),
+            unit_price: parseFloat(request.priceId),
             quantity: 1,
             currency_id: request.currency,
           },
@@ -53,6 +57,8 @@ export class MercadoPagoPaymentService implements PaymentProvider {
         external_reference: request.userId,
         notification_url: `${this.configService.get('BACKEND_URL')}/api/subscriptions/mercadopago/webhook`,
       };
+
+      console.log('🔍 MercadoPago Preference Data:', preferenceData);
 
       const response = await preference.create({ body: preferenceData });
 
