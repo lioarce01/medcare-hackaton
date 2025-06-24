@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/sonner';
 import { AuthProvider } from '@/contexts/auth-context';
@@ -18,6 +18,9 @@ import { RemindersPage } from '@/pages/reminders';
 import { ProfilePage } from '@/pages/profile';
 
 import './App.css';
+import Subscription from './pages/subscription';
+import SubscriptionSuccess from './pages/subscription-success';
+import { NotFound } from './pages/NotFound';
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -62,32 +65,32 @@ function App() {
                     <RegisterPage />
                   </PublicRoute>
                 } />
-                
+
                 {/* Protected Routes */}
                 <Route path="/dashboard" element={
                   <ProtectedRoute>
                     <DashboardPage />
                   </ProtectedRoute>
                 } />
-                
+
                 <Route path="/medications" element={
                   <ProtectedRoute>
                     <MedicationsPage />
                   </ProtectedRoute>
                 } />
-                
+
                 <Route path="/adherence" element={
                   <ProtectedRoute>
                     <AdherencePage />
                   </ProtectedRoute>
                 } />
-                
+
                 <Route path="/analytics" element={
                   <ProtectedRoute>
                     <AnalyticsPage />
                   </ProtectedRoute>
                 } />
-                
+
                 <Route path="/reminders" element={
                   <ProtectedRoute>
                     <RemindersPage />
@@ -99,9 +102,21 @@ function App() {
                     <ProfilePage />
                   </ProtectedRoute>
                 } />
-                
+
+                <Route path="/subscription" element={
+                  <ProtectedRoute>
+                    <Subscription />
+                  </ProtectedRoute>
+                } />
+
+                <Route path="/subscription/success" element={
+                  <ProtectedRoute>
+                    <SubscriptionSuccess />
+                  </ProtectedRoute>
+                } />
+
                 {/* Redirect unknown routes */}
-                <Route path="*" element={<Navigate to="/" replace />} />
+                <Route path="*" element={<NotFound />} />
               </Routes>
               <Toaster />
             </RealtimeProvider>

@@ -13,13 +13,11 @@ import {
   Activity,
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { TrialBanner } from '@/components/premium/trial-banner';
 import { useTodaySchedule, useDashboardStats, useDashboardAlerts, useDashboardActions } from '@/hooks/useDashboard';
 import { useAuth } from '@/hooks/useAuth';
 import { DateTime } from 'luxon';
 import { useRealtimeMedications, useRealtimeAdherence, useRealtimeReminders } from '@/hooks/useRealtime';
 import { useState } from 'react';
-import Pagination from '@/components/Pagination';
 
 export function DashboardPage() {
   const { user } = useAuth();
@@ -57,7 +55,6 @@ export function DashboardPage() {
   return (
     <div className="space-y-6">
       {/* Trial Banner */}
-      <TrialBanner />
 
       {/* Welcome Section */}
       <div className="flex items-center justify-between">

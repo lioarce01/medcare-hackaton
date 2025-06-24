@@ -20,22 +20,20 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { ProgressBar } from '@/components/ui/progress-bar';
 import { useAuth } from '@/contexts/auth-context';
 import { useTheme } from '@/contexts/theme-context';
-import { TrialBannerCompact } from '@/components/premium/trial-banner';
 import {
   User,
-  Settings,
-  Crown,
   Moon,
   Sun,
   Monitor,
   LogOut,
   Pill,
   Menu,
+  Crown,
 } from 'lucide-react';
 
 export function Header() {
   const { user, logout } = useAuth();
-  const { theme, language, setTheme, setLanguage } = useTheme();
+  const { language, setTheme, setLanguage } = useTheme();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -68,12 +66,11 @@ export function Header() {
   return (
     <>
       <ProgressBar isLoading={isLoading} />
-      <TrialBannerCompact />
       <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between mx-2">
           <div className="flex items-center space-x-4">
-            <Link 
-              to="/dashboard" 
+            <Link
+              to="/dashboard"
               className="flex items-center space-x-2 transition-opacity hover:opacity-80"
               onClick={(e) => {
                 e.preventDefault();
@@ -83,7 +80,7 @@ export function Header() {
               <Pill className="h-6 w-6 text-primary" />
               <span className="font-bold text-lg">MediTrack</span>
             </Link>
-            
+
             <nav className="hidden md:flex items-center space-x-2">
               <Button
                 variant="ghost"
