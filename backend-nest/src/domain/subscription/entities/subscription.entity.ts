@@ -9,7 +9,7 @@ export class Subscription {
     public paymentProviderId?: string | null,
     public createdAt?: Date,
     public updatedAt?: Date,
-  ) {}
+  ) { }
 
   isActive(): boolean {
     return (
@@ -62,24 +62,18 @@ export enum SubscriptionPlan {
 
 export class SubscriptionFeatures {
   constructor(
-    public smsReminders: boolean = false,
-    public customSounds: boolean = false,
-    public priorityNotifications: boolean = false,
-    public familyNotifications: boolean = false,
-    public weeklyReports: boolean = false,
-    public advancedAnalytics: boolean = false,
-    public riskScoring: boolean = false,
-  ) {}
+    public advanced_analytics: boolean = false,
+    public data_export: boolean = false,
+    public custom_analytics: boolean = false,
+    public risk_predictions: boolean = false,
+  ) { }
 
   static createPremiumFeatures(): SubscriptionFeatures {
-    return new SubscriptionFeatures(true, true, true, true, true, true, true);
+    return new SubscriptionFeatures(true, true, true, true);
   }
 
   static createFreeFeatures(): SubscriptionFeatures {
     return new SubscriptionFeatures(
-      false,
-      false,
-      false,
       false,
       false,
       false,
@@ -89,22 +83,19 @@ export class SubscriptionFeatures {
 
   static fromJson(json: any): SubscriptionFeatures {
     return new SubscriptionFeatures(
-      json.smsReminders || false,
-      json.customSounds || false,
-      json.priorityNotifications || false,
-      json.familyNotifications || false,
-      json.weeklyReports || false,
-      json.advancedAnalytics || false,
-      json.riskScoring || false,
+      json.advanced_analytics || false,
+      json.data_export || false,
+      json.custom_analytics || false,
+      json.risk_predictions || false,
     );
   }
 
   toJson(): Record<string, boolean> {
     return {
-      smsReminders: this.smsReminders,
-      customSounds: this.customSounds,
-      priorityNotifications: this.priorityNotifications,
-      familyNotifications: this.familyNotifications,
+      advanced_analytics: this.advanced_analytics,
+      data_export: this.data_export,
+      custom_analytics: this.custom_analytics,
+      risk_predictions: this.risk_predictions,
     };
   }
 }
