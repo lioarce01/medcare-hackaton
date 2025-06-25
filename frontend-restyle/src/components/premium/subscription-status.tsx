@@ -62,29 +62,29 @@ export function SubscriptionStatus() {
               limit={features.maxMedications}
             />
             <FeatureItem
-              enabled={features.basicReminders}
+              enabled={features.basic_reminders}
               label="Basic Reminders"
               limit={features.maxReminders}
             />
             <FeatureItem
-              enabled={features.advancedAnalytics}
+              enabled={features.advanced_analytics}
               label="Advanced Analytics"
-              premium={!features.advancedAnalytics}
+              premium={!features.advanced_analytics}
             />
             <FeatureItem
-              enabled={features.exportData}
+              enabled={features.data_export}
               label="Data Export"
-              premium={!features.exportData}
+              premium={!features.data_export}
             />
             <FeatureItem
-              enabled={features.customReminders}
+              enabled={features.custom_reminders}
               label="Custom Reminders"
-              premium={!features.customReminders}
+              premium={!features.custom_reminders}
             />
             <FeatureItem
-              enabled={features.riskPredictions}
+              enabled={features.risk_predictions}
               label="Risk Predictions"
-              premium={!features.riskPredictions}
+              premium={!features.risk_predictions}
             />
           </div>
         </CardContent>

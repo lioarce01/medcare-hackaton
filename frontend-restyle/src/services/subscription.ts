@@ -6,16 +6,16 @@ export type SubscriptionStatus = 'free' | 'active'
 export interface SubscriptionFeatures {
   // Core features
   medications: boolean;
-  basicReminders: boolean;
-  adherenceTracking: boolean;
+  basic_reminders: boolean;
+  adherence_tracking: boolean;
 
   // Premium features
-  advancedAnalytics: boolean;
-  exportData: boolean;
-  customReminders: boolean;
-  unlimitedMedications: boolean;
-  riskPredictions: boolean;
-  weeklyReports: boolean;
+  advanced_analytics: boolean;
+  data_export: boolean;
+  custom_reminders: boolean;
+  unlimited_medications: boolean;
+  risk_predictions: boolean;
+  weekly_reports: boolean;
 
   // Limits
   maxMedications: number;
@@ -26,28 +26,28 @@ export interface SubscriptionFeatures {
 export const SUBSCRIPTION_FEATURES: Record<SubscriptionPlan, SubscriptionFeatures> = {
   free: {
     medications: true,
-    basicReminders: true,
-    adherenceTracking: true,
-    advancedAnalytics: false,
-    exportData: false,
-    customReminders: false,
-    unlimitedMedications: false,
-    riskPredictions: false,
-    weeklyReports: false,
+    basic_reminders: true,
+    adherence_tracking: true,
+    advanced_analytics: false,
+    data_export: false,
+    custom_reminders: false,
+    unlimited_medications: false,
+    risk_predictions: false,
+    weekly_reports: false,
     maxMedications: 3,
     maxReminders: 10,
     maxFamilyMembers: 0,
   },
   premium: {
     medications: true,
-    basicReminders: true,
-    adherenceTracking: true,
-    advancedAnalytics: true,
-    exportData: true,
-    customReminders: true,
-    unlimitedMedications: true,
-    riskPredictions: true,
-    weeklyReports: true,
+    basic_reminders: true,
+    adherence_tracking: true,
+    advanced_analytics: true,
+    data_export: true,
+    custom_reminders: true,
+    unlimited_medications: true,
+    risk_predictions: true,
+    weekly_reports: true,
     maxMedications: -1, // unlimited
     maxReminders: -1, // unlimited
     maxFamilyMembers: 0,
@@ -71,12 +71,12 @@ export class SubscriptionService {
   }
 
   static isPremium(user: User | null): boolean {
-    return user?.subscription_status === 'active' &&
+    return user?.subscription_status === 'premium' &&
       (user.subscription_plan === 'premium' || user.subscription_plan === 'family');
   }
 
   static isActive(user: User | null): boolean {
-    return user?.subscription_status === 'active' || user?.subscription_status === 'trial';
+    return user?.subscription_status === 'premium'
   }
 
   static canAddMedication(user: User | null, currentCount: number): boolean {
@@ -93,8 +93,8 @@ export class SubscriptionService {
     if (!user) return 'Not signed in';
 
     switch (user.subscription_status) {
-      case 'active':
-        return `${(user.subscription_plan || 'premium').toUpperCase()} Plan`;
+      case 'premium':
+        return `${(user.subscription_plan || 'premium').toUpperCase()} PLAN`;
       default:
         return 'Free Plan';
     }
