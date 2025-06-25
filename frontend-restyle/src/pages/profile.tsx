@@ -23,6 +23,7 @@ import {
   AlertTriangle,
 
   Loader2,
+  RefreshCw,
 } from 'lucide-react';
 import { User as UserType, UserSettings } from '@/types';
 import { SubscriptionStatus } from '@/components/premium/subscription-status';
@@ -74,6 +75,27 @@ export function ProfilePage() {
       relationship: ''
     }
   });
+
+  const getUserTimezone = () => {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone;
+  };
+  const [detectedTimezone, setDetectedTimezone] = useState(getUserTimezone());
+
+  const handleRefreshTimezone = async () => {
+    const newTimezone = getUserTimezone();
+    setDetectedTimezone(newTimezone);
+
+    if (userProfile?.id && newTimezone !== userProfile?.settings?.timezone) {
+      try {
+        await handleUpdateGeneralSettings({ timezone: newTimezone });
+        toast.success('Timezone updated successfully');
+      } catch (error) {
+        console.error('Failed to update timezone:', error);
+        toast.error('Failed to update timezone');
+      }
+    }
+  };
+
 
   // API hooks
   const { data: userProfile, isLoading: isLoadingProfile, error: profileError } = useUserProfile();
@@ -178,11 +200,6 @@ export function ProfilePage() {
       // Error handling is done in the mutation
       console.error('Failed to update settings:', error);
     }
-  };
-
-  const handleExportData = () => {
-    // In a real app, this would trigger a backend job to generate and email the data
-    toast.info('Data export requested. You will receive an email with your data within 30 days.');
   };
 
   const handleDeleteAccount = async () => {
@@ -539,47 +556,30 @@ export function ProfilePage() {
 
               {/* Reminder Timing */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Reminder Timing</h3>
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="reminder-before">Remind me before</Label>
-                    <Select
-                      value={notificationPreferences.reminder_before.toString()}
-                      onValueChange={(value) => handleUpdateNotificationSettings({ reminder_before: parseInt(value) })}
-                      disabled={updateSettingsMutation.isPending}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="0">At the scheduled time</SelectItem>
-                        <SelectItem value="5">5 minutes before</SelectItem>
-                        <SelectItem value="10">10 minutes before</SelectItem>
-                        <SelectItem value="15">15 minutes before</SelectItem>
-                        <SelectItem value="30">30 minutes before</SelectItem>
-                        <SelectItem value="60">1 hour before</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
+                <div className="">
                   <div className="space-y-2">
                     <Label htmlFor="timezone">Timezone</Label>
-                    <Select
-                      value={userProfile?.settings?.timezone || 'UTC'}
-                      onValueChange={(value) => handleUpdateGeneralSettings({ timezone: value })}
-                      disabled={updateSettingsMutation.isPending}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="America/New_York">Eastern Time (ET)</SelectItem>
-                        <SelectItem value="America/Chicago">Central Time (CT)</SelectItem>
-                        <SelectItem value="America/Denver">Mountain Time (MT)</SelectItem>
-                        <SelectItem value="America/Los_Angeles">Pacific Time (PT)</SelectItem>
-                        <SelectItem value="UTC">UTC</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        id="timezone"
+                        value={detectedTimezone}
+                        disabled={true}
+                        className="flex-1"
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleRefreshTimezone}
+                        disabled={updateSettingsMutation.isPending}
+                        className="flex items-center gap-1"
+                      >
+                        <RefreshCw className={`h-4 w-4 ${updateSettingsMutation.isPending ? 'animate-spin' : ''}`} />
+                        Refresh
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Your timezone is automatically detected. Click refresh to update if you've changed locations.
+                    </p>
                   </div>
                 </div>
               </div>
