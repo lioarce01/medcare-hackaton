@@ -1,10 +1,10 @@
-# MedTracker User Guide
+# MedCare+ User Guide
 
 ## Getting Started
 
 ### Creating an Account
 
-1. Visit the MedTracker website
+1. Visit the MedCare+ website
 2. Click "Register" in the top right corner
 3. Fill in your details:
    - Email address
@@ -335,7 +335,7 @@ Premium subscribers receive:
 
 ### Regular Updates
 
-MedTracker is continuously improved with:
+MedCare+ is continuously improved with:
 - New features and improvements
 - Bug fixes and security updates
 - Performance optimizations

@@ -1,10 +1,10 @@
-# MedTracker - Your Personal Medication Companion
+# MedCare+ - Your Personal Medication Companion
 
 > Never miss a dose again with intelligent medication tracking and personalized insights
 
-MedTracker is a comprehensive medication management system designed to help you stay on top of your health. Whether you're managing a single medication or a complex regimen, our smart tracking system ensures you never miss a dose while providing valuable insights into your adherence patterns.
+MedCare+ is a comprehensive medication management system designed to help you stay on top of your health. Whether you're managing a single medication or a complex regimen, our smart tracking system ensures you never miss a dose while providing valuable insights into your adherence patterns.
 
-## ✨ Why Choose MedTracker?
+## ✨ Why Choose MedCare+?
 
 - **Smart Tracking**: Log your medications with just one tap
 - **Intelligent Reminders**: Get personalized notifications when you need them most
@@ -138,7 +138,7 @@ We accept payments worldwide:
 
 ## 🔄 Regular Updates
 
-We're constantly improving MedTracker with:
+We're constantly improving MedCare+ with:
 - New features and improvements
 - Enhanced security updates
 - Performance optimizations
@@ -150,4 +150,4 @@ We're constantly improving MedTracker with:
 
 **Ready to take control of your medication management?** [Start today](https://medcare-hackaton.netlify.app/) and experience the difference that intelligent tracking can make in your health journey.
 
-*MedTracker - Because your health deserves the best care.* 
+*MedCare+ - Because your health deserves the best care.* 

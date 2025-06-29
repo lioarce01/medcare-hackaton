@@ -49,7 +49,11 @@ export function Header() {
     navigate('/');
   };
 
-  const getInitials = (name: string) => {
+  const getInitials = (name: string | null | undefined) => {
+    if (!name || typeof name !== 'string') {
+      return 'U';
+    }
+
     return name
       .split(' ')
       .map(n => n[0])
@@ -78,7 +82,7 @@ export function Header() {
               }}
             >
               <Pill className="h-6 w-6 text-primary" />
-              <span className="font-bold text-lg">MediTrack</span>
+              <span className="font-bold text-lg">MedCare+</span>
             </Link>
 
             <nav className="hidden md:flex items-center space-x-2">
@@ -189,7 +193,7 @@ export function Header() {
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                   <Avatar className="h-8 w-8">
                     <AvatarFallback>
-                      {user ? getInitials(user.name) : 'U'}
+                      {getInitials(user?.name)}
                     </AvatarFallback>
                   </Avatar>
                 </Button>

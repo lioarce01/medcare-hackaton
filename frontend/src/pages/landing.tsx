@@ -65,7 +65,7 @@ export function LandingPage() {
               <Pill className="h-8 w-8" />
             </div>
             <span className="font-bold text-2xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              MediTrack
+              MedCare+
             </span>
           </div>
           <div className="flex items-center space-x-4">
@@ -97,7 +97,7 @@ export function LandingPage() {
             </span>
           </h1>
           <p className="text-xl text-muted-foreground mb-10 max-w-3xl mx-auto leading-relaxed">
-            MediTrack helps you stay on top of your medications with smart reminders,
+            MedCare+ helps you stay on top of your medications with smart reminders,
             detailed analytics, and comprehensive tracking tools designed for better health outcomes.
           </p>
           <div className="flex flex-col sm:flex-row gap-6 justify-center mb-12">
@@ -176,9 +176,9 @@ export function LandingPage() {
                 <BarChart3 className="h-4 w-4 mr-2" />
                 Proven Results
               </div>
-              <h2 className="text-4xl font-bold mb-6">Why Choose MediTrack?</h2>
-              <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-                Join thousands of users who have improved their medication adherence with MediTrack.
+              <h2 className="text-4xl font-bold mb-6">Why Choose MedCare+?</h2>
+              <p className="text-lg text-gray-600 dark:text-gray-300 mb-8">
+                Join thousands of users who have improved their medication adherence with MedCare+.
               </p>
             </div>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -201,7 +201,7 @@ export function LandingPage() {
           <div className="p-12 rounded-3xl bg-purple-light text-white shadow-2xl">
             <h2 className="text-4xl font-bold mb-6">Ready to Transform Your Health?</h2>
             <p className="text-xl mb-10 opacity-90 max-w-2xl mx-auto">
-              Take the first step towards better medication adherence today. Join thousands of users who trust MediTrack.
+              Take the first step towards better medication adherence today. Join thousands of users who trust MedCare+.
             </p>
             <div className="flex flex-col sm:flex-row gap-6 justify-center">
               <Link to="/register">
@@ -233,7 +233,7 @@ export function LandingPage() {
                   <Pill className="h-6 w-6" />
                 </div>
                 <span className="font-bold text-xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  MediTrack
+                  MedCare+
                 </span>
               </div>
               <p className="text-muted-foreground max-w-md">
@@ -261,7 +261,7 @@ export function LandingPage() {
           </div>
           <div className="border-t pt-8 flex flex-col md:flex-row items-center justify-between">
             <p className="text-sm text-muted-foreground">
-              © 2024 MediTrack. All rights reserved.
+              © 2024 MedCare+. All rights reserved.
             </p>
             <div className="flex items-center space-x-4 mt-4 md:mt-0">
               <span className="text-sm text-muted-foreground">Made with ❤️ for better health</span>

@@ -55,7 +55,7 @@ export function LoginPage() {
         <CardHeader className="text-center">
           <div className="flex items-center justify-center mb-4">
             <Pill className="h-8 w-8 text-primary" />
-            <span className="ml-2 text-xl font-bold">MediTrack</span>
+            <span className="ml-2 text-xl font-bold">MedCare+</span>
           </div>
           <CardTitle className="text-2xl">Welcome back</CardTitle>
           <CardDescription>

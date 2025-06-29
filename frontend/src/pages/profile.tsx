@@ -24,6 +24,7 @@ import {
   Calendar,
   Loader2,
   RefreshCw,
+  Crown,
 } from 'lucide-react';
 import { UserSettings } from '@/types';
 import { SubscriptionStatus } from '@/components/premium/subscription-status';
@@ -264,57 +265,76 @@ export function ProfilePage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Profile</h1>
-          <p className="text-muted-foreground">
-            Manage your account settings and preferences
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Avatar className="h-12 w-12">
-            <AvatarFallback className="text-lg">
-              {userProfile ? getInitials(userProfile.name || 'User') : 'U'}
-            </AvatarFallback>
-          </Avatar>
-          <div>
-            <p className="font-medium">{userProfile?.name}</p>
-            <p className="text-sm text-muted-foreground">{userProfile?.email}</p>
+    <div className="max-w-6xl mx-auto space-y-8 p-6">
+      {/* Enhanced Header Section */}
+      <div className="bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 dark:from-primary/10 dark:via-primary/20 dark:to-primary/10 rounded-xl p-6 border shadow-sm">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-primary/10 rounded-full">
+              <User className="h-8 w-8 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
+                Profile Settings
+              </h1>
+              <p className="text-muted-foreground mt-1">
+                Manage your account settings, subscription, and privacy preferences
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-4 p-4 bg-card/50 rounded-lg border">
+            <Avatar className="h-12 w-12 border-2 border-primary/20">
+              <AvatarFallback className="text-lg font-semibold bg-primary/10 text-primary">
+                {userProfile ? getInitials(userProfile.name || 'User') : 'U'}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <p className="font-semibold text-foreground">{userProfile?.name || 'User'}</p>
+              <p className="text-sm text-muted-foreground">{userProfile?.email}</p>
+            </div>
           </div>
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="profile">Edit Profile</TabsTrigger>
-          <TabsTrigger value="subscription">Subscription</TabsTrigger>
-          <TabsTrigger value="privacy">Privacy</TabsTrigger>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
+        <TabsList className="grid w-full grid-cols-3 bg-muted/80 rounded-lg">
+          <TabsTrigger value="profile" className="data-[state=active]:bg-background data-[state=active]:shadow-sm">
+            <User className="h-4 w-4 mr-2" />
+            Profile
+          </TabsTrigger>
+          <TabsTrigger value="subscription" className="data-[state=active]:bg-background data-[state=active]:shadow-sm">
+            <Crown className="h-4 w-4 mr-2" />
+            Subscription
+          </TabsTrigger>
+          <TabsTrigger value="privacy" className="data-[state=active]:bg-background data-[state=active]:shadow-sm">
+            <Shield className="h-4 w-4 mr-2" />
+            Privacy
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="profile" className="space-y-6">
-          <Card>
-            <CardHeader>
+          <Card className="border shadow-sm">
+            <CardHeader className="">
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="flex items-center gap-2">
-                    <User className="h-5 w-5" />
+                  <CardTitle className="flex items-center gap-2 text-xl">
+                    <User className="h-5 w-5 text-primary" />
                     Personal Information
                   </CardTitle>
-                  <CardDescription>
+                  <CardDescription className="text-base">
                     Update your personal details and medical information
                   </CardDescription>
                 </div>
                 {!isEditing ? (
-                  <Button onClick={() => setIsEditing(true)} className="flex items-center gap-2">
+                  <Button onClick={() => setIsEditing(true)} className="flex items-center gap-2 bg-primary hover:bg-primary/90">
                     <Edit3 className="h-4 w-4" />
-                    Edit
+                    Edit Profile
                   </Button>
                 ) : (
                   <div className="flex gap-2">
                     <Button
                       onClick={handleSaveProfile}
-                      className="flex items-center gap-2"
+                      className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
                       disabled={updateProfileMutation.isPending}
                     >
                       {updateProfileMutation.isPending ? (
@@ -322,7 +342,7 @@ export function ProfilePage() {
                       ) : (
                         <Save className="h-4 w-4" />
                       )}
-                      Save
+                      Save Changes
                     </Button>
                     <Button
                       variant="outline"
@@ -493,56 +513,82 @@ export function ProfilePage() {
         </TabsContent>
 
         <TabsContent value="subscription" className="space-y-6">
-          <SubscriptionStatus />
+          <div className="space-y-6">
+            {/* Subscription Header */}
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-gradient-to-r from-yellow-400 to-orange-500 dark:from-yellow-500 dark:to-orange-600 rounded-lg">
+                <Crown className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold">Subscription Management</h2>
+                <p className="text-muted-foreground">
+                  View your current plan and manage your subscription
+                </p>
+              </div>
+            </div>
+
+            {/* Subscription Status Component */}
+            <div className="bg-gradient-to-br from-background to-muted/30 rounded-xl border p-6">
+              <SubscriptionStatus />
+            </div>
+          </div>
         </TabsContent>
 
         <TabsContent value="privacy" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Shield className="h-5 w-5" />
-                Data Export & Privacy
-              </CardTitle>
-              <CardDescription>
-                Export your data or manage your privacy settings
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <Download className="h-5 w-5 text-blue-600" />
-                    <div>
-                      <p className="font-medium">Export Your Data</p>
-                      <p className="text-sm text-muted-foreground">
-                        Download all your data in PDF format
-                      </p>
-                    </div>
-                  </div>
-                  <ExportUserDataCall />
-                </div>
+          <div className="space-y-6">
 
-                <div className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <AlertTriangle className="h-5 w-5 text-red-600" />
-                    <div>
-                      <p className="font-medium">Delete Account</p>
-                      <p className="text-sm text-muted-foreground">
-                        Permanently delete your account and all data
-                      </p>
+
+            <Card className="border shadow-sm">
+              <CardHeader className="bg-gradient-to-r from-blue-500/5 to-blue-600/10 dark:from-blue-500/10 dark:to-blue-600/20">
+                <CardTitle className="flex items-center gap-2 text-xl">
+                  <Shield className="h-5 w-5 text-blue-600" />
+                  Data Export & Privacy
+                </CardTitle>
+                <CardDescription className="text-base">
+                  Export your data or manage your privacy settings
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6 p-6">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-4 border rounded-lg bg-gradient-to-r from-blue-50 to-blue-100/50 dark:from-blue-950/30 dark:to-blue-900/30 hover:from-blue-100 dark:hover:from-blue-950/50 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-blue-500 rounded-lg">
+                        <Download className="h-5 w-5 text-white" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-foreground">Export Your Data</p>
+                        <p className="text-sm text-muted-foreground">
+                          Download all your data in PDF format
+                        </p>
+                      </div>
                     </div>
+                    <ExportUserDataCall />
                   </div>
-                  <Button
-                    variant="outline"
-                    onClick={handleDeleteAccount}
-                    className="text-red-600 hover:text-red-700"
-                  >
-                    Delete Account
-                  </Button>
+
+                  <div className="flex items-center justify-between p-4 border rounded-lg bg-gradient-to-r from-red-50 to-red-100/50 dark:from-red-950/30 dark:to-red-900/30 hover:from-red-100 dark:hover:from-red-950/50 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-red-500 rounded-lg">
+                        <AlertTriangle className="h-5 w-5 text-white" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-foreground">Delete Account</p>
+                        <p className="text-sm text-muted-foreground">
+                          Permanently delete your account and all data
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      variant="outline"
+                      onClick={handleDeleteAccount}
+                      className="text-red-600 hover:text-red-700 border-red-300 hover:border-red-400 hover:bg-red-50 dark:hover:bg-red-950/30"
+                    >
+                      Delete Account
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
     </div>

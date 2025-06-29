@@ -55,7 +55,7 @@ export function RegisterPage() {
       /[0-9]/.test(password),
       /[^A-Za-z0-9]/.test(password),
     ];
-    
+
     strength = checks.filter(Boolean).length;
     return {
       score: strength,
@@ -99,7 +99,7 @@ export function RegisterPage() {
         <CardHeader className="text-center">
           <div className="flex items-center justify-center mb-4">
             <Pill className="h-8 w-8 text-primary" />
-            <span className="ml-2 text-xl font-bold">MediTrack</span>
+            <span className="ml-2 text-xl font-bold">MedCare+</span>
           </div>
           <CardTitle className="text-2xl">Create your account</CardTitle>
           <CardDescription>
@@ -157,14 +157,14 @@ export function RegisterPage() {
                     <span>Password strength</span>
                     <span className={
                       passwordStrength.score < 3 ? 'text-destructive' :
-                      passwordStrength.score < 4 ? 'text-yellow-600' :
-                      'text-green-600'
+                        passwordStrength.score < 4 ? 'text-yellow-600' :
+                          'text-green-600'
                     }>
                       {passwordStrength.label}
                     </span>
                   </div>
-                  <Progress 
-                    value={passwordStrength.percentage} 
+                  <Progress
+                    value={passwordStrength.percentage}
                     className="h-2"
                   />
                   <div className="space-y-1">
