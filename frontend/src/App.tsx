@@ -5,10 +5,8 @@ import { AuthProvider } from '@/contexts/auth-context';
 import { ThemeProvider, useTheme } from '@/contexts/theme-context';
 import { ProtectedRoute } from '@/components/auth/protected-route';
 import { useRealtimeSubscriptions } from '@/hooks/useRealtime';
-import { useAuth } from '@/contexts/auth-context';
-import { Navigate, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { useEffect, useState, useRef } from 'react';
-import { supabase } from '@/config/supabase';
 import { ProgressBar } from '@/components/ui/progress-bar';
 import { queryClient } from '@/lib/query-client';
 
@@ -27,38 +25,11 @@ import './App.css';
 import Subscription from './pages/subscription';
 import SubscriptionSuccess from './pages/subscription-success';
 import { NotFound } from './pages/NotFound';
-import { Loader2 } from 'lucide-react';
+import { PublicRoute } from './components/auth/public-route';
 
-// Component to handle real-time subscriptions
+// Component to handle real-time subscriptions only for authenticated users
 function RealtimeProvider({ children }: { children: React.ReactNode }) {
   useRealtimeSubscriptions();
-  return <>{children}</>;
-}
-
-// Component to handle auth state changes and cache invalidation
-function AuthStateListener({ children }: { children: React.ReactNode }) {
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('App: Auth state changed:', event, session?.user?.id);
-
-        // Invalidate auth-related queries immediately
-        await Promise.all([
-          queryClient.invalidateQueries({ queryKey: ["session"] }),
-          queryClient.invalidateQueries({ queryKey: ["user"] }),
-          queryClient.invalidateQueries({ queryKey: ["profile"] }),
-        ]);
-
-        // Clear all cache on sign out
-        if (event === 'SIGNED_OUT') {
-          queryClient.clear();
-        }
-      }
-    );
-
-    return () => subscription.unsubscribe();
-  }, []);
-
   return <>{children}</>;
 }
 
@@ -66,23 +37,25 @@ function AuthStateListener({ children }: { children: React.ReactNode }) {
 function NavigationLoader({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const [isNavigating, setIsNavigating] = useState(false);
-  const navigationRef = useRef(false);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    // Prevent duplicate navigation triggers in Strict Mode
-    if (navigationRef.current) return;
+    // Clear any existing timeout
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
 
-    navigationRef.current = true;
     setIsNavigating(true);
 
-    const timer = setTimeout(() => {
+    // Set a shorter timeout for better UX
+    timeoutRef.current = setTimeout(() => {
       setIsNavigating(false);
-      navigationRef.current = false;
-    }, 500);
+    }, 300);
 
     return () => {
-      clearTimeout(timer);
-      navigationRef.current = false;
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
     };
   }, [location.pathname]);
 
@@ -94,32 +67,29 @@ function NavigationLoader({ children }: { children: React.ReactNode }) {
   );
 }
 
-// Component to handle auth redirects for public routes
-function PublicRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading, isInitializing } = useAuth();
-
-  // Show loading while checking authentication
-  if (isLoading || isInitializing) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="animate-spin rounded-full h-8 w-8 text-emerald-600" />
-        <span className="ml-2">Loading...</span>
-      </div>
-    );
-  }
-
-  // If user is authenticated, redirect to dashboard
-  if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
-  }
-
-  // If not authenticated, show the public page
-  return <>{children}</>;
-}
-
 function FloatingBoltIcon() {
   const { theme } = useTheme();
-  const isDark = (theme === 'dark') || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    const checkTheme = () => {
+      const isDarkMode = (theme === 'dark') ||
+        (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      setIsDark(isDarkMode);
+    };
+
+    checkTheme();
+
+    // Listen for system theme changes if using system theme
+    if (theme === 'system') {
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      const handleChange = () => checkTheme();
+
+      mediaQuery.addEventListener('change', handleChange);
+      return () => mediaQuery.removeEventListener('change', handleChange);
+    }
+  }, [theme]);
+
   const iconSrc = isDark ? '/white_circle_360x360.webp' : '/black_circle_360x360.webp';
 
   return (
@@ -134,6 +104,7 @@ function FloatingBoltIcon() {
           src={iconSrc}
           alt="Bolt.new"
           className="w-16 h-16 rounded-full shadow-lg hover:shadow-xl transition-shadow duration-200"
+          loading="lazy"
         />
       </a>
     </div>
@@ -146,84 +117,82 @@ function App() {
       <Router>
         <ThemeProvider>
           <AuthProvider>
-            <AuthStateListener>
-              <NavigationLoader>
-                <RealtimeProvider>
-                  <FloatingBoltIcon />
-                  <Routes>
-                    {/* Public Routes */}
-                    <Route path="/" element={
-                      <PublicRoute>
-                        <LandingPage />
-                      </PublicRoute>
-                    } />
-                    <Route path="/login" element={
-                      <PublicRoute>
-                        <LoginPage />
-                      </PublicRoute>
-                    } />
-                    <Route path="/register" element={
-                      <PublicRoute>
-                        <RegisterPage />
-                      </PublicRoute>
-                    } />
+            <NavigationLoader>
+              <RealtimeProvider>
+                <FloatingBoltIcon />
+                <Routes>
+                  {/* Public Routes */}
+                  <Route path="/" element={
+                    <PublicRoute>
+                      <LandingPage />
+                    </PublicRoute>
+                  } />
+                  <Route path="/login" element={
+                    <PublicRoute>
+                      <LoginPage />
+                    </PublicRoute>
+                  } />
+                  <Route path="/register" element={
+                    <PublicRoute>
+                      <RegisterPage />
+                    </PublicRoute>
+                  } />
 
-                    {/* Protected Routes */}
-                    <Route path="/dashboard" element={
-                      <ProtectedRoute>
-                        <DashboardPage />
-                      </ProtectedRoute>
-                    } />
+                  {/* Protected Routes */}
+                  <Route path="/dashboard" element={
+                    <ProtectedRoute>
+                      <DashboardPage />
+                    </ProtectedRoute>
+                  } />
 
-                    <Route path="/medications" element={
-                      <ProtectedRoute>
-                        <MedicationsPage />
-                      </ProtectedRoute>
-                    } />
+                  <Route path="/medications" element={
+                    <ProtectedRoute>
+                      <MedicationsPage />
+                    </ProtectedRoute>
+                  } />
 
-                    <Route path="/adherence" element={
-                      <ProtectedRoute>
-                        <AdherencePage />
-                      </ProtectedRoute>
-                    } />
+                  <Route path="/adherence" element={
+                    <ProtectedRoute>
+                      <AdherencePage />
+                    </ProtectedRoute>
+                  } />
 
-                    <Route path="/analytics" element={
-                      <ProtectedRoute>
-                        <AnalyticsPage />
-                      </ProtectedRoute>
-                    } />
+                  <Route path="/analytics" element={
+                    <ProtectedRoute>
+                      <AnalyticsPage />
+                    </ProtectedRoute>
+                  } />
 
-                    <Route path="/reminders" element={
-                      <ProtectedRoute>
-                        <RemindersPage />
-                      </ProtectedRoute>
-                    } />
+                  <Route path="/reminders" element={
+                    <ProtectedRoute>
+                      <RemindersPage />
+                    </ProtectedRoute>
+                  } />
 
-                    <Route path="/profile" element={
-                      <ProtectedRoute>
-                        <ProfilePage />
-                      </ProtectedRoute>
-                    } />
+                  <Route path="/profile" element={
+                    <ProtectedRoute>
+                      <ProfilePage />
+                    </ProtectedRoute>
+                  } />
 
-                    <Route path="/subscription" element={
-                      <ProtectedRoute>
-                        <Subscription />
-                      </ProtectedRoute>
-                    } />
+                  <Route path="/subscription" element={
+                    <ProtectedRoute>
+                      <Subscription />
+                    </ProtectedRoute>
+                  } />
 
-                    <Route path="/subscription/success" element={
-                      <ProtectedRoute>
-                        <SubscriptionSuccess />
-                      </ProtectedRoute>
-                    } />
+                  <Route path="/subscription/success" element={
+                    <ProtectedRoute>
+                      <SubscriptionSuccess />
+                    </ProtectedRoute>
+                  } />
 
-                    {/* Redirect unknown routes */}
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                  <Toaster />
-                </RealtimeProvider>
-              </NavigationLoader>
-            </AuthStateListener>
+                  {/* Redirect unknown routes */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+                <Toaster />
+              </RealtimeProvider>
+            </NavigationLoader>
           </AuthProvider>
         </ThemeProvider>
       </Router>

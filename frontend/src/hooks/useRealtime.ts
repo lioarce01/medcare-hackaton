@@ -1,136 +1,196 @@
 import { useEffect, useRef } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
-import { realtimeService, RealtimeSubscriptionConfig } from '../services/realtime';
-import { useAuth } from './useAuth';
+import { useAuth } from './useAuthContext';
+import { supabase } from '../config/supabase';
+import { queryClient } from '../lib/query-client';
 import { toast } from 'sonner';
 
-// Generic real-time hook
-export const useRealtimeSubscription = (config: RealtimeSubscriptionConfig) => {
-  const channelIdRef = useRef<string | null>(null);
-  const { user } = useAuth();
+// Singleton para manejar las suscripciones globalmente
+class RealtimeSubscriptionManager {
+  private static instance: RealtimeSubscriptionManager;
+  private subscriptions: Map<string, any> = new Map();
+  private currentUserId: string | null = null;
+
+  static getInstance(): RealtimeSubscriptionManager {
+    if (!RealtimeSubscriptionManager.instance) {
+      RealtimeSubscriptionManager.instance = new RealtimeSubscriptionManager();
+    }
+    return RealtimeSubscriptionManager.instance;
+  }
+
+  private cleanupSubscriptions() {
+    this.subscriptions.forEach((subscription, key) => {
+      if (subscription?.unsubscribe) {
+        console.log(`Unsubscribing from ${key}`);
+        subscription.unsubscribe();
+      }
+    });
+    this.subscriptions.clear();
+  }
+
+  setupSubscriptions(userId: string) {
+    // Si ya tenemos suscripciones para este usuario, no hacer nada
+    if (this.currentUserId === userId && this.subscriptions.size > 0) {
+      console.log('Subscriptions already exist for user:', userId);
+      return;
+    }
+
+    // Limpiar suscripciones anteriores si hay un usuario diferente
+    if (this.currentUserId !== userId) {
+      this.cleanupSubscriptions();
+    }
+
+    console.log('Setting up realtime subscriptions for user:', userId);
+    this.currentUserId = userId;
+
+    // Configurar subscripciones para datos del usuario
+    const medicationsSubscription = supabase
+      .channel(`medications_${userId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'medications',
+          filter: `user_id=eq.${userId}`,
+        },
+        (payload) => {
+          console.log('Medications change:', payload);
+          queryClient.invalidateQueries({ queryKey: ['medications'] });
+
+          // Show toast notifications based on event type
+          if (payload.eventType === 'INSERT') {
+            toast.success(`New medication "${payload.new.name}" added`);
+          } else if (payload.eventType === 'UPDATE') {
+            toast.info(`Medication "${payload.new.name}" updated`);
+          } else if (payload.eventType === 'DELETE') {
+            toast.info(`Medication "${payload.old.name}" removed`);
+          }
+        }
+      )
+      .subscribe();
+
+    const remindersSubscription = supabase
+      .channel(`reminders_${userId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'medication_reminders',
+          filter: `user_id=eq.${userId}`,
+        },
+        (payload) => {
+          console.log('Reminders change:', payload);
+          queryClient.invalidateQueries({ queryKey: ['reminders'] });
+
+          // Show toast notifications based on event type
+          if (payload.eventType === 'INSERT') {
+            toast.success('New reminder created');
+          } else if (payload.eventType === 'UPDATE') {
+            if (payload.new.status === 'sent') {
+              toast.success('Reminder sent successfully');
+            } else if (payload.new.status === 'failed') {
+              toast.error('Failed to send reminder');
+            }
+          } else if (payload.eventType === 'DELETE') {
+            toast.info('Reminder deleted');
+          }
+        }
+      )
+      .subscribe();
+
+    const adherenceSubscription = supabase
+      .channel(`adherence_${userId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'adherence_logs',
+          filter: `user_id=eq.${userId}`,
+        },
+        (payload) => {
+          console.log('Adherence change:', payload);
+          queryClient.invalidateQueries({ queryKey: ['adherence'] });
+          queryClient.invalidateQueries({ queryKey: ['analytics'] });
+
+          // Show toast notifications based on event type
+          if (payload.eventType === 'INSERT') {
+            if (payload.new.status === 'taken') {
+              toast.success('Dose confirmed!');
+            } else if (payload.new.status === 'skipped') {
+              toast.info('Dose skipped');
+            }
+          } else if (payload.eventType === 'UPDATE') {
+            if (payload.new.status === 'taken') {
+              toast.success('Dose confirmed!');
+            } else if (payload.new.status === 'skipped') {
+              toast.info('Dose skipped');
+            }
+          }
+        }
+      )
+      .subscribe();
+
+    // Guardar referencias
+    this.subscriptions.set('medications', medicationsSubscription);
+    this.subscriptions.set('reminders', remindersSubscription);
+    this.subscriptions.set('adherence', adherenceSubscription);
+  }
+
+  cleanup() {
+    console.log('Cleaning up all realtime subscriptions');
+    this.cleanupSubscriptions();
+    this.currentUserId = null;
+  }
+
+  getCurrentUserId(): string | null {
+    return this.currentUserId;
+  }
+}
+
+export const useRealtimeSubscriptions = () => {
+  const { isAuthenticated, user } = useAuth();
+  const manager = RealtimeSubscriptionManager.getInstance();
+  const hasSetupRef = useRef(false);
 
   useEffect(() => {
-    if (!user) return;
+    // Solo configurar subscripciones si el usuario está autenticado
+    if (!isAuthenticated || !user) {
+      if (hasSetupRef.current) {
+        console.log('User logged out, cleaning up subscriptions');
+        manager.cleanup();
+        hasSetupRef.current = false;
+      }
+      return;
+    }
 
-    // Subscribe to real-time changes
-    const channelId = realtimeService.subscribe(config);
-    channelIdRef.current = channelId;
+    // Evitar configuraciones múltiples para el mismo usuario
+    if (hasSetupRef.current && manager.getCurrentUserId() === user.id) {
+      return;
+    }
 
+    // Configurar suscripciones
+    manager.setupSubscriptions(user.id);
+    hasSetupRef.current = true;
+
+    // Cleanup function
     return () => {
-      if (channelIdRef.current) {
-        realtimeService.unsubscribe(channelIdRef.current);
+      // Solo limpiar si el usuario cambia o se desmonta el componente
+      if (manager.getCurrentUserId() !== user.id) {
+        console.log('User changed, cleaning up subscriptions');
+        manager.cleanup();
+        hasSetupRef.current = false;
       }
     };
-  }, [user, config.table, config.filter]);
+  }, [isAuthenticated, user?.id]);
 
-  // Cleanup on unmount
+  // Cleanup en unmount del componente
   useEffect(() => {
     return () => {
-      if (channelIdRef.current) {
-        realtimeService.unsubscribe(channelIdRef.current);
-      }
+      // Solo limpiar si este es el último componente que usa las suscripciones
+      // En una aplicación real, podrías usar un contador de referencias
+      console.log('Component unmount - checking if cleanup needed');
     };
   }, []);
-};
-
-// Real-time medications updates
-export const useRealtimeMedications = () => {
-  const queryClient = useQueryClient();
-  const { user } = useAuth();
-
-  useRealtimeSubscription({
-    table: 'medications',
-    filter: user ? `user_id=eq.${user.id}` : '',
-    onInsert: (medication) => {
-      queryClient.invalidateQueries({ queryKey: ['medications'] });
-      toast.success(`New medication "${medication.name}" added`);
-    },
-    onUpdate: ({ new: newMedication }) => {
-      queryClient.invalidateQueries({ queryKey: ['medications'] });
-      queryClient.setQueryData(['medications', newMedication.id], newMedication);
-      toast.info(`Medication "${newMedication.name}" updated`);
-    },
-    onDelete: (medication) => {
-      queryClient.invalidateQueries({ queryKey: ['medications'] });
-      toast.info(`Medication "${medication.name}" removed`);
-    },
-  });
-};
-
-// Real-time adherence updates
-export const useRealtimeAdherence = () => {
-  const queryClient = useQueryClient();
-  const { user } = useAuth();
-
-  useRealtimeSubscription({
-    table: 'adherence',
-    filter: user ? `user_id=eq.${user.id}` : '',
-    onInsert: () => {
-      queryClient.invalidateQueries({ queryKey: ['adherence'] });
-      queryClient.invalidateQueries({ queryKey: ['analytics'] });
-    },
-    onUpdate: ({ new: newAdherence }) => {
-      queryClient.invalidateQueries({ queryKey: ['adherence'] });
-      queryClient.invalidateQueries({ queryKey: ['analytics'] });
-
-      // Show notification based on status
-      if (newAdherence.status === 'taken') {
-        toast.success('Dose confirmed!');
-      } else if (newAdherence.status === 'skipped') {
-        toast.info('Dose skipped');
-      }
-    },
-  });
-};
-
-// Real-time reminders updates
-export const useRealtimeReminders = () => {
-  const queryClient = useQueryClient();
-  const { user } = useAuth();
-
-  useRealtimeSubscription({
-    table: 'reminders',
-    filter: user ? `user_id=eq.${user.id}` : '',
-    onInsert: () => {
-      queryClient.invalidateQueries({ queryKey: ['reminders'] });
-    },
-    onUpdate: ({ new: newReminder }) => {
-      queryClient.invalidateQueries({ queryKey: ['reminders'] });
-
-      // Show notification when reminder is sent
-      if (newReminder.status === 'sent') {
-        toast.success('Reminder sent successfully');
-      } else if (newReminder.status === 'failed') {
-        toast.error('Failed to send reminder');
-      }
-    },
-    onDelete: () => {
-      queryClient.invalidateQueries({ queryKey: ['reminders'] });
-      toast.info('Reminder deleted');
-    },
-  });
-};
-
-// Real-time user profile updates
-export const useRealtimeUserProfile = () => {
-  const queryClient = useQueryClient();
-  const { user } = useAuth();
-
-  useRealtimeSubscription({
-    table: 'profiles',
-    filter: user ? `id=eq.${user.id}` : '',
-    onUpdate: ({ new: newProfile }) => {
-      queryClient.setQueryData(['userProfile'], newProfile);
-      queryClient.invalidateQueries({ queryKey: ['user'] });
-      toast.success('Profile updated');
-    },
-  });
-};
-
-// Hook to enable all real-time subscriptions
-export const useRealtimeSubscriptions = () => {
-  useRealtimeMedications();
-  useRealtimeAdherence();
-  useRealtimeReminders();
-  useRealtimeUserProfile();
 };

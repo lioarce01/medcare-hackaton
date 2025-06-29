@@ -34,7 +34,7 @@ import {
   useUserSettings
 } from '@/hooks/useReminders';
 import { useMedications } from '@/hooks/useMedications';
-import { useAuth } from '@/contexts/auth-context';
+import { useAuth } from '@/hooks/useAuthContext';
 import Pagination from '@/components/Pagination';
 
 export function RemindersPage() {

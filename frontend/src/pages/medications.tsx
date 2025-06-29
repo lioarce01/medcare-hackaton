@@ -34,10 +34,10 @@ import {
   useUpdateMedication,
   useDeleteMedication,
 } from "@/hooks/useMedications"
-import { useAuth } from "@/hooks/useAuth"
 import { DateTime } from "luxon"
 import Pagination from "@/components/Pagination"
 import { useUserProfile } from "@/hooks/useUser"
+import { useAuth } from "@/hooks/useAuthContext"
 
 const medicationSchema = z.object({
   name: z.string().min(1, "Medication name is required"),

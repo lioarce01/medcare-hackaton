@@ -9,9 +9,9 @@ import {
 } from "../api/medications";
 import { CreateMedicationData, UpdateMedicationData } from "../types";
 import { toast } from "sonner";
-import { useAuth } from "./useAuth";
 import { useEffect, useState } from "react";
 import { Medication, PaginationResult } from "@/types";
+import { useAuth } from "./useAuthContext";
 
 // Get all medications
 export const useMedications = (page = 1, limit = 10, searchTerm?: string, filterType?: string) => {

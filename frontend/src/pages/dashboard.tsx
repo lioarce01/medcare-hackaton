@@ -13,17 +13,15 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useTodaySchedule, useDashboardStats, useDashboardActions } from '@/hooks/useDashboard';
-import { useAuth } from '@/hooks/useAuth';
 import { DateTime } from 'luxon';
-import { useRealtimeMedications, useRealtimeAdherence, useRealtimeReminders } from '@/hooks/useRealtime';
+import { useRealtimeSubscriptions } from '@/hooks/useRealtime';
+import { useAuth } from '@/hooks/useAuthContext';
 
 export function DashboardPage() {
   const { user } = useAuth();
 
   // Enable realtime updates for dashboard data
-  useRealtimeMedications();
-  useRealtimeAdherence();
-  useRealtimeReminders();
+  useRealtimeSubscriptions();
 
   // Fetch real data using custom hooks
   const { data: todaySchedule, isLoading: scheduleLoading } = useTodaySchedule();

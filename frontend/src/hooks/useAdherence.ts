@@ -7,9 +7,9 @@ import {
   getAdherenceStats,
 } from "../api/adherence";
 import { toast } from "sonner";
-import { useAuth } from "./useAuth";
 import { format, startOfMonth, endOfMonth, subDays, addDays } from "date-fns";
 import { Adherence, PaginationResult } from "@/types";
+import { useAuth } from "./useAuthContext";
 
 // Get adherence history
 export const useAdherenceHistory = (page?: number, limit?: number, date?: string) => {

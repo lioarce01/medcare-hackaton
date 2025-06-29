@@ -7,12 +7,32 @@ import {
 } from "../api/users";
 import { UserSettings } from "../types";
 import { toast } from "sonner";
+import { useAuth } from "./useAuthContext";
 
 // Get user profile
 export const useUserProfile = () => {
+  const { isAuthenticated } = useAuth();
+
   return useQuery({
     queryKey: ["userProfile"],
     queryFn: getUserProfile,
+    enabled: isAuthenticated,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+};
+
+// Get user profile with session check
+export const useUserProfileWithSession = () => {
+  const { isAuthenticated } = useAuth();
+
+  return useQuery({
+    queryKey: ["userProfile"],
+    queryFn: async () => {
+      if (!isAuthenticated) {
+        throw new Error("No authenticated session");
+      }
+      return getUserProfile();
+    },
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 };
@@ -25,11 +45,10 @@ export const useUpdateUserProfile = () => {
     mutationFn: updateUserProfile,
     onSuccess: (data) => {
       queryClient.setQueryData(["userProfile"], data);
-      queryClient.invalidateQueries({ queryKey: ["user"] });
       toast.success("Profile updated successfully");
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.message || "Failed to update profile");
+      toast.error(error.message || "Failed to update profile");
     },
   });
 };
@@ -38,22 +57,19 @@ export const useUpdateUserProfile = () => {
 export const useUpdateUserSettings = () => {
   const queryClient = useQueryClient();
 
-  const updateUserSettingsMutation = useMutation({
+  return useMutation({
     mutationFn: updateUserSettings,
     onSuccess: (data) => {
-      // Update the user profile in the cache
-      queryClient.setQueryData(['userProfile'], (oldData: any) => ({
+      queryClient.setQueryData(["userProfile"], (oldData: any) => ({
         ...oldData,
-        settings: data.settings
+        settings: data,
       }));
-      queryClient.invalidateQueries({ queryKey: ['userProfile'] });
+      toast.success("Settings updated successfully");
     },
-    onError: (error) => {
-      // Error handling is done in the mutation
-    }
+    onError: (error: any) => {
+      toast.error(error.message || "Failed to update settings");
+    },
   });
-
-  return updateUserSettingsMutation;
 };
 
 // Delete user account
@@ -67,7 +83,7 @@ export const useDeleteUser = () => {
       toast.success("Account deleted successfully");
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.message || "Failed to delete account");
+      toast.error(error.message || "Failed to delete account");
     },
   });
 };

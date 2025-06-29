@@ -1,9 +1,22 @@
 // types/index.ts (or wherever your types are defined)
 
+import { Session as SupabaseSession } from '@supabase/supabase-js';
+
+export type Session = SupabaseSession;
+
 export interface User {
   id: string;
-  email: string;
   name: string;
+  email: string;
+  created_at: string;
+  updated_at: string;
+  subscription_status?: string;
+  subscription_plan?: string;
+  subscription_end_date?: string;
+  subscription_features?: Record<string, any>;
+  settings?: UserSettings;
+  emergency_contact?: Record<string, any>;
+  is_admin?: boolean;
 
   // Optional fields from your database
   date_of_birth?: string;
@@ -11,39 +24,24 @@ export interface User {
   allergies?: string[];
   conditions?: string[];
   phone_number?: string;
-  emergency_contact?: Record<string, any>;
-  is_admin?: boolean;
-
-  // Subscription fields
-  subscription_status?: string;
-  subscription_plan?: string;
-  subscription_expires_at?: string;
-  subscription_features?: Record<string, any>;
-
-  // Timestamps
-  created_at: string;
-  updated_at: string;
-
-  // Settings (optional, if you want to include them in the user object)
-  settings?: UserSettings;
 }
 
 export interface UserSettings {
-  id: string;
-  user_id: string;
-  email_enabled: boolean;
-  preferred_times: string[];
+  notification_preferences: {
+    email: boolean;
+    push: boolean;
+    sms: boolean;
+  };
+  reminder_settings: {
+    default_reminder_time: string;
+    reminder_frequency: string;
+  };
+  theme_preferences: {
+    theme: string;
+    color_scheme: string;
+  };
   timezone: string;
   language?: string;
-  theme?: string;
-  notification_preferences?: {
-    email: boolean;
-    sms: boolean;
-    push: boolean;
-    reminder_before: number;
-  };
-  created_at: string;
-  updated_at: string;
 }
 
 // For forms and API calls
@@ -214,33 +212,11 @@ export interface AdherenceStats {
 }
 
 export interface AuthContextType {
-  // Estado del usuario
+  session: Session | null;
   user: User | null;
-  session: any; // Use any to accommodate Supabase Session type
-  isAuthenticated: boolean;
   isLoading: boolean;
-  isInitializing: boolean;
-  isPremium: boolean;
-
-  // Manejo de errores
-  authError: string | null;
-  clearError: () => void;
-
-  // Funciones de autenticación
-  login: (email: string, password: string, redirectTo?: string) => Promise<any>;
-  register: (
-    name: string,
-    email: string,
-    password: string,
-    redirectTo?: string
-  ) => Promise<any>;
-  logout: (redirectTo?: string) => Promise<void>;
-  refreshSession: () => Promise<any>;
-
-  // Estados específicos de las operaciones
-  isSigningIn: boolean;
-  isSigningUp: boolean;
-  isSigningOut: boolean;
+  isAuthenticated: boolean;
+  isInitialized: boolean;
 }
 
 export interface PaginationResult<T> {
@@ -362,9 +338,4 @@ export interface UpdateReminderSettingsData {
     push?: boolean;
     reminder_before?: number;
   };
-}
-
-// Session type for auth
-export interface Session {
-  token: string;
 }

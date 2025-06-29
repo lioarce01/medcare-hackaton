@@ -1,157 +1,164 @@
-import { useMemo } from "react";
-import { useAuth as useAuthContext } from "@/contexts/auth-context";
-
-import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/config/supabase";
-import { signIn, signUp, signOut, getUserProfile, getUserSettings } from "../api/auth";
-import { User } from "../types";
+import { getUserProfile } from "@/api/users";
+import { User } from "@/types";
+import { useEffect } from "react";
 
-export const useSignUp = () => {
-  const navigate = useNavigate();
+// Hook principal para obtener la sesión y el usuario
+export const useSession = () => {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: ({
-      name,
-      email,
-      password,
-    }: {
-      name: string;
-      email: string;
-      password: string;
-    }) => signUp(name, email, password),
-    onSuccess: async (data) => {
-      // Invalidate all auth-related queries
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["session"] }),
-        queryClient.invalidateQueries({ queryKey: ["user"] }),
-        queryClient.invalidateQueries({ queryKey: ["profile"] }),
-      ]);
-      navigate("/dashboard");
-    },
-    onError: (error) => {
-      console.error("Sign up error:", error);
-    },
-  });
-};
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state changed:', event, session?.user?.id);
 
-export const useSignIn = () => {
-  const queryClient = useQueryClient();
+      if (event === 'SIGNED_OUT') {
+        queryClient.setQueryData(['session'], { session: null, user: null });
+        queryClient.removeQueries({ queryKey: ['session'] });
+      } else if (event === 'SIGNED_IN') {
+        // Invalidar y refetch inmediatamente después del signin
+        queryClient.invalidateQueries({ queryKey: ['session'] });
+      } else if (event === 'TOKEN_REFRESHED') {
+        // Solo invalidar si hay cambios significativos
+        queryClient.invalidateQueries({ queryKey: ['session'] });
+      }
+    });
 
-  return useMutation({
-    mutationFn: async ({
-      email,
-      password,
-    }: {
-      email: string;
-      password: string;
-    }) => {
-      const data = await signIn(email, password);
-      return data;
-    },
-    onSuccess: async (data) => {
-      // Invalidate all auth-related queries
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["session"] }),
-        queryClient.invalidateQueries({ queryKey: ["user"] }),
-        queryClient.invalidateQueries({ queryKey: ["profile"] }),
-      ]);
-    },
-    onError: (error) => {
-      console.error("Sign in error:", error);
-    },
-  });
-};
+    return () => subscription.unsubscribe();
+  }, [queryClient]);
 
-export const useSignOut = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async () => {
-      await signOut();
-    },
-    onSuccess: () => {
-      // Clear all cached data on sign out
-      queryClient.clear();
-      // Remove navigation from here - let the context handle it
-    },
-    onError: (error) => {
-      console.error("Sign out error:", error);
-    },
-  });
-};
-
-export const useAuth = () => {
-  const { data: session, isLoading: sessionLoading } = useQuery({
+  return useQuery({
     queryKey: ["session"],
     queryFn: async () => {
-      // Get session from Supabase
-      const { data: { session: supabaseSession } } = await supabase.auth.getSession();
-      return supabaseSession;
-    },
-    staleTime: 1000 * 60 * 5, // 5 minutes
-    refetchOnWindowFocus: true,
-    refetchOnMount: true,
-  });
-
-  // Enhanced user query that fetches from backend
-  const {
-    data: user,
-    isLoading: userLoading,
-    error: userError,
-  } = useQuery<User | null, Error>({
-    queryKey: ["user", session?.user?.id] as const,
-    queryFn: async () => {
-      if (!session?.user) return null;
-
       try {
-        // Get user profile from backend
-        const userProfile = await getUserProfile();
-        return userProfile;
+        console.log('Fetching session...');
+
+        // Obtener sesión de Supabase
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+        if (sessionError) {
+          console.error('Session error:', sessionError);
+          throw sessionError;
+        }
+
+        // Si no hay sesión, retornar null
+        if (!session) {
+          console.log('No session found');
+          return { session: null, user: null };
+        }
+
+        console.log('Session found, fetching profile...');
+
+        // Si hay sesión, obtener el perfil
+        try {
+          const profile = await getUserProfile();
+          console.log('Profile fetched successfully');
+          return { session, user: profile };
+        } catch (error) {
+          console.error('Error fetching user profile:', error);
+
+          // Si es un error de autenticación, limpiar la sesión
+          if (error && typeof error === 'object' && 'status' in error && error.status === 401) {
+            console.log('Unauthorized, signing out...');
+            await supabase.auth.signOut();
+            return { session: null, user: null };
+          }
+
+          // Para otros errores, retornar sesión sin usuario
+          console.log('Profile fetch failed, but session exists');
+          return { session, user: null };
+        }
       } catch (error) {
-        console.error("Error fetching user profile:", error);
-        // If there's an error, return null
-        return null;
+        console.error('Session query error:', error);
+        return { session: null, user: null };
       }
     },
-    enabled: !!session?.user,
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 60 * 15, // 15 minutos (más tiempo para evitar refetches innecesarios)
+    gcTime: 1000 * 60 * 30, // 30 minutos
+    refetchOnMount: false, // Cambiar a false para evitar refetch innecesario
     refetchOnWindowFocus: false,
+    refetchOnReconnect: false, // Evitar refetch en reconexión
     retry: (failureCount, error) => {
-      // Don't retry if it's a database error
-      if (
-        error.message?.includes("not found") ||
-        error.message?.includes("does not exist") ||
-        error.message?.includes("404") ||
-        error.message?.includes("500")
-      ) {
+      // Solo retry si no es un error de autenticación
+      if (error && typeof error === 'object' && 'status' in error && error.status === 401) {
         return false;
       }
       return failureCount < 2;
     },
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
-
-  return {
-    user: user as User | null,
-    session,
-    isAuthenticated: !!session?.user,
-    isLoading: sessionLoading || userLoading,
-    error: userError,
-    isPremium:
-      user?.subscription_status === "active" &&
-      user?.subscription_plan === "premium",
-  };
 };
 
+// Hook para iniciar sesión
+export const useSignIn = () => {
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+
+  return useMutation({
+    mutationFn: async ({ email, password }: { email: string; password: string }) => {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: async () => {
+      // Esperar un poco para que la sesión se establezca
+      await new Promise(resolve => setTimeout(resolve, 100));
+      await queryClient.invalidateQueries({ queryKey: ["session"] });
+      navigate('/dashboard');
+    },
+  });
+};
+
+// Hook para registrarse
+export const useSignUp = () => {
+  const navigate = useNavigate();
+
+  return useMutation({
+    mutationFn: async ({ name, email, password }: { name: string; email: string; password: string }) => {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { name },
+        },
+      });
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      navigate('/login');
+    },
+  });
+};
+
+// Hook para cerrar sesión
+export const useSignOut = () => {
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+
+  return useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.clear();
+      navigate('/login');
+    },
+  });
+};
+
+// Hook para actualizar el perfil del usuario
 export const useUpdateUserProfile = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (updates: Partial<User>) => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("No authenticated user");
 
       const { data, error } = await supabase
@@ -165,7 +172,7 @@ export const useUpdateUserProfile = () => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["user"] });
+      queryClient.invalidateQueries({ queryKey: ["session"] });
     },
   });
 };
@@ -175,9 +182,7 @@ export const useUpdateUserSettings = () => {
 
   return useMutation({
     mutationFn: async (settings: any) => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("No authenticated user");
 
       const { data, error } = await supabase

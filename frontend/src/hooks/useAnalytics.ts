@@ -6,8 +6,8 @@ import {
   getRiskPredictions,
 } from "../api/analytics";
 import { getAdherenceTimeline } from "../api/adherence";
-import { useAuth } from "./useAuth";
 import { DateTime } from "luxon";
+import { useAuth } from "./useAuthContext";
 
 // Helper to check if a string is a valid UUID (v4)
 function isValidUUID(uuid: string) {

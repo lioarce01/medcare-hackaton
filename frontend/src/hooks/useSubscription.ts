@@ -1,10 +1,10 @@
 import { useMemo } from "react";
-import { useAuth } from "./useAuth";
 
 import { useMutation } from "@tanstack/react-query";
 import { createCheckoutSession } from "@/api/subscriptions";
 import { SubscriptionFeatures, SubscriptionService } from "@/services/subscription";
 import { toast } from "sonner";
+import { useAuth } from "./useAuthContext";
 
 export const useCreateCheckoutSession = () => {
   return useMutation({

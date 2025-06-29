@@ -6,9 +6,9 @@ import {
   useSkipDose,
   useTodayAdherence,
 } from "./useAdherence";
-import { useAuth } from "./useAuth";
 import { useMemo } from "react";
 import { DateTime } from "luxon";
+import { useAuth } from "./useAuthContext";
 
 // Hook for today's adherence schedule
 export const useTodaySchedule = (page = 1, limit = 10) => {

@@ -1,5 +1,7 @@
+// PublicRoute.tsx
 import { Navigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/auth-context';
+import { Loader2 } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuthContext';
 
 interface PublicRouteProps {
   children: React.ReactNode;
@@ -7,22 +9,29 @@ interface PublicRouteProps {
 }
 
 export function PublicRoute({ children, redirectTo = '/dashboard' }: PublicRouteProps) {
-  const { isAuthenticated, isLoading, isInitializing } = useAuth();
+  const { session, isLoading, isInitialized } = useAuth();
 
-  // Mostrar loading mientras se inicializa la autenticación
-  if (isLoading || isInitializing) {
+  console.log('PublicRoute state:', {
+    hasSession: !!session,
+    isLoading,
+    isInitialized,
+    redirectTo
+  });
+
+  // Mostrar loader solo durante la carga inicial
+  if (!isInitialized || isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+        <Loader2 className="animate-spin rounded-full h-8 w-8 text-emerald-600" />
       </div>
     );
   }
 
-  // Si el usuario ya está autenticado, redirigir al dashboard
-  if (isAuthenticated) {
+  // Si hay sesión activa, redirigir al dashboard
+  if (session) {
     return <Navigate to={redirectTo} replace />;
   }
 
-  // Si no está autenticado, mostrar la ruta pública
+  // Si no hay sesión, mostrar el contenido público
   return <>{children}</>;
 }

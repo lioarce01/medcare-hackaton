@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -59,30 +59,42 @@ interface NotificationPreferences {
   reminder_before: number;
 }
 
+const defaultEditedProfile: EditedProfile = {
+  name: '',
+  email: '',
+  phone_number: '',
+  date_of_birth: '',
+  gender: '',
+  allergies: [],
+  conditions: [],
+  emergency_contact: {
+    name: '',
+    phone_number: '',
+    relationship: ''
+  }
+};
+
 export function ProfilePage() {
+  // Estados
   const [activeTab, setActiveTab] = useState('profile');
   const [isEditing, setIsEditing] = useState(false);
-  const [editedProfile, setEditedProfile] = useState<EditedProfile>({
-    name: '',
-    email: '',
-    phone_number: '',
-    date_of_birth: '',
-    gender: '',
-    allergies: [],
-    conditions: [],
-    emergency_contact: {
-      name: '',
-      phone_number: '',
-      relationship: ''
-    }
-  });
+  const [editedProfile, setEditedProfile] = useState<EditedProfile>(defaultEditedProfile);
+  const [detectedTimezone, setDetectedTimezone] = useState(() =>
+    Intl.DateTimeFormat().resolvedOptions().timeZone
+  );
 
-  const getUserTimezone = () => {
+  // Queries y Mutations
+  const { data: userProfile, isLoading: isLoadingProfile, error: profileError } = useUserProfile();
+  const updateProfileMutation = useUpdateUserProfile();
+  const updateSettingsMutation = useUpdateUserSettings();
+  const deleteUserMutation = useDeleteUser();
+
+  // Funciones memoizadas
+  const getUserTimezone = useCallback(() => {
     return Intl.DateTimeFormat().resolvedOptions().timeZone;
-  };
-  const [detectedTimezone, setDetectedTimezone] = useState(getUserTimezone());
+  }, []);
 
-  const handleRefreshTimezone = async () => {
+  const handleRefreshTimezone = useCallback(async () => {
     const newTimezone = getUserTimezone();
     setDetectedTimezone(newTimezone);
 
@@ -94,15 +106,61 @@ export function ProfilePage() {
         toast.error('Failed to update timezone');
       }
     }
-  };
+  }, [userProfile?.id, userProfile?.settings?.timezone, getUserTimezone]);
 
-  // API hooks
-  const { data: userProfile, isLoading: isLoadingProfile, error: profileError } = useUserProfile();
-  const updateProfileMutation = useUpdateUserProfile();
-  const updateSettingsMutation = useUpdateUserSettings();
-  const deleteUserMutation = useDeleteUser();
+  const handleUpdateSettings = useCallback(async (newSettings: Partial<UserSettings>) => {
+    if (!userProfile?.id) {
+      toast.error('User ID not found');
+      return;
+    }
 
-  // Initialize form data when user profile loads
+    try {
+      await updateSettingsMutation.mutateAsync(newSettings);
+      toast.success('Settings updated successfully');
+    } catch (error) {
+      toast.error('Failed to update settings');
+    }
+  }, [userProfile?.id, updateSettingsMutation]);
+
+  const handleSaveProfile = useCallback(async () => {
+    if (!userProfile?.id) {
+      toast.error('User ID not found');
+      return;
+    }
+
+    try {
+      await updateProfileMutation.mutateAsync({
+        id: userProfile.id,
+        ...editedProfile
+      });
+      setIsEditing(false);
+      toast.success('Profile updated successfully');
+    } catch (error) {
+      toast.error('Failed to update profile');
+    }
+  }, [userProfile?.id, editedProfile, updateProfileMutation]);
+
+  const handleCancelEdit = useCallback(() => {
+    if (userProfile) {
+      setEditedProfile({
+        name: userProfile.name || '',
+        email: userProfile.email || '',
+        phone_number: userProfile.phone_number || '',
+        date_of_birth: userProfile.date_of_birth || '',
+        gender: userProfile.gender || '',
+        allergies: userProfile.allergies || [],
+        conditions: userProfile.conditions || [],
+        emergency_contact: {
+          name: userProfile.emergency_contact?.name || '',
+          phone_number: userProfile.emergency_contact?.phone_number || '',
+          relationship: userProfile.emergency_contact?.relationship || ''
+        }
+      });
+    }
+    setIsEditing(false);
+  }, [userProfile]);
+
+  // Effects
   useEffect(() => {
     if (userProfile) {
       setEditedProfile({
@@ -121,43 +179,6 @@ export function ProfilePage() {
       });
     }
   }, [userProfile]);
-
-  const handleSaveProfile = async () => {
-    if (!userProfile?.id) {
-      toast.error('User ID not found');
-      return;
-    }
-
-    try {
-      await updateProfileMutation.mutateAsync({
-        id: userProfile.id,
-        ...editedProfile
-      });
-      setIsEditing(false);
-    } catch (error) {
-      // Error handling is done in the mutation
-    }
-  };
-
-  const handleCancelEdit = () => {
-    if (userProfile) {
-      setEditedProfile({
-        name: userProfile.name || '',
-        email: userProfile.email || '',
-        phone_number: userProfile.phone_number || '',
-        date_of_birth: userProfile.date_of_birth || '',
-        gender: userProfile.gender || '',
-        allergies: userProfile.allergies || [],
-        conditions: userProfile.conditions || [],
-        emergency_contact: {
-          name: userProfile.emergency_contact?.name || '',
-          phone_number: userProfile.emergency_contact?.phone_number || '',
-          relationship: userProfile.emergency_contact?.relationship || ''
-        }
-      });
-    }
-    setIsEditing(false);
-  };
 
   const handleUpdateNotificationSettings = async (newSettings: Partial<NotificationPreferences>) => {
     if (!userProfile?.id) {
@@ -204,19 +225,6 @@ export function ProfilePage() {
       };
 
       await updateSettingsMutation.mutateAsync(settingsToSend);
-    } catch (error) {
-      // Error handling is done in the mutation
-    }
-  };
-
-  const handleUpdateSettings = async (newSettings: Partial<UserSettings>) => {
-    if (!userProfile?.id) {
-      toast.error('User ID not found');
-      return;
-    }
-
-    try {
-      await updateSettingsMutation.mutateAsync(newSettings);
     } catch (error) {
       // Error handling is done in the mutation
     }

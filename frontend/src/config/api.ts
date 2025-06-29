@@ -14,28 +14,42 @@ const apiClient = axios.create({
 
 // Request interceptor to add auth token
 apiClient.interceptors.request.use(async (config) => {
-  // Get token from Supabase session
-  const { data: { session } } = await supabase.auth.getSession();
+  try {
+    // Get token from Supabase session
+    const { data: { session } } = await supabase.auth.getSession();
 
-  if (session?.access_token) {
+    if (!session?.access_token) {
+      throw new Error("No authenticated session");
+    }
+
     config.headers.Authorization = `Bearer ${session.access_token}`;
+    return config;
+  } catch (error) {
+    return Promise.reject(error);
   }
-
-  return config;
 });
 
 // Response interceptor for error handling
 apiClient.interceptors.response.use(
   (response) => response,
-  (error) => {
-    // Handle 401 errors by redirecting to login
-    if (error.response?.status === 401) {
-      // Clear session and redirect to login
-      supabase.auth.signOut();
-      window.location.href = "/login";
+  async (error) => {
+    // Handle network errors
+    if (!error.response) {
+      console.error('Network error:', error);
+      return Promise.reject(new Error('Network error occurred'));
     }
 
-    return Promise.reject(error);
+    // Handle 401 errors by redirecting to login
+    if (error.response.status === 401) {
+      // Clear session and redirect to login
+      await supabase.auth.signOut();
+      window.location.href = "/login";
+      return Promise.reject(new Error('Authentication required'));
+    }
+
+    // Handle other errors
+    const errorMessage = error.response?.data?.message || error.message || 'An error occurred';
+    return Promise.reject(new Error(errorMessage));
   }
 );
 

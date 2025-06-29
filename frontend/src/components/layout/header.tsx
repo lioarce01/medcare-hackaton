@@ -18,7 +18,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { ProgressBar } from '@/components/ui/progress-bar';
-import { useAuth } from '@/contexts/auth-context';
+import { useAuth } from '@/hooks/useAuthContext';
 import { useTheme } from '@/contexts/theme-context';
 import {
   User,

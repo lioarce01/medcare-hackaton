@@ -1,5 +1,4 @@
 import { useQuery } from "@tanstack/react-query";
-import { useAuth } from "./useAuth";
 import { useAdherenceStats } from "./useAdherence";
 import { useActiveMedications } from "./useMedications";
 import { useMemo } from "react";
@@ -7,6 +6,7 @@ import { DateTime } from 'luxon';
 import { getRiskHistoryByUser, getLatestRiskScore } from "../api/analytics";
 import { RiskHistory, LatestRiskScore } from "../types/analytics";
 import { useAdherenceTimeline, useRiskPredictions } from "./useAnalytics";
+import { useAuth } from "./useAuthContext";
 
 export interface TimelineDataType {
   date: string;

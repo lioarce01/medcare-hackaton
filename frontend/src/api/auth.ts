@@ -37,16 +37,6 @@ export const signOut = async () => {
   return { success: true };
 };
 
-export const getUserProfile = async (): Promise<User> => {
-  try {
-    const response = await apiClient.get('/users/me');
-    return response.data;
-  } catch (error) {
-    // Return null if endpoint is not available
-    throw error;
-  }
-};
-
 // Get user settings from database
 export const getUserSettings = async (): Promise<UserSettings> => {
   try {
