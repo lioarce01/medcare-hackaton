@@ -7,8 +7,13 @@ async function bootstrap() {
 
   app.setGlobalPrefix('/api');
   app.enableCors({
-    origin: 'http://localhost:5173',
+    origin: `http://${process.env.FRONTEND_URL}`,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  });
+
+  // Health check endpoint for Render
+  app.use('/health', (req, res) => {
+    res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
   });
 
   app.useGlobalPipes(

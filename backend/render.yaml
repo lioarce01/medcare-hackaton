@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: medcare-backend
+    env: node
+    buildCommand: chmod +x build.sh && ./build.sh
+    startCommand: npm run start:prod
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_OPTIONS
+        value: --max-old-space-size=4096
+    healthCheckPath: /health
+    autoDeploy: true 
