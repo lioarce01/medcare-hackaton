@@ -31,17 +31,17 @@ export class CreateCheckoutSessionUseCase {
       userId: command.userId,
       email: command.email,
       priceId: command.priceId,
-      currency: command.currency || 'ARS',
+      currency: command.currency || 'USD',
     };
 
     console.log('🧾 CheckoutSessionRequest:', request);
 
     try {
       const result = await provider.createCheckoutSession(request);
-      console.log('✅ MercadoPago response:', result);
+      console.log(`✅ ${command.paymentProvider} response:`, result);
       return result
     } catch (error) {
-      console.error('❌ MercadoPago error:', error?.response?.data || error.message || error);
+      console.error(`❌ ${command.paymentProvider} error:`, error?.response?.data || error.message || error);
       throw new BadRequestException(`Error creating checkout session: ${error.message}`);
     }
   }
