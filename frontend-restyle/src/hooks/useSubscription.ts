@@ -1,11 +1,9 @@
 import { useMemo } from "react";
 import { useAuth } from "./useAuth";
-import {
-  SubscriptionService,
-  SubscriptionFeatures,
-} from "../services/subscription";
+
 import { useMutation } from "@tanstack/react-query";
 import { createCheckoutSession } from "@/api/subscriptions";
+import { SubscriptionFeatures, SubscriptionService } from "@/services/subscription";
 
 export const useCreateCheckoutSession = () => {
   return useMutation({

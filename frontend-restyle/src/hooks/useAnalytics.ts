@@ -33,12 +33,14 @@ export function getDateRangeForTimeRange(timeRange: "7d" | "30d" | "90d") {
 export const useRiskHistoryByMedication = (
   medicationId: string,
   startDate?: string,
-  endDate?: string
+  endDate?: string,
+  page = 1,
+  limit = 10
 ) => {
   const { user } = useAuth();
   return useQuery({
-    queryKey: ["analytics", "risk-history", medicationId, startDate, endDate],
-    queryFn: () => getRiskHistoryByMedication(medicationId, startDate, endDate),
+    queryKey: ["analytics", "risk-history", medicationId, startDate, endDate, page, limit],
+    queryFn: () => getRiskHistoryByMedication(medicationId, startDate, endDate, page, limit),
     enabled: !!user && !!medicationId && isValidUUID(medicationId),
     staleTime: 0,
     refetchOnWindowFocus: true,
@@ -49,12 +51,14 @@ export const useRiskHistoryByMedication = (
 // Get all risk history for the current user
 export const useRiskHistoryByUser = (
   startDate?: string,
-  endDate?: string
+  endDate?: string,
+  page = 1,
+  limit = 10
 ) => {
   const { user } = useAuth();
   return useQuery({
-    queryKey: ["analytics", "risk-history", "user", startDate, endDate],
-    queryFn: () => getRiskHistoryByUser(startDate, endDate),
+    queryKey: ["analytics", "risk-history", "user", startDate, endDate, page, limit],
+    queryFn: () => getRiskHistoryByUser(startDate, endDate, page, limit),
     enabled: !!user,
     staleTime: 0,
     refetchOnWindowFocus: true,
@@ -78,7 +82,7 @@ export const useRiskPredictions = () => {
   const { user } = useAuth();
   return useQuery({
     queryKey: ["analytics", "risks"],
-    queryFn: getRiskPredictions,
+    queryFn: () => getRiskPredictions(),
     enabled: !!user,
     staleTime: 1 * 60 * 1000, // 10 minutes
   });

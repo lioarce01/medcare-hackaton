@@ -65,14 +65,14 @@ export const useRealtimeAdherence = () => {
   useRealtimeSubscription({
     table: 'adherence',
     filter: user ? `user_id=eq.${user.id}` : '',
-    onInsert: (adherence) => {
+    onInsert: () => {
       queryClient.invalidateQueries({ queryKey: ['adherence'] });
       queryClient.invalidateQueries({ queryKey: ['analytics'] });
     },
     onUpdate: ({ new: newAdherence }) => {
       queryClient.invalidateQueries({ queryKey: ['adherence'] });
       queryClient.invalidateQueries({ queryKey: ['analytics'] });
-      
+
       // Show notification based on status
       if (newAdherence.status === 'taken') {
         toast.success('Dose confirmed!');
@@ -91,17 +91,12 @@ export const useRealtimeReminders = () => {
   useRealtimeSubscription({
     table: 'reminders',
     filter: user ? `user_id=eq.${user.id}` : '',
-    onInsert: (reminder) => {
+    onInsert: () => {
       queryClient.invalidateQueries({ queryKey: ['reminders'] });
-      
-      // Show notification for new reminders
-      if (reminder.status === 'pending') {
-        toast.info(`Reminder set for ${reminder.scheduled_time}`);
-      }
     },
     onUpdate: ({ new: newReminder }) => {
       queryClient.invalidateQueries({ queryKey: ['reminders'] });
-      
+
       // Show notification when reminder is sent
       if (newReminder.status === 'sent') {
         toast.success('Reminder sent successfully');
@@ -109,7 +104,7 @@ export const useRealtimeReminders = () => {
         toast.error('Failed to send reminder');
       }
     },
-    onDelete: (reminder) => {
+    onDelete: () => {
       queryClient.invalidateQueries({ queryKey: ['reminders'] });
       toast.info('Reminder deleted');
     },

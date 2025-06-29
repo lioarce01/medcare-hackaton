@@ -67,8 +67,8 @@ export function Header() {
     <>
       <ProgressBar isLoading={isLoading} />
       <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center justify-between mx-2">
-          <div className="flex items-center space-x-4">
+        <div className="container flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center space-x-2 sm:space-x-4">
             <Link
               to="/dashboard"
               className="flex items-center space-x-2 transition-opacity hover:opacity-80"
@@ -125,20 +125,22 @@ export function Header() {
             </nav>
           </div>
 
-          <div className="flex items-center space-x-6">
-            {/* Language Selector */}
-            <Select value={language} onValueChange={setLanguage}>
-              <SelectTrigger className="w-32 text-foreground">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {Object.entries(languages).map(([code, name]) => (
-                  <SelectItem key={code} value={code} className="text-foreground">
-                    {name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="flex items-center space-x-2 sm:space-x-4 lg:space-x-6">
+            {/* Language Selector - Hidden on very small screens */}
+            <div className="hidden sm:block">
+              <Select value={language} onValueChange={setLanguage}>
+                <SelectTrigger className="w-32 text-foreground">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(languages).map(([code, name]) => (
+                    <SelectItem key={code} value={code} className="text-foreground">
+                      {name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
             {/* Mobile Menu */}
             <DropdownMenu>
@@ -147,7 +149,7 @@ export function Header() {
                   <Menu className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuContent align="end" className="w-56" sideOffset={8}>
                 <DropdownMenuItem
                   onClick={() => handleNavigation('/dashboard')}
                   className="text-gray-700 dark:text-gray-200 hover:bg-gray-800 hover:text-white dark:hover:bg-gray-700 dark:hover:text-white"
@@ -192,7 +194,7 @@ export function Header() {
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="end" forceMount>
+              <DropdownMenuContent className="w-56" align="end" forceMount sideOffset={8}>
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
                     <p className="text-sm font-medium leading-none">{user?.name}</p>
@@ -206,7 +208,7 @@ export function Header() {
                   <User className="mr-2 h-4 w-4" />
                   Profile
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleNavigation('/profile')}>
+                <DropdownMenuItem onClick={() => handleNavigation('/subscription')}>
                   <Crown className="mr-2 h-4 w-4" />
                   Premium
                 </DropdownMenuItem>

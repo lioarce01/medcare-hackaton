@@ -8,7 +8,7 @@ import {
 } from "../api/adherence";
 import { toast } from "sonner";
 import { useAuth } from "./useAuth";
-import { format, startOfMonth, endOfMonth } from "date-fns";
+import { format, startOfMonth, endOfMonth, subDays, addDays } from "date-fns";
 import { Adherence, PaginationResult } from "@/types";
 
 // Get adherence history
@@ -53,7 +53,11 @@ export const useAdherenceCalendar = (month?: Date) => {
   const startDate = format(startOfMonth(currentMonth), "yyyy-MM-dd");
   const endDate = format(endOfMonth(currentMonth), "yyyy-MM-dd");
 
-  return useAdherenceHistoryRange(startDate, endDate);
+  // Extend the date range to include future data for timeline view
+  const extendedStartDate = format(subDays(startOfMonth(currentMonth), 7), "yyyy-MM-dd");
+  const extendedEndDate = format(addDays(endOfMonth(currentMonth), 30), "yyyy-MM-dd");
+
+  return useAdherenceHistoryRange(extendedStartDate, extendedEndDate);
 };
 
 // Get adherence statistics

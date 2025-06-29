@@ -1,22 +1,20 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  getReminders,
+  getAllReminders,
   getUpcomingReminders,
   createReminder,
   sendReminderManually,
   deleteReminder,
   updateReminderSettings,
-  getUserSettings,
-  CreateReminderDto,
-  UpdateReminderSettingsDto,
 } from "../api/reminders";
 import { toast } from "sonner";
+import { getUserSettings } from "@/api/auth";
 
 // Get all reminders
-export const useReminders = () => {
+export const useReminders = (page: number = 1, limit: number = 10) => {
   return useQuery({
-    queryKey: ["reminders"],
-    queryFn: getReminders,
+    queryKey: ["reminders", page, limit],
+    queryFn: () => getAllReminders(page, limit),
     staleTime: 2 * 60 * 1000, // 2 minutes
   });
 };
@@ -25,7 +23,7 @@ export const useReminders = () => {
 export const useUpcomingReminders = () => {
   return useQuery({
     queryKey: ["reminders", "upcoming"],
-    queryFn: getUpcomingReminders,
+    queryFn: () => getUpcomingReminders(10), // Pass default limit
     staleTime: 1 * 60 * 1000, // 1 minute
   });
 };
@@ -44,7 +42,7 @@ export const useCreateReminder = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: createReminder,
+    mutationFn: (reminder: any) => createReminder(reminder),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["reminders"] });
       toast.success("Reminder created successfully");

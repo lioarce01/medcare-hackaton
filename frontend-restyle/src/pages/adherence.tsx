@@ -88,18 +88,20 @@ export function AdherencePage() {
         };
       }
 
-      // Ensure item.medication exists before pushing
-      if (item.medication) {
+      // Find medication data from activeMedications
+      const medication = activeMedications?.data?.find(med => med.id === item.medication_id);
+
+      if (medication) {
         grouped[localDate].medications.push({
-          medication: item.medication,
+          medication: medication,
           status: item.status,
           scheduled_time: DateTime.fromISO(item.scheduled_datetime, { zone: 'utc' }).setZone(timezone).toFormat('HH:mm'),
           taken_time: item.taken_time || undefined,
         });
       } else {
         console.warn('Skipping adherence item without medication:', item);
+        continue;
       }
-
 
       grouped[localDate].adherenceData.total += 1;
       if (item.status === 'taken') grouped[localDate].adherenceData.taken += 1;
@@ -122,8 +124,12 @@ export function AdherencePage() {
   // Memoize the result of groupAdherenceByDay
   const groupedData = useMemo(() => {
     console.log('Regrouping adherence data...'); // Add a log to see when this runs
-    return groupAdherenceByDay(adherenceData, timezone);
-  }, [adherenceData, timezone]); // Dependencies: re-run only when adherenceData or timezone changes
+    console.log('Adherence data:', adherenceData);
+    console.log('Active medications:', activeMedications?.data);
+    const result = groupAdherenceByDay(adherenceData, timezone);
+    console.log('Grouped data result:', result);
+    return result;
+  }, [adherenceData, timezone, activeMedications?.data]); // Dependencies: re-run only when adherenceData or timezone changes
 
 
   const selectedDayData = useMemo(() => {
@@ -461,8 +467,7 @@ export function AdherencePage() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Medications</SelectItem>
-                      {/* Use activeMedications data here */}
-                      {activeMedications?.data.map((med: Medication) => (
+                      {activeMedications?.data?.map((med: Medication) => (
                         <SelectItem key={med.id} value={med.id}>{med.name}</SelectItem>
                       ))}
                     </SelectContent>
@@ -503,7 +508,7 @@ export function AdherencePage() {
               {groupedData && groupedData.length > 0 ? (
                 groupedData
                   .slice()
-                  .slice(0, 14) // Show last 14 days
+                  .slice(-30) // Show last 30 days including future
                   .map((dayData, dayIndex) => {
                     const filteredMeds = filteredMedications(dayData.medications);
 
@@ -516,6 +521,11 @@ export function AdherencePage() {
                         <div className="flex items-center justify-between">
                           <h4 className="font-medium">
                             {format(dayData.date, 'EEEE, MMM d, yyyy')}
+                            {isSameDay(dayData.date, new Date()) && (
+                              <span className="ml-2 text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100 px-2 py-1 rounded">
+                                Today
+                              </span>
+                            )}
                           </h4>
                           <Badge className="bg-purple-600 text-white hover:bg-purple-700 dark:bg-purple-600 dark:text-white dark:hover:bg-purple-700">
                             {dayData.adherenceData.percentage}% adherence
@@ -549,7 +559,7 @@ export function AdherencePage() {
                           ))}
                         </div>
 
-                        {dayIndex < 13 && <Separator />}
+                        {dayIndex < 29 && <Separator />}
                       </div>
                     );
                   })

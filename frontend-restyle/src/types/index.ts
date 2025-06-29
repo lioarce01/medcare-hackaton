@@ -1,5 +1,3 @@
-import { Session } from "@supabase/supabase-js";
-
 // types/index.ts (or wherever your types are defined)
 
 export interface User {
@@ -36,7 +34,14 @@ export interface UserSettings {
   email_enabled: boolean;
   preferred_times: string[];
   timezone: string;
-  notification_preferences?: Record<string, any>;
+  language?: string;
+  theme?: string;
+  notification_preferences?: {
+    email: boolean;
+    sms: boolean;
+    push: boolean;
+    reminder_before: number;
+  };
   created_at: string;
   updated_at: string;
 }
@@ -68,7 +73,12 @@ export interface UserSettingsUpdate {
   email_enabled?: boolean;
   preferred_times?: string[];
   timezone?: string;
-  notification_preferences?: Record<string, any>;
+  notification_preferences?: {
+    email?: boolean;
+    sms?: boolean;
+    push?: boolean;
+    reminder_before?: number;
+  };
 }
 
 export interface Medication {
@@ -148,17 +158,18 @@ export interface Reminder {
   id: string;
   user_id: string;
   medication_id: string;
-  scheduled_time: string;
-  scheduled_date: string;
+  scheduled_datetime: string; // ISO string, UTC - matches backend
   status: "pending" | "sent" | "failed";
   channels: {
     email: {
       enabled: boolean;
       sent: boolean;
+      sentAt?: string;
     };
     sms: {
       enabled: boolean;
       sent: boolean;
+      sentAt?: string;
     };
   };
   message?: string;
@@ -167,6 +178,7 @@ export interface Reminder {
   adherence_id?: string;
   created_at: string;
   updated_at: string;
+  medication?: Medication; // Include medication data if available
 }
 
 export interface AdherenceStats {
@@ -236,4 +248,123 @@ export interface PaginationResult<T> {
   page: number,
   limit: number,
   total: number
+}
+
+// Analytics types
+export interface RiskHistory {
+  id: string;
+  user_id: string;
+  medication_id: string;
+  risk_score: number;
+  factors: string[];
+  date: string;
+  created_at: string;
+}
+
+export interface RiskScore {
+  score: number;
+  level: 'low' | 'medium' | 'high';
+  factors: string[];
+  date: string;
+}
+
+export interface RiskPrediction {
+  id: string;
+  user_id: string;
+  medication_id: string;
+  predicted_risk: number;
+  confidence: number;
+  date: string;
+  factors: string[];
+}
+
+export interface LatestRiskScore {
+  risk_score: number;
+}
+
+// API types for mutations
+export interface CreateMedicationData {
+  name: string;
+  dosage: {
+    amount: number;
+    unit: string;
+    form: string;
+  };
+  frequency: {
+    type: string;
+    interval: number;
+    times_per_day?: number;
+    specific_days?: string[];
+  };
+  scheduled_times: string[];
+  instructions?: string;
+  start_date: string;
+  end_date?: string;
+  refill_reminder?: {
+    enabled: boolean;
+    threshold: number;
+    last_refill?: string | null;
+    next_refill?: string | null;
+    supply_amount: number;
+    supply_unit: string;
+  } | null;
+  side_effects_to_watch: string[];
+  medication_type?: "prescription" | "otc" | "supplement";
+}
+
+export interface UpdateMedicationData {
+  name?: string;
+  dosage?: {
+    amount: number;
+    unit: string;
+    form: string;
+  };
+  frequency?: {
+    type: string;
+    interval: number;
+    times_per_day?: number;
+    specific_days?: string[];
+  };
+  scheduled_times?: string[];
+  instructions?: string;
+  start_date?: string;
+  end_date?: string;
+  refill_reminder?: {
+    enabled: boolean;
+    threshold: number;
+    last_refill?: string | null;
+    next_refill?: string | null;
+    supply_amount: number;
+    supply_unit: string;
+  } | null;
+  side_effects_to_watch?: string[];
+  medication_type?: "prescription" | "otc" | "supplement";
+}
+
+export interface CreateReminderData {
+  medication_id: string;
+  scheduled_datetime: string;
+  message?: string;
+  channels: {
+    email: boolean;
+    sms: boolean;
+  };
+}
+
+export interface UpdateReminderSettingsData {
+  email_enabled?: boolean;
+  sms_enabled?: boolean;
+  preferred_times?: string[];
+  timezone?: string;
+  notification_preferences?: {
+    email?: boolean;
+    sms?: boolean;
+    push?: boolean;
+    reminder_before?: number;
+  };
+}
+
+// Session type for auth
+export interface Session {
+  token: string;
 }

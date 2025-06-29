@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useActiveMedications } from "./useMedications";
 import {
   useAdherenceStats,
@@ -6,7 +6,6 @@ import {
   useSkipDose,
   useTodayAdherence,
 } from "./useAdherence";
-import { useUpcomingReminders } from "./useReminders";
 import { useAuth } from "./useAuth";
 import { useMemo } from "react";
 import { DateTime } from "luxon";
@@ -90,7 +89,6 @@ export const useTodaySchedule = (page = 1, limit = 10) => {
   };
 };
 
-
 // Hook for dashboard statistics
 export const useDashboardStats = () => {
   const { data: adherenceStats, isLoading: statsLoading } = useAdherenceStats();
@@ -132,7 +130,6 @@ export const useDashboardStats = () => {
 export const useDashboardAlerts = () => {
   const { user } = useAuth();
   const { data: medications } = useActiveMedications();
-  const { data: upcomingReminders } = useUpcomingReminders();
   const { data: todaySchedule } = useTodaySchedule();
 
   return useQuery({
@@ -272,8 +269,7 @@ export const useDashboardActions = () => {
         });
       }
     } catch (error) {
-      console.error("Failed to update medication status:", error);
-      throw error;
+      // Error handling is done in the mutation
     }
   };
 

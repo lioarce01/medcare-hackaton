@@ -40,11 +40,11 @@ class RealtimeService {
     // Subscribe to the channel
     channel.subscribe((status) => {
       if (status === "SUBSCRIBED") {
-        console.log(`Successfully subscribed to ${channelId}`);
+        // Successfully subscribed
       } else if (status === "CHANNEL_ERROR") {
-        console.error(`Error subscribing to ${channelId}`);
+        // Error subscribing
       } else if (status === "TIMED_OUT") {
-        console.warn(`Subscription to ${channelId} timed out`);
+        // Subscription timed out
       }
     });
 
@@ -72,8 +72,6 @@ class RealtimeService {
     config: RealtimeSubscriptionConfig
   ): void {
     const { eventType, new: newRecord, old: oldRecord } = payload;
-
-    console.log("Realtime payload received:", payload);
 
     switch (eventType) {
       case "INSERT":

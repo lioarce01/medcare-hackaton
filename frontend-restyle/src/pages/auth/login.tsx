@@ -39,11 +39,9 @@ export function LoginPage() {
 
   const onSubmit = async (data: LoginFormData) => {
     try {
-      await login(data.email, data.password, from);
-      navigate(from, { replace: true });
+      await login(data.email, data.password);
     } catch (err) {
-      console.error('Login error:', err);
-
+      // Error handling is done in the auth context
     }
   };
 

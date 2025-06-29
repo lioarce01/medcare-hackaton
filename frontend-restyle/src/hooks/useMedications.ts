@@ -4,26 +4,25 @@ import {
   getActiveMedications,
   getMedicationById,
   createMedication,
-  createSimpleMedication,
   updateMedication,
   deleteMedication,
-  CreateMedicationDto,
 } from "../api/medications";
+import { CreateMedicationData, UpdateMedicationData } from "../types";
 import { toast } from "sonner";
 import { useAuth } from "./useAuth";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Medication, PaginationResult } from "@/types";
 
 // Get all medications
-export const useMedications = (page?: number, limit?: number) => {
+export const useMedications = (page = 1, limit = 10, searchTerm?: string, filterType?: string) => {
   const { user } = useAuth();
 
   return useQuery<PaginationResult<Medication>>({
-    queryKey: ["medications", page, limit],
-    queryFn: () => getMedications(page, limit),
+    queryKey: ["medications", page, limit, searchTerm, filterType],
+    queryFn: () => getMedications(page, limit, searchTerm, filterType),
     placeholderData: (prev) => prev, //keep prev data
     enabled: !!user,
-    staleTime: 2 * 60 * 1000, // 2 minutes
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 };
 
@@ -51,7 +50,7 @@ export const useMedicationsWithFilters = (
     queryFn: () => getMedications(page, limit, debouncedSearchTerm, filterType),
     placeholderData: (prev) => prev,
     enabled: !!user,
-    staleTime: 2 * 60 * 1000,
+    staleTime: 5 * 60 * 1000,
   });
 };
 
@@ -80,21 +79,23 @@ export const useMedicationsList = (
 };
 
 // Get active medications
-export const useActiveMedications = (page?: number, limit?: number) => {
+export const useActiveMedications = (page = 1, limit = 10) => {
   const { user } = useAuth();
 
-  return useQuery({
+  return useQuery<PaginationResult<Medication>>({
     queryKey: ["medications", "active", page, limit],
     queryFn: () => getActiveMedications(page, limit),
     placeholderData: (prev) => prev, // keep previous data
     enabled: !!user,
-    staleTime: 2 * 60 * 1000, // 2 minutes
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 };
 
 // Get medication by ID
-export const useMedication = (id: string) => {
-  return useQuery({
+export const useMedicationById = (id: string) => {
+  const { user } = useAuth();
+
+  return useQuery<Medication>({
     queryKey: ["medications", id],
     queryFn: () => getMedicationById(id),
     enabled: !!id,
@@ -102,49 +103,18 @@ export const useMedication = (id: string) => {
   });
 };
 
-// Create medication with adherence records
+// Create medication
 export const useCreateMedication = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: createMedication,
-    onSuccess: async () => {
-      await Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: ["medications"],
-          exact: false,
-        }),
-        queryClient.invalidateQueries({
-          queryKey: ["adherence"],
-          exact: false,
-        }),
-      ]);
-
-      toast.success("Medication created successfully");
-    },
-
-    onError: (error: any) => {
-      toast.error(
-        error.response?.data?.message || "Failed to create medication"
-      );
-    },
-  });
-};
-
-// Create simple medication without adherence records
-export const useCreateSimpleMedication = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: createSimpleMedication,
+    mutationFn: (medicationData: CreateMedicationData) => createMedication(medicationData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["medications"] });
       toast.success("Medication created successfully");
     },
     onError: (error: any) => {
-      toast.error(
-        error.response?.data?.message || "Failed to create medication"
-      );
+      toast.error(error.response?.data?.message || "Failed to create medication");
     },
   });
 };
@@ -154,23 +124,15 @@ export const useUpdateMedication = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({
-      id,
-      medication,
-    }: {
-      id: string;
-      medication: Partial<CreateMedicationDto>;
-    }) => updateMedication(id, medication),
-    onSuccess: (data, variables) => {
-      queryClient.setQueryData(["medications", variables.id], data);
+    mutationFn: ({ id, medicationData }: { id: string; medicationData: UpdateMedicationData }) =>
+      updateMedication(id, medicationData),
+    onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: ["medications"] });
-      queryClient.invalidateQueries({ queryKey: ["adherence"] });
+      queryClient.invalidateQueries({ queryKey: ["medications", id] });
       toast.success("Medication updated successfully");
     },
     onError: (error: any) => {
-      toast.error(
-        error.response?.data?.message || "Failed to update medication"
-      );
+      toast.error(error.response?.data?.message || "Failed to update medication");
     },
   });
 };
@@ -181,25 +143,12 @@ export const useDeleteMedication = () => {
 
   return useMutation({
     mutationFn: deleteMedication,
-    onSuccess: async () => {
-      await Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: ["medications"],
-          exact: false,
-        }),
-        queryClient.invalidateQueries({
-          queryKey: ["adherence"],
-          exact: false,
-        }),
-      ]);
-
-      toast.success("Medication created successfully");
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["medications"] });
+      toast.success("Medication deleted successfully");
     },
-
     onError: (error: any) => {
-      toast.error(
-        error.response?.data?.message || "Failed to delete medication"
-      );
+      toast.error(error.response?.data?.message || "Failed to delete medication");
     },
   });
 };

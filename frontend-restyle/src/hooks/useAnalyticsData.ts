@@ -58,23 +58,6 @@ export const useAnalyticsOverview = (
   const timelineLimit = timelineResult?.limit ?? 10
   const timelineTotal = timelineResult?.total ?? 0
 
-  // DEBUG: Log timeline entries with local date conversion
-  if (timelineRaw) {
-    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    timelineRaw.forEach(entry => {
-      const localDate = DateTime.fromISO(entry.scheduled_datetime, { zone: 'utc' }).setZone(timezone);
-      // eslint-disable-next-line no-console
-      console.log('[DEBUG] Timeline Entry:', {
-        medication: entry.medication?.name,
-        medication_id: entry.medication_id,
-        status: entry.status,
-        scheduled_datetime_utc: entry.scheduled_datetime,
-        local_date: localDate.toISODate(),
-        local_time: localDate.toFormat('HH:mm'),
-      });
-    });
-  }
-
   // Get user timezone
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   // Calculate startDate and endDate for the selected time range
@@ -90,6 +73,7 @@ export const useAnalyticsOverview = (
     refetchOnWindowFocus: true,
     refetchOnMount: true,
   });
+
   // Fetch latest risk score for each medication
   const { data: medicationsResult } = useActiveMedications();
   const medications = medicationsResult?.data ?? [];

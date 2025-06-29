@@ -1,4 +1,6 @@
-import { supabase } from "../config/supabase";
+import apiClient from "@/config/api";
+import { supabase } from "@/config/supabase";
+import { User, UserSettings } from "@/types";
 
 export const signUp = async (name: string, email: string, password: string) => {
   const { data, error } = await supabase.auth.signUp({
@@ -13,7 +15,6 @@ export const signUp = async (name: string, email: string, password: string) => {
   });
 
   if (error) {
-    console.error("Supabase signUp error:", error);
     throw error;
   }
 
@@ -25,6 +26,7 @@ export const signIn = async (email: string, password: string) => {
     email,
     password,
   });
+
   if (error) throw error;
   return data;
 };
@@ -32,36 +34,54 @@ export const signIn = async (email: string, password: string) => {
 export const signOut = async () => {
   const { error } = await supabase.auth.signOut();
   if (error) throw error;
-  return true;
+  return { success: true };
 };
 
-export const getUserProfile = async (userId: string) => {
-  const { data, error } = await supabase
-    .from("users")
-    .select("*")
-    .eq("id", userId)
-    .single();
-
-  if (error) {
-    console.error("Error fetching user profile:", error);
+export const getUserProfile = async (): Promise<User> => {
+  try {
+    const response = await apiClient.get('/users/me');
+    return response.data;
+  } catch (error) {
+    // Return null if endpoint is not available
     throw error;
   }
-
-  return data;
 };
 
-// New function to get user settings
-export const getUserSettings = async (userId: string) => {
-  const { data, error } = await supabase
-    .from("user_settings")
-    .select("*")
-    .eq("user_id", userId)
-    .single();
-
-  if (error) {
-    console.error("Error fetching user settings:", error);
-    throw error;
+// Get user settings from database
+export const getUserSettings = async (): Promise<UserSettings> => {
+  try {
+    const response = await apiClient.get('/users/me');
+    return response.data.settings || {
+      id: 'default',
+      user_id: 'default',
+      email_enabled: true,
+      preferred_times: [],
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      notification_preferences: {
+        email: true,
+        sms: false,
+        push: false,
+        reminder_before: 15,
+      },
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+  } catch (error) {
+    // Return default settings if endpoint is not available
+    return {
+      id: 'default',
+      user_id: 'default',
+      email_enabled: true,
+      preferred_times: [],
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      notification_preferences: {
+        email: true,
+        sms: false,
+        push: false,
+        reminder_before: 15,
+      },
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
   }
-
-  return data;
 };

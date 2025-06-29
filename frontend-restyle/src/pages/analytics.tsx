@@ -1,12 +1,10 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DashboardSkeleton } from '@/components/ui/loading-skeleton';
 import { Progress } from '@/components/ui/progress';
-import { Separator } from '@/components/ui/separator';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -25,7 +23,6 @@ import 'chartjs-adapter-date-fns';
 import {
   BarChart3,
   TrendingUp,
-  TrendingDown,
   Target,
   Award,
   Calendar,
@@ -38,11 +35,9 @@ import {
   Crown,
   AlertTriangle,
 } from 'lucide-react';
-import { format } from 'date-fns';
 import { useAnalyticsOverview, useAnalyticsInsights, TimelineDataType } from '@/hooks/useAnalyticsData';
 import { useActiveMedications } from '@/hooks/useMedications';
 import { DateTime } from 'luxon';
-import { useRiskHistoryByMedicationWithRange } from '@/hooks/useAnalytics';
 
 // Register Chart.js components
 ChartJS.register(
@@ -67,17 +62,18 @@ export function AnalyticsPage() {
   const { data: insights } = useAnalyticsInsights();
   const { data: medications } = useActiveMedications();
 
-  console.log('Analytics Data:', analyticsData);
-  console.log('Insights Data:', insights);
-  console.log('Medications Data:', medications);
+  // Combine all analytics data
+  const combinedAnalyticsData = useMemo(() => {
+    if (!analyticsData || !insights || !medications) {
+      return null;
+    }
 
-  // Combine insights with analytics data
-  const combinedAnalyticsData = analyticsData ? {
-    ...analyticsData,
-    insights: insights || [],
-  } : null;
-
-  console.log("combined analytics:", combinedAnalyticsData)
+    return {
+      ...analyticsData,
+      insights,
+      medications
+    };
+  }, [analyticsData, insights, medications]);
 
   // Use backend-provided ranking color and text if available
   const getRankingColor = (rank: string) => {
@@ -85,13 +81,13 @@ export function AnalyticsPage() {
       return `text-${analyticsData.rankingColor} bg-${analyticsData.rankingColor.replace('600', '100')}`;
     }
     switch (rank) {
-      case 'S': return 'text-purple-600 bg-purple-100';
-      case 'A': return 'text-green-600 bg-green-100';
-      case 'B': return 'text-blue-600 bg-blue-100';
-      case 'C': return 'text-yellow-600 bg-yellow-100';
-      case 'D': return 'text-orange-600 bg-orange-100';
-      case 'E': return 'text-red-600 bg-red-100';
-      default: return 'text-gray-600 bg-gray-100';
+      case 'S': return 'text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-900/30';
+      case 'A': return 'text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30';
+      case 'B': return 'text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30';
+      case 'C': return 'text-yellow-600 dark:text-yellow-400 bg-yellow-100 dark:bg-yellow-900/30';
+      case 'D': return 'text-orange-600 dark:text-orange-400 bg-orange-100 dark:bg-orange-900/30';
+      case 'E': return 'text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/30';
+      default: return 'text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800';
     }
   };
 
@@ -111,13 +107,12 @@ export function AnalyticsPage() {
 
   const getRankingIcon = (rank: string) => {
     switch (rank) {
-      case 'S': return <Crown className="h-6 w-6" />;
-      case 'A': return <Trophy className="h-6 w-6" />;
-      case 'B': return <Medal className="h-6 w-6" />;
-      case 'C': return <Award className="h-6 w-6" />;
-      case 'D': return <Star className="h-6 w-6" />;
-      case 'E': return <Target className="h-6 w-6" />;
-      default: return <Activity className="h-6 w-6" />;
+      case 'A': return <Trophy className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />;
+      case 'B': return <Medal className="h-6 w-6 text-gray-600 dark:text-gray-400" />;
+      case 'C': return <Award className="h-6 w-6 text-orange-600 dark:text-orange-400" />;
+      case 'D': return <Star className="h-6 w-6 text-blue-600 dark:text-blue-400" />;
+      case 'E': return <Target className="h-6 w-6 text-gray-600 dark:text-gray-300" />;
+      default: return <Activity className="h-6 w-6 text-gray-600 dark:text-gray-300" />;
     }
   };
 
@@ -160,13 +155,6 @@ export function AnalyticsPage() {
     },
   };
 
-  // Fetch medication-specific risk history for selected medication and time range
-  const riskHistoryQuery = useRiskHistoryByMedicationWithRange(
-    selectedMedication !== 'all' ? selectedMedication : '',
-    timeRange
-  );
-  const medicationRiskHistory = selectedMedication !== 'all' ? riskHistoryQuery.data : null;
-
   // Get user timezone at the top before any usage
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
@@ -178,7 +166,7 @@ export function AnalyticsPage() {
     return (
       <div className="space-y-6">
         <div className="text-center py-12">
-          <BarChart3 className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+          <BarChart3 className="h-12 w-12 mx-auto text-gray-600 dark:text-gray-300 mb-4" />
           <h3 className="text-lg font-semibold mb-2">No Analytics Data Available</h3>
           <p className="text-muted-foreground">
             Start taking your medications to see analytics and insights.
@@ -305,7 +293,7 @@ export function AnalyticsPage() {
           </CardHeader>
           <CardContent>
             <div className="flex justify-center">
-              <div className={`text-4xl font-bold ${getRankingColor(combinedAnalyticsData.performanceRanking)} w-16 h-16 rounded-full flex items-center justify-center mb-2`}>
+              <div className={`text-4xl font-bold text-black dark:text-black ${getRankingColor(combinedAnalyticsData.performanceRanking)} w-16 h-16 rounded-full flex items-center justify-center mb-2`}>
                 {combinedAnalyticsData.performanceRanking}
               </div>
             </div>
@@ -318,7 +306,7 @@ export function AnalyticsPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Current Streak</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <TrendingUp className="h-4 w-4 text-gray-600 dark:text-gray-300" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">{combinedAnalyticsData.streakData.current}</div>
@@ -331,7 +319,7 @@ export function AnalyticsPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Longest Streak</CardTitle>
-            <Trophy className="h-4 w-4 text-muted-foreground" />
+            <Trophy className="h-4 w-4 text-gray-600 dark:text-gray-300" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-blue-600">{combinedAnalyticsData.streakData.longest}</div>
@@ -344,7 +332,7 @@ export function AnalyticsPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">This Month</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <Calendar className="h-4 w-4 text-gray-600 dark:text-gray-300" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-purple-600">{combinedAnalyticsData.streakData.thisMonth}</div>

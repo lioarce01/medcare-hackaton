@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
@@ -37,6 +37,7 @@ import {
 import { useAuth } from "@/hooks/useAuth"
 import { DateTime } from "luxon"
 import Pagination from "@/components/Pagination"
+import { useUserProfile } from "@/hooks/useUser"
 
 const medicationSchema = z.object({
   name: z.string().min(1, "Medication name is required"),
@@ -71,7 +72,7 @@ export function MedicationsPage() {
   const [limit, setLimit] = useState(10)
 
   // Use real data hooks
-  const { data: medicationsResult, isLoading } = useMedicationsWithFilters(searchTerm, filterType, page, limit)
+  const { data: medicationsResult, isLoading: medicationsLoading, error: medicationsError } = useMedicationsWithFilters(searchTerm, filterType, page, limit)
   const createMedicationMutation = useCreateMedication()
   const updateMedicationMutation = useUpdateMedication()
   const deleteMedicationMutation = useDeleteMedication()
@@ -80,16 +81,26 @@ export function MedicationsPage() {
 
   const { user } = useAuth()
 
-  console.log("medications result:", medicationsResult)
+  const { data: userProfile } = useUserProfile();
 
-  const handlePageChange = (newPage: number) => {
-    setPage(newPage)
-  }
+  // Filter medications based on search term and status
+  const filteredMedications = useMemo(() => {
+    if (!medicationsResult?.data || !Array.isArray(medicationsResult.data)) {
+      return [];
+    }
 
-  const handleLimitChange = (newLimit: number) => {
-    setLimit(newLimit)
-    setPage(1) // Reset to first page when changing limit
-  }
+    return medicationsResult.data.filter((medication: Medication) => {
+      const matchesSearch = medication.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        medication.instructions?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        medication.medication_type?.toLowerCase().includes(searchTerm.toLowerCase());
+
+      const matchesStatus = filterType === 'all' ||
+        (filterType === 'active' && medication.active) ||
+        (filterType === 'inactive' && !medication.active);
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [medicationsResult?.data, searchTerm, filterType]);
 
   useEffect(() => {
     setPage(1) // Reset to first page when search/filter changes
@@ -120,8 +131,6 @@ export function MedicationsPage() {
   const frequencyType = watch("frequency_type")
   const timesPerDay = watch("times_per_day") || 1
   const refillReminderEnabled = watch("refill_reminder_enabled")
-
-  console.log("filteredMedications:", medicationsResult?.data, Array.isArray(medicationsResult?.data))
 
   const onSubmit = async (data: MedicationFormData) => {
     try {
@@ -181,8 +190,6 @@ export function MedicationsPage() {
         newMedication.refill_reminder = null
       }
 
-      console.log("🚀 newMedication:", newMedication)
-
       if (!newMedication.refill_reminder) {
         throw new Error("Refill reminder is missing")
       }
@@ -190,7 +197,7 @@ export function MedicationsPage() {
       if (editingMedication) {
         await updateMedicationMutation.mutateAsync({
           id: editingMedication.id,
-          medication: {
+          medicationData: {
             name: newMedication.name,
             dosage: newMedication.dosage,
             frequency: newMedication.frequency,
@@ -200,7 +207,6 @@ export function MedicationsPage() {
             end_date: newMedication.end_date,
             refill_reminder: {
               enabled: newMedication.refill_reminder?.enabled || false,
-              days_before: newMedication.refill_reminder?.threshold || 7,
               threshold: newMedication.refill_reminder?.threshold || 7,
               last_refill: newMedication.refill_reminder?.last_refill || null,
               next_refill: newMedication.refill_reminder?.next_refill || null,
@@ -214,7 +220,6 @@ export function MedicationsPage() {
         setEditingMedication(null)
       } else {
         await createMedicationMutation.mutateAsync({
-          user_id: user?.id ?? "",
           name: newMedication.name,
           dosage: newMedication.dosage,
           frequency: newMedication.frequency,
@@ -226,7 +231,6 @@ export function MedicationsPage() {
             ? {
               enabled: newMedication.refill_reminder.enabled,
               threshold: newMedication.refill_reminder.threshold,
-              days_before: newMedication.refill_reminder.threshold,
               last_refill: newMedication.refill_reminder.last_refill,
               next_refill: newMedication.refill_reminder.next_refill,
               supply_amount: newMedication.refill_reminder.supply_amount,
@@ -278,8 +282,13 @@ export function MedicationsPage() {
         await deleteMedicationMutation.mutateAsync(medicationToDelete.id)
         setIsDeleteDialogOpen(false)
         setMedicationToDelete(null)
+        toast.success("Medication Deleted", {
+          description: "The medication has been deleted successfully.",
+        });
       } catch (error) {
-        console.error("Failed to delete medication:", error)
+        toast.error("Error", {
+          description: "Failed to delete medication. Please try again.",
+        });
       }
     }
   }
@@ -304,7 +313,7 @@ export function MedicationsPage() {
     }
   }, [timesPerDay, frequencyType])
 
-  if (isLoading) {
+  if (medicationsLoading) {
     return <DashboardSkeleton />
   }
 
@@ -377,7 +386,7 @@ export function MedicationsPage() {
 
           {/* Medications List */}
           <div className="grid gap-3">
-            {medicationsResult?.data.length === 0 ? (
+            {filteredMedications.length === 0 ? (
               <Card>
                 <CardContent className="flex flex-col items-center justify-center py-12">
                   <Pill className="h-12 w-12 text-muted-foreground mb-4" />
@@ -395,7 +404,7 @@ export function MedicationsPage() {
               </Card>
             ) : (
               <>
-                {medicationsResult?.data.map((medication) => (
+                {filteredMedications.map((medication) => (
                   <Card key={medication.id} className="hover:shadow-md transition-shadow">
                     <CardHeader className="pb-4">
                       <div className="flex items-start justify-between">
@@ -443,7 +452,7 @@ export function MedicationsPage() {
                       {/* Schedule Section */}
                       <div className="space-y-3">
                         <div className="flex items-center gap-2">
-                          <Clock className="h-4 w-4 text-muted-foreground" />
+                          <Clock className="h-4 w-4 text-gray-600 dark:text-gray-300" />
                           <span className="font-semibold text-sm">Daily Schedule</span>
                           <Separator className="flex-1" />
                           <span className="text-xs text-muted-foreground">
@@ -478,7 +487,7 @@ export function MedicationsPage() {
                       {medication.instructions && (
                         <div className="space-y-2">
                           <div className="flex items-center gap-2">
-                            <Info className="h-4 w-4 text-muted-foreground" />
+                            <Info className="h-5 w-5 text-gray-600 dark:text-gray-300" />
                             <span className="font-semibold text-sm">Instructions</span>
                           </div>
                           <p className="text-sm text-muted-foreground pl-6 leading-relaxed">{medication.instructions}</p>
@@ -832,7 +841,7 @@ export function MedicationsPage() {
                         <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                           {watch("scheduled_times")?.map((time, index) => (
                             <div key={index} className="flex items-center gap-2 p-3 border rounded-lg">
-                              <Clock className="h-4 w-4 text-muted-foreground" />
+                              <Clock className="h-4 w-4 text-gray-600 dark:text-gray-300" />
                               <Input
                                 type="time"
                                 value={time}
@@ -882,7 +891,7 @@ export function MedicationsPage() {
                 {/* Treatment Period Section */}
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 pb-1">
-                    <Calendar className="h-5 w-5 text-muted-foreground" />
+                    <Calendar className="h-5 w-5 text-gray-600 dark:text-gray-300" />
                     <h3 className="text-lg font-semibold">Treatment Period</h3>
                     <Separator className="flex-1 ml-4" />
                   </div>
@@ -891,13 +900,18 @@ export function MedicationsPage() {
                       <Label htmlFor="start_date" className="text-sm font-medium">
                         Start Date *
                       </Label>
-                      <Input
-                        id="start_date"
-                        type="date"
-                        {...register("start_date")}
-                        aria-invalid={errors.start_date ? "true" : "false"}
-                        className="h-11"
-                      />
+                      <div className="relative">
+                        <Input
+                          id="start_date"
+                          type="date"
+                          {...register("start_date")}
+                          aria-invalid={errors.start_date ? "true" : "false"}
+                          className="h-11 pl-10"
+                        />
+                        <div className="absolute left-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                          <Calendar className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+                        </div>
+                      </div>
                       {errors.start_date && (
                         <p className="text-sm text-destructive flex items-center gap-1">
                           <AlertTriangle className="h-3 w-3" />
@@ -909,7 +923,17 @@ export function MedicationsPage() {
                       <Label htmlFor="end_date" className="text-sm font-medium">
                         End Date (Optional)
                       </Label>
-                      <Input id="end_date" type="date" {...register("end_date")} className="h-11" />
+                      <div className="relative">
+                        <Input
+                          id="end_date"
+                          type="date"
+                          {...register("end_date")}
+                          className="h-11 pl-10"
+                        />
+                        <div className="absolute left-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                          <Calendar className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+                        </div>
+                      </div>
                       <p className="text-xs text-muted-foreground">Leave empty for ongoing treatment</p>
                     </div>
                   </div>
@@ -920,7 +944,7 @@ export function MedicationsPage() {
                 {/* Instructions & Notes Section */}
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 pb-1">
-                    <Info className="h-5 w-5 text-muted-foreground" />
+                    <Info className="h-5 w-5 text-gray-600 dark:text-gray-300" />
                     <h3 className="text-lg font-semibold">Instructions & Notes</h3>
                     <Separator className="flex-1 ml-4" />
                   </div>
@@ -947,7 +971,7 @@ export function MedicationsPage() {
                 {/* Refill Reminder Section */}
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 pb-1">
-                    <CheckCircle2 className="h-5 w-5 text-muted-foreground" />
+                    <CheckCircle2 className="h-5 w-5 text-gray-600 dark:text-gray-300" />
                     <h3 className="text-lg font-semibold">Refill Reminder</h3>
                     <Separator className="flex-1 ml-4" />
                   </div>

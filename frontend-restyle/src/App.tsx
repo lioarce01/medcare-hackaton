@@ -2,9 +2,11 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/sonner';
 import { AuthProvider } from '@/contexts/auth-context';
-import { ThemeProvider } from '@/contexts/theme-context';
+import { ThemeProvider, useTheme } from '@/contexts/theme-context';
 import { ProtectedRoute } from '@/components/auth/protected-route';
 import { useRealtimeSubscriptions } from '@/hooks/useRealtime';
+import { useAuth } from '@/contexts/auth-context';
+import { Navigate } from 'react-router-dom';
 
 // Pages
 import { LandingPage } from '@/pages/landing';
@@ -41,8 +43,48 @@ function RealtimeProvider({ children }: { children: React.ReactNode }) {
 
 // Component to handle auth redirects for public routes
 function PublicRoute({ children }: { children: React.ReactNode }) {
-  // Este componente podría redirigir usuarios autenticados lejos de login/register
+  const { isAuthenticated, isLoading, isInitializing } = useAuth();
+
+  // Show loading while checking authentication
+  if (isLoading || isInitializing) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+        <span className="ml-2">Loading...</span>
+      </div>
+    );
+  }
+
+  // If user is authenticated, redirect to dashboard
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  // If not authenticated, show the public page
   return <>{children}</>;
+}
+
+function FloatingBoltIcon() {
+  const { theme } = useTheme();
+  const isDark = (theme === 'dark') || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  const iconSrc = isDark ? '/white_circle_360x360.webp' : '/black_circle_360x360.webp';
+
+  return (
+    <div className="fixed bottom-4 right-4 z-50">
+      <a
+        href="https://bolt.new"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="block"
+      >
+        <img
+          src={iconSrc}
+          alt="Bolt.new"
+          className="w-16 h-16 rounded-full shadow-lg hover:shadow-xl transition-shadow duration-200"
+        />
+      </a>
+    </div>
+  );
 }
 
 function App() {
@@ -52,9 +94,14 @@ function App() {
         <ThemeProvider>
           <AuthProvider>
             <RealtimeProvider>
+              <FloatingBoltIcon />
               <Routes>
                 {/* Public Routes */}
-                <Route path="/" element={<LandingPage />} />
+                <Route path="/" element={
+                  <PublicRoute>
+                    <LandingPage />
+                  </PublicRoute>
+                } />
                 <Route path="/login" element={
                   <PublicRoute>
                     <LoginPage />

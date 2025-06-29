@@ -21,6 +21,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const [isInitializing, setIsInitializing] = useState(true);
   const [authError, setAuthError] = useState<string | null>(null);
+  const [isSigningIn, setIsSigningIn] = useState(false);
+  const [isSigningUp, setIsSigningUp] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
 
   const signInMutation = useSignIn();
   const signUpMutation = useSignUp();
@@ -35,9 +38,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Función para manejar errores de autenticación
   const handleAuthError = useCallback((error: any) => {
-    console.error('Auth error:', error);
     setAuthError(error?.message || 'Error de autenticación');
-    
+
     // Limpiar error después de 5 segundos
     setTimeout(() => setAuthError(null), 5000);
   }, []);
@@ -55,61 +57,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setIsInitializing(false);
     }
   }, [authLoading, session]);
-  useEffect(() => {
-    let mounted = true;
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event: AuthChangeEvent, session: Session | null) => {
-      if (!mounted) return;
-
-      console.log("Auth state changed:", event, session?.user?.id || 'no user');
-      
-      try {
-        switch (event) {
-          case 'INITIAL_SESSION':
-            setIsInitializing(false);
-            if (session) {
-              invalidateAuthQueries();
-            }
-            break;
-            
-          case 'SIGNED_IN':
-            setAuthError(null);
-            invalidateAuthQueries();
-            console.log('User signed in:', session?.user?.email);
-            break;
-            
-          case 'SIGNED_OUT':
-            setAuthError(null);
-            // Limpiar todas las queries relacionadas con el usuario
-            queryClient.clear();
-            console.log('User signed out');
-            break;
-            
-          case 'TOKEN_REFRESHED':
-            invalidateAuthQueries();
-            console.log('Token refreshed for user:', session?.user?.email);
-            break;
-            
-          case 'USER_UPDATED':
-            invalidateAuthQueries();
-            console.log('User updated:', session?.user?.email);
-            break;
-            
-          default:
-            console.log('Unhandled auth event:', event);
-        }
-      } catch (error) {
-        handleAuthError(error);
-      }
-    });
-
-    return () => {
-      mounted = false;
-      subscription.unsubscribe();
-    };
-  }, [invalidateAuthQueries, handleAuthError]);
 
   // Helper: Retry fetching user profile/settings with backoff
   async function waitForUserProfile(userId: string, maxAttempts = 6, delayMs = 500): Promise<void> {
@@ -129,50 +76,65 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   // Funciones de autenticación con manejo de errores mejorado
-  const login = async (email: string, password: string, redirectTo: string = '/dashboard') => {
+  const login = async (email: string, password: string, redirectTo?: string) => {
+    setIsSigningIn(true);
+    setAuthError(null);
+
     try {
-      setAuthError(null);
-      const result = await signInMutation.mutateAsync({ email, password });
-      // Esperar a que el perfil/settings estén disponibles
-      if (result?.user?.id) {
-        await waitForUserProfile(result.user.id);
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        setAuthError(error.message);
+      } else if (redirectTo) {
+        window.location.href = redirectTo;
       }
-      // Redirección después de login exitoso
-      navigate(redirectTo);
-      return result;
     } catch (error) {
-      handleAuthError(error);
-      throw error;
+      setAuthError('An unexpected error occurred');
+    } finally {
+      setIsSigningIn(false);
     }
   };
 
-  const register = async (name: string, email: string, password: string, redirectTo: string = '/login') => {
+  const register = async (name: string, email: string, password: string, redirectTo?: string) => {
+    setIsSigningUp(true);
+    setAuthError(null);
+
     try {
-      setAuthError(null);
-      const result = await signUpMutation.mutateAsync({ name, email, password });
-      // Esperar a que el perfil/settings estén disponibles
-      if (result?.user?.id) {
-        await waitForUserProfile(result.user.id);
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { name },
+        },
+      });
+
+      if (error) {
+        setAuthError(error.message);
+      } else if (redirectTo) {
+        window.location.href = redirectTo;
       }
-      // Redirección después de registro exitoso
-      navigate(redirectTo);
-      return result;
     } catch (error) {
-      handleAuthError(error);
-      throw error;
+      setAuthError('An unexpected error occurred');
+    } finally {
+      setIsSigningUp(false);
     }
   };
 
-  const logout = async (redirectTo: string = '/login') => {
+  const logout = async (redirectTo?: string) => {
+    setIsSigningOut(true);
+
     try {
-      setAuthError(null);
-      await signOutMutation.mutateAsync();
-      
-      // Redirección después de logout exitoso
-      navigate(redirectTo);
+      await supabase.auth.signOut();
+      if (redirectTo) {
+        window.location.href = redirectTo;
+      }
     } catch (error) {
-      handleAuthError(error);
-      throw error;
+      // Error handling is done in the component
+    } finally {
+      setIsSigningOut(false);
     }
   };
 
@@ -182,23 +144,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   // Función para reautenticar (útil cuando el token expira)
-  const refreshSession = useCallback(async () => {
+  const refreshSession = async () => {
     try {
       const { data, error } = await supabase.auth.refreshSession();
-      if (error) throw error;
-      return data;
+      if (error) {
+        // Error handling is done in the component
+      }
+      return { data, error };
     } catch (error) {
-      handleAuthError(error);
-      throw error;
+      return { data: null, error };
     }
-  }, [handleAuthError]);
+  };
 
   const isLoading =
     authLoading ||
     isInitializing ||
     signInMutation.isPending ||
     signUpMutation.isPending ||
-    signOutMutation.isPending;
+    signOutMutation.isPending ||
+    isSigningIn ||
+    isSigningUp ||
+    isSigningOut;
 
   const contextValue: AuthContextType = {
     user: currentUser || null,
@@ -214,9 +180,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     clearError,
     refreshSession,
     // Estados de las mutaciones para UI feedback
-    isSigningIn: signInMutation.isPending,
-    isSigningUp: signUpMutation.isPending,
-    isSigningOut: signOutMutation.isPending,
+    isSigningIn: signInMutation.isPending || isSigningIn,
+    isSigningUp: signUpMutation.isPending || isSigningUp,
+    isSigningOut: signOutMutation.isPending || isSigningOut,
   };
 
   return (

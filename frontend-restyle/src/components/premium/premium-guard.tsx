@@ -38,7 +38,7 @@ export function LimitGuard({
     <Card className="border-2 border-dashed border-muted-foreground/25">
       <CardContent className="pt-6 text-center space-y-4">
         <div className="flex items-center justify-center">
-          <Lock className="h-8 w-8 text-muted-foreground" />
+          <Lock className="h-8 w-8 text-gray-600 dark:text-gray-300" />
         </div>
         <div>
           <h3 className="font-semibold mb-2">Limit Reached</h3>

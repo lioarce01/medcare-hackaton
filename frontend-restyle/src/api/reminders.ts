@@ -1,5 +1,5 @@
 import apiClient from "../config/api";
-import { Reminder, UserSettings } from "../types";
+import { CreateReminderData, UpdateReminderSettingsData } from "../types";
 
 export interface CreateReminderDto {
   medication_id: string;
@@ -8,10 +8,12 @@ export interface CreateReminderDto {
     email: {
       enabled: boolean;
       sent: boolean;
+      sentAt?: string;
     };
     sms: {
       enabled: boolean;
       sent: boolean;
+      sentAt?: string;
     };
   };
   message?: string;
@@ -31,41 +33,49 @@ export interface UpdateReminderSettingsDto {
 }
 
 // Get all reminders
-export const getReminders = async (): Promise<Reminder[]> => {
-  const response = await apiClient.get("/reminders");
+export const getAllReminders = async (page = 1, limit = 10, startDate?: string, endDate?: string) => {
+  const params = new URLSearchParams();
+  params.append('page', page.toString());
+  params.append('limit', limit.toString());
+  if (startDate) params.append('startDate', startDate);
+  if (endDate) params.append('endDate', endDate);
+
+  const response = await apiClient.get(`/reminders?${params.toString()}`);
   return response.data;
 };
 
-// Get upcoming reminders (premium feature)
-export const getUpcomingReminders = async (): Promise<Reminder[]> => {
-  const response = await apiClient.get("/reminders/upcoming");
+// Get upcoming reminders
+export const getUpcomingReminders = async (limit = 10) => {
+  const response = await apiClient.get(`/reminders/upcoming?limit=${limit}`);
   return response.data;
 };
 
-// Create reminder (premium feature)
-export const createReminder = async (reminder: CreateReminderDto): Promise<Reminder> => {
-  const response = await apiClient.post("/reminders", reminder);
+// Create reminder
+export const createReminder = async (reminderData: CreateReminderData) => {
+  const response = await apiClient.post('/reminders', reminderData);
   return response.data;
 };
 
-// Send reminder manually (premium feature)
-export const sendReminderManually = async (id: string): Promise<void> => {
-  await apiClient.post(`/reminders/${id}/send`);
+// Send reminder manually
+export const sendReminderManually = async (id: string) => {
+  const response = await apiClient.post(`/reminders/${id}/send`);
+  return response.data;
 };
 
 // Delete reminder
-export const deleteReminder = async (id: string): Promise<void> => {
-  await apiClient.delete(`/reminders/${id}`);
-};
-
-// Update reminder settings
-export const updateReminderSettings = async (settings: UpdateReminderSettingsDto): Promise<UserSettings> => {
-  const response = await apiClient.put("/reminders/settings", settings);
+export const deleteReminder = async (id: string) => {
+  const response = await apiClient.delete(`/reminders/${id}`);
   return response.data;
 };
 
-// Get user settings
-export const getUserSettings = async (): Promise<UserSettings> => {
-  const response = await apiClient.get("/reminders/settings");
+// Get reminder settings
+export const getReminderSettings = async () => {
+  const response = await apiClient.get('/reminders/settings');
+  return response.data;
+};
+
+// Update reminder settings
+export const updateReminderSettings = async (settings: UpdateReminderSettingsData) => {
+  const response = await apiClient.put('/reminders/settings', settings);
   return response.data;
 };

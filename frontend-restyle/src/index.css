@@ -22,6 +22,7 @@ a {
   color: #646cff;
   text-decoration: inherit;
 }
+
 a:hover {
   color: #535bf2;
 }
@@ -32,6 +33,20 @@ body {
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
+  overflow-x: hidden;
+  /* Prevent horizontal scroll on mobile */
+}
+
+/* Mobile-specific improvements */
+@media (max-width: 768px) {
+  body {
+    overflow-x: hidden;
+  }
+
+  /* Ensure dropdowns don't cause horizontal overflow */
+  [data-radix-popper-content-wrapper] {
+    max-width: calc(100vw - 2rem) !important;
+  }
 }
 
 h1 {
@@ -50,9 +65,11 @@ button {
   cursor: pointer;
   transition: border-color 0.25s;
 }
+
 button:hover {
   border-color: #646cff;
 }
+
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
@@ -63,9 +80,11 @@ button:focus-visible {
     color: #213547;
     background-color: #ffffff;
   }
+
   a:hover {
     color: #747bff;
   }
+
   button {
     background-color: #f9f9f9;
   }
@@ -113,6 +132,7 @@ button:focus-visible {
     --purple-text: 270 91% 65%;
     --purple-border: 270 95% 88%;
   }
+
   .dark {
     --background: 0 0% 3.9%;
     --foreground: 0 0% 98%;
@@ -159,6 +179,7 @@ button:focus-visible {
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }
@@ -191,34 +212,42 @@ button:focus-visible {
 }
 
 @layer components {
+
   /* Botones estándar - Light Mode: fondo oscuro + texto claro */
   button:not([role="combobox"]):not([role="tab"]):not([data-state]):not(.tab-trigger) {
-    background-color: hsl(0, 0%, 3.9%) !important; /* Mismo bg que dark mode */
+    background-color: hsl(0, 0%, 3.9%) !important;
+    /* Mismo bg que dark mode */
     color: white !important;
     border: 1px solid hsl(0, 0%, 3.9%) !important;
   }
 
   button:not([role="combobox"]):not([role="tab"]):not([data-state]):not(.tab-trigger):hover {
-    background-color: hsl(0, 0%, 14.9%) !important; /* Ligeramente más claro para hover */
+    background-color: hsl(0, 0%, 14.9%) !important;
+    /* Ligeramente más claro para hover */
     border-color: hsl(0, 0%, 14.9%) !important;
   }
 
   /* Botones estándar - Dark Mode: fondo oscuro + texto claro + borde claro */
   .dark button:not([role="combobox"]):not([role="tab"]):not([data-state]):not(.tab-trigger) {
-    background-color: hsl(0, 0%, 3.9%) !important; /* Mismo bg que dark mode */
+    background-color: hsl(0, 0%, 3.9%) !important;
+    /* Mismo bg que dark mode */
     color: white !important;
-    border: 1px solid rgb(156, 163, 175) !important; /* gray-400 */
+    border: 1px solid rgb(156, 163, 175) !important;
+    /* gray-400 */
   }
 
   .dark button:not([role="combobox"]):not([role="tab"]):not([data-state]):not(.tab-trigger):hover {
-    background-color: hsl(0, 0%, 14.9%) !important; /* Ligeramente más claro para hover */
-    border-color: rgb(209, 213, 219) !important; /* gray-300 */
+    background-color: hsl(0, 0%, 14.9%) !important;
+    /* Ligeramente más claro para hover */
+    border-color: rgb(209, 213, 219) !important;
+    /* gray-300 */
   }
 
   /* Botones destructivos */
   button[class*="destructive"]:not([role="tab"]),
   button[class*="bg-red"]:not([role="tab"]) {
-    background-color: rgb(220, 38, 38) !important; /* red-600 */
+    background-color: rgb(220, 38, 38) !important;
+    /* red-600 */
     color: white !important;
     border: 1px solid rgb(220, 38, 38) !important;
   }
@@ -227,7 +256,8 @@ button:focus-visible {
   .dark button[class*="bg-red"]:not([role="tab"]) {
     background-color: rgb(220, 38, 38) !important;
     color: white !important;
-    border: 1px solid rgb(248, 113, 113) !important; /* red-400 */
+    border: 1px solid rgb(248, 113, 113) !important;
+    /* red-400 */
   }
 
   /* Botones de colores específicos */
@@ -251,16 +281,20 @@ button:focus-visible {
 
   /* Botones disabled */
   button:disabled:not([role="tab"]) {
-    background-color: rgb(156, 163, 175) !important; /* gray-400 */
+    background-color: rgb(156, 163, 175) !important;
+    /* gray-400 */
     color: rgb(255, 255, 255) !important;
     border-color: rgb(156, 163, 175) !important;
     opacity: 0.6 !important;
   }
 
   .dark button:disabled:not([role="tab"]) {
-    background-color: rgb(75, 85, 99) !important; /* gray-600 */
-    color: rgb(209, 213, 219) !important; /* gray-300 */
-    border-color: rgb(107, 114, 128) !important; /* gray-500 */
+    background-color: rgb(75, 85, 99) !important;
+    /* gray-600 */
+    color: rgb(209, 213, 219) !important;
+    /* gray-300 */
+    border-color: rgb(107, 114, 128) !important;
+    /* gray-500 */
   }
 
   /* Asegurar que el language selector tenga texto apropiado */
@@ -287,7 +321,8 @@ button:focus-visible {
   .bg-red-100,
   .bg-purple-100,
   .bg-orange-100 {
-    color: rgb(17, 24, 39) !important; /* gray-900 */
+    color: rgb(17, 24, 39) !important;
+    /* gray-900 */
   }
 
   /* En dark mode, mantener texto claro para badges con fondos claros */

@@ -11,7 +11,6 @@ import {
   BellRing,
   Calendar,
   CheckCircle,
-  Clock,
   CreditCard,
   Crown,
   FileDown,
@@ -20,7 +19,6 @@ import {
   Shield,
   Sparkles,
   Star,
-  Users,
   Wallet,
   Zap,
 } from "lucide-react"
@@ -87,28 +85,23 @@ export const SubscriptionManager: React.FC = () => {
       : SUBSCRIPTION_CONFIG.prices.stripe
 
   const handleUpgrade = async () => {
-    try {
-      console.log("Creating checkout with:", {
-        priceId,
-        paymentProvider: selectedPaymentMethod,
-        currency: currentCurrency,
-        email: user?.email,
-      })
-      const response = await createCheckoutSession.mutateAsync({
-        priceId: String(priceId),
-        paymentProvider: selectedPaymentMethod,
-        currency: currentCurrency,
-        email: user?.email,
-      })
+    if (!user) return;
 
-      const redirectUrl = response.url || response.initPoint
-      if (redirectUrl) {
-        window.location.href = redirectUrl
+    try {
+      const checkoutData = {
+        priceId: priceId,
+        userId: user.id,
+        successUrl: `${window.location.origin}/dashboard?success=true`,
+        cancelUrl: `${window.location.origin}/dashboard?canceled=true`,
+      };
+
+      const response = await createCheckoutSession(checkoutData);
+
+      if (response.url) {
+        window.location.href = response.url;
       }
     } catch (error) {
-      console.error("Payment error:", error)
-      const errorMessage = error instanceof Error ? error.message : "Failed to process payment"
-      toast.error(errorMessage)
+      // Error handling is done in the component
     }
   }
 

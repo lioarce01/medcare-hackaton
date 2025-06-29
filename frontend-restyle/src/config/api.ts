@@ -1,8 +1,8 @@
 import axios from "axios";
 import { supabase } from "./supabase";
 
-// Get API base URL from environment or default to relative path
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
+// Get API base URL from environment or default to backend-nest
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
 
 const apiClient = axios.create({
   baseURL: `${API_BASE_URL}/api`,
@@ -14,9 +14,8 @@ const apiClient = axios.create({
 
 // Request interceptor to add auth token
 apiClient.interceptors.request.use(async (config) => {
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  // Get token from Supabase session
+  const { data: { session } } = await supabase.auth.getSession();
 
   if (session?.access_token) {
     config.headers.Authorization = `Bearer ${session.access_token}`;

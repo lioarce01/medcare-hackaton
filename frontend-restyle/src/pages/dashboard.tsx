@@ -6,18 +6,16 @@ import { DashboardSkeleton } from '@/components/ui/loading-skeleton';
 import {
   Calendar,
   Clock,
-  TrendingUp,
   CheckCircle2,
   XCircle,
   Pill,
   Activity,
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { useTodaySchedule, useDashboardStats, useDashboardAlerts, useDashboardActions } from '@/hooks/useDashboard';
+import { useTodaySchedule, useDashboardStats, useDashboardActions } from '@/hooks/useDashboard';
 import { useAuth } from '@/hooks/useAuth';
 import { DateTime } from 'luxon';
 import { useRealtimeMedications, useRealtimeAdherence, useRealtimeReminders } from '@/hooks/useRealtime';
-import { useState } from 'react';
 
 export function DashboardPage() {
   const { user } = useAuth();
@@ -27,13 +25,9 @@ export function DashboardPage() {
   useRealtimeAdherence();
   useRealtimeReminders();
 
-  const [page, setPage] = useState(1);
-  const limit = 10
-
   // Fetch real data using custom hooks
-  const { data: todaySchedule, meta, isLoading: scheduleLoading } = useTodaySchedule(page, limit);
+  const { data: todaySchedule, isLoading: scheduleLoading } = useTodaySchedule();
   const { data: stats, isLoading: statsLoading } = useDashboardStats();
-  const { data: alerts, isLoading: alertsLoading } = useDashboardAlerts();
   const { handleMedicationAction, isLoading: actionLoading } = useDashboardActions();
 
   // Hora local del usuario
@@ -42,7 +36,7 @@ export function DashboardPage() {
   const localTimeStr = nowLocal.toFormat('HH:mm');
   const localTzStr = nowLocal.offsetNameShort;
 
-  const isLoading = scheduleLoading || statsLoading || alertsLoading;
+  const isLoading = scheduleLoading || statsLoading;
 
   if (isLoading) {
     return <DashboardSkeleton />;
@@ -81,7 +75,7 @@ export function DashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Today's Progress</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <Calendar className="h-4 w-4 text-gray-600 dark:text-gray-300" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.today.completed}/{stats.today.total}</div>
@@ -95,7 +89,6 @@ export function DashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Weekly Adherence</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{(stats.week.adherenceRate).toFixed()}%</div>
@@ -108,7 +101,7 @@ export function DashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Active Medications</CardTitle>
-            <Pill className="h-4 w-4 text-muted-foreground" />
+            <Pill className="h-4 w-4 text-gray-600 dark:text-gray-300" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.activeMedications}</div>
@@ -121,7 +114,7 @@ export function DashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Overall Performance</CardTitle>{' '}
-            <Activity className="h-4 w-4 text-muted-foreground" />
+            <Activity className="h-4 w-4 text-gray-600 dark:text-gray-300" />
           </CardHeader>
           <CardContent>
             <div className={`text-2xl font-bold text-${stats.ranking.color}`}>{stats.ranking.grade}</div>
@@ -213,13 +206,6 @@ export function DashboardPage() {
                 </div>
               </div>
             ))}
-            {/* <Pagination
-              page={meta.page}
-              limit={meta.limit}
-              total={meta.total}
-              onPageChange={setPage}
-              className='mt-4'
-            /> */}
           </CardContent>
         </Card>
 

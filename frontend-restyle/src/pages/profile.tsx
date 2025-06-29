@@ -21,11 +21,11 @@ import {
   Save,
   X,
   AlertTriangle,
-
+  Calendar,
   Loader2,
   RefreshCw,
 } from 'lucide-react';
-import { User as UserType, UserSettings } from '@/types';
+import { UserSettings } from '@/types';
 import { SubscriptionStatus } from '@/components/premium/subscription-status';
 import {
   useUserProfile,
@@ -87,23 +87,19 @@ export function ProfilePage() {
 
     if (userProfile?.id && newTimezone !== userProfile?.settings?.timezone) {
       try {
-        await handleUpdateGeneralSettings({ timezone: newTimezone });
+        await handleUpdateSettings({ timezone: newTimezone });
         toast.success('Timezone updated successfully');
       } catch (error) {
-        console.error('Failed to update timezone:', error);
         toast.error('Failed to update timezone');
       }
     }
   };
-
 
   // API hooks
   const { data: userProfile, isLoading: isLoadingProfile, error: profileError } = useUserProfile();
   const updateProfileMutation = useUpdateUserProfile();
   const updateSettingsMutation = useUpdateUserSettings();
   const deleteUserMutation = useDeleteUser();
-
-  console.log("user profile:", userProfile)
 
   // Initialize form data when user profile loads
   useEffect(() => {
@@ -139,7 +135,6 @@ export function ProfilePage() {
       setIsEditing(false);
     } catch (error) {
       // Error handling is done in the mutation
-      console.error('Failed to save profile:', error);
     }
   };
 
@@ -170,35 +165,59 @@ export function ProfilePage() {
     }
 
     try {
-      await updateSettingsMutation.mutateAsync({
-        userId: userProfile.id,
-        settings: {
-          notification_preferences: {
-            ...userProfile.settings?.notification_preferences,
-            ...newSettings
-          }
-        }
-      });
+      // Ensure we have default notification preferences if they don't exist
+      const currentPreferences = userProfile.settings?.notification_preferences &&
+        Object.keys(userProfile.settings.notification_preferences).length > 0
+        ? userProfile.settings.notification_preferences
+        : {
+          email: true,
+          sms: false,
+          push: false,
+          reminder_before: 15,
+        };
+
+      const mergedPreferences: NotificationPreferences = {
+        ...currentPreferences,
+        ...newSettings
+      };
+
+      // Ensure we're not sending an empty object
+      if (Object.keys(mergedPreferences).length === 0) {
+        toast.error("Invalid notification preferences");
+        return;
+      }
+
+      // Ensure all required properties are present
+      const requiredProperties: (keyof NotificationPreferences)[] = ['email', 'sms', 'push', 'reminder_before'];
+      const missingProperties = requiredProperties.filter(
+        (prop) => mergedPreferences[prop] === undefined
+      );
+
+      if (missingProperties.length > 0) {
+        toast.error("Invalid notification preferences");
+        return;
+      }
+
+      const settingsToSend = {
+        notification_preferences: mergedPreferences
+      };
+
+      await updateSettingsMutation.mutateAsync(settingsToSend);
     } catch (error) {
       // Error handling is done in the mutation
-      console.error('Failed to update notification settings:', error);
     }
   };
 
-  const handleUpdateGeneralSettings = async (newSettings: Partial<UserSettings>) => {
+  const handleUpdateSettings = async (newSettings: Partial<UserSettings>) => {
     if (!userProfile?.id) {
       toast.error('User ID not found');
       return;
     }
 
     try {
-      await updateSettingsMutation.mutateAsync({
-        userId: userProfile.id,
-        settings: newSettings
-      });
+      await updateSettingsMutation.mutateAsync(newSettings);
     } catch (error) {
       // Error handling is done in the mutation
-      console.error('Failed to update settings:', error);
     }
   };
 
@@ -219,7 +238,6 @@ export function ProfilePage() {
         window.location.href = '/';
       } catch (error) {
         // Error handling is done in the mutation
-        console.error('Failed to delete account:', error);
       }
     }
   };
@@ -237,28 +255,12 @@ export function ProfilePage() {
     return <LoadingSkeleton />;
   }
 
-  // Handle error state
-  if (profileError) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <h2 className="text-lg font-semibold mb-2">Failed to load profile</h2>
-          <p className="text-muted-foreground mb-4">Please try refreshing the page</p>
-          <Button onClick={() => window.location.reload()}>
-            Refresh Page
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
   // Safe access to notification preferences
   const notificationPreferences: NotificationPreferences = {
-    email: userProfile?.settings?.notification_preferences?.email || false,
-    sms: userProfile?.settings?.notification_preferences?.sms || false,
-    push: userProfile?.settings?.notification_preferences?.push || false,
-    reminder_before: userProfile?.settings?.notification_preferences?.reminder_before || 0,
+    email: userProfile?.settings?.notification_preferences?.email ?? true,
+    sms: userProfile?.settings?.notification_preferences?.sms ?? false,
+    push: userProfile?.settings?.notification_preferences?.push ?? false,
+    reminder_before: userProfile?.settings?.notification_preferences?.reminder_before ?? 15,
   };
 
   return (
@@ -284,9 +286,8 @@ export function ProfilePage() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="profile">Edit Profile</TabsTrigger>
-          <TabsTrigger value="settings">Reminder Settings</TabsTrigger>
           <TabsTrigger value="subscription">Subscription</TabsTrigger>
           <TabsTrigger value="privacy">Privacy</TabsTrigger>
         </TabsList>
@@ -372,13 +373,19 @@ export function ProfilePage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="dob">Date of Birth</Label>
-                  <Input
-                    id="dob"
-                    type="date"
-                    value={editedProfile.date_of_birth ? editedProfile.date_of_birth.split('T')[0] : ''}
-                    onChange={(e) => setEditedProfile(prev => ({ ...prev, date_of_birth: e.target.value }))}
-                    disabled={!isEditing}
-                  />
+                  <div className="relative">
+                    <Input
+                      id="dob"
+                      type="date"
+                      value={editedProfile.date_of_birth ? editedProfile.date_of_birth.split('T')[0] : ''}
+                      onChange={(e) => setEditedProfile(prev => ({ ...prev, date_of_birth: e.target.value }))}
+                      disabled={!isEditing}
+                      className="pl-10"
+                    />
+                    <div className="absolute left-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                      <Calendar className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+                    </div>
+                  </div>
                 </div>
 
                 <div className="space-y-2">
@@ -455,7 +462,7 @@ export function ProfilePage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="emergency-phone">Phone</Label>
+                    <Label htmlFor="emergency-phone">Phone Number</Label>
                     <Input
                       id="emergency-phone"
                       value={editedProfile.emergency_contact.phone_number}
@@ -485,134 +492,6 @@ export function ProfilePage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="settings" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Bell className="h-5 w-5" />
-                Notification Preferences
-              </CardTitle>
-              <CardDescription>
-                Configure how and when you receive medication reminders
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Notification Channels */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Notification Channels</h3>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <Mail className="h-5 w-5 text-blue-600" />
-                      <div>
-                        <p className="font-medium">Email Notifications</p>
-                        <p className="text-sm text-muted-foreground">
-                          Receive reminders via email
-                        </p>
-                      </div>
-                    </div>
-                    <Switch
-                      checked={notificationPreferences.email}
-                      onCheckedChange={(checked) => handleUpdateNotificationSettings({ email: checked })}
-                      disabled={updateSettingsMutation.isPending}
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <Phone className="h-5 w-5 text-green-600" />
-                      <div>
-                        <p className="font-medium">SMS Notifications</p>
-                        <p className="text-sm text-muted-foreground">
-                          Receive reminders via text message
-                        </p>
-                      </div>
-                    </div>
-                    <Switch
-                      checked={notificationPreferences.sms}
-                      onCheckedChange={(checked) => handleUpdateNotificationSettings({ sms: checked })}
-                      disabled={updateSettingsMutation.isPending}
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <Bell className="h-5 w-5 text-purple-600" />
-                      <div>
-                        <p className="font-medium">Push Notifications</p>
-                        <p className="text-sm text-muted-foreground">
-                          Receive browser push notifications
-                        </p>
-                      </div>
-                    </div>
-                    <Switch
-                      checked={notificationPreferences.push}
-                      onCheckedChange={(checked) => handleUpdateNotificationSettings({ push: checked })}
-                      disabled={updateSettingsMutation.isPending}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Reminder Timing */}
-              <div className="space-y-4">
-                <div className="">
-                  <div className="space-y-2">
-                    <Label htmlFor="timezone">Timezone</Label>
-                    <div className="flex items-center gap-2">
-                      <Input
-                        id="timezone"
-                        value={detectedTimezone}
-                        disabled={true}
-                        className="flex-1"
-                      />
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={handleRefreshTimezone}
-                        disabled={updateSettingsMutation.isPending}
-                        className="flex items-center gap-1"
-                      >
-                        <RefreshCw className={`h-4 w-4 ${updateSettingsMutation.isPending ? 'animate-spin' : ''}`} />
-                        Refresh
-                      </Button>
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      Your timezone is automatically detected. Click refresh to update if you've changed locations.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Preferred Times */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Preferred Reminder Times</h3>
-                <p className="text-sm text-muted-foreground">
-                  Set your preferred times for medication reminders. These will be suggested when creating new medications.
-                </p>
-                <div className="grid gap-2 md:grid-cols-4">
-                  {(userProfile?.settings?.preferred_times || ['08:00', '12:00', '18:00', '22:00']).map((time, index) => (
-                    <div key={index} className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-muted-foreground" />
-                      <Input
-                        type="time"
-                        value={time}
-                        onChange={(e) => {
-                          const currentTimes = userProfile?.settings?.preferred_times || ['08:00', '12:00', '18:00', '22:00'];
-                          const newTimes = [...currentTimes];
-                          newTimes[index] = e.target.value;
-                          handleUpdateGeneralSettings({ preferred_times: newTimes });
-                        }}
-                        disabled={updateSettingsMutation.isPending}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
         <TabsContent value="subscription" className="space-y-6">
           <SubscriptionStatus />
         </TabsContent>
@@ -622,102 +501,44 @@ export function ProfilePage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Shield className="h-5 w-5" />
-                Privacy & Data
+                Data Export & Privacy
               </CardTitle>
               <CardDescription>
-                Manage your data privacy settings and export your information
+                Export your data or manage your privacy settings
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6 flex flex-col items-center">
-              {/* Data Export */}
-              <div className="space-y-4 w-full max-w-2xl">
-                <h3 className="text-lg font-semibold">Data Export</h3>
-                <div className="p-4 border rounded-lg bg-blue-50 dark:bg-blue-900/20">
-                  <div className="flex items-start gap-4">
-                    <Download className="h-6 w-6 mt-1 text-blue-600" />
-                    <div className="flex-1">
-                      <h4 className="font-medium">Export Your Data</h4>
-                      <p className="text-sm mb-4 text-muted-foreground">
-                        Download a comprehensive report of your medication data, adherence history,
-                        and account information in PDF format. This report will be generated and
-                        sent to your email within 30 days.
+            <CardContent className="space-y-6">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <Download className="h-5 w-5 text-blue-600" />
+                    <div>
+                      <p className="font-medium">Export Your Data</p>
+                      <p className="text-sm text-muted-foreground">
+                        Download all your data in PDF format
                       </p>
-                      <ExportUserDataCall />
                     </div>
                   </div>
+                  <ExportUserDataCall />
                 </div>
-              </div>
 
-              {/* Account Actions */}
-              <div className="space-y-4 w-full max-w-2xl">
-                <h3 className="text-lg font-semibold">Account Actions</h3>
-                <div className="space-y-4">
-                  <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 rounded-lg">
-                    <div className="flex items-start gap-3">
-                      <AlertTriangle className="h-5 w-5 mt-0.5 text-yellow-600" />
-                      <div>
-                        <h4 className="font-medium text-yellow-800 dark:text-yellow-200">
-                          Data Retention Policy
-                        </h4>
-                        <p className="text-sm mt-1 text-yellow-700 dark:text-yellow-300">
-                          Your medication data is stored securely and retained for as long as your account
-                          is active. You can request deletion of your data at any time by contacting support.
-                        </p>
-                      </div>
+                <div className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <AlertTriangle className="h-5 w-5 text-red-600" />
+                    <div>
+                      <p className="font-medium">Delete Account</p>
+                      <p className="text-sm text-muted-foreground">
+                        Permanently delete your account and all data
+                      </p>
                     </div>
                   </div>
-
-                  <div className="p-4 border border-red-200 rounded-lg bg-red-50 dark:bg-red-900/20">
-                    <div className="flex items-start gap-3">
-                      <AlertTriangle className="h-5 w-5 text-red-600 mt-0.5" />
-                      <div className="flex-1">
-                        <h4 className="font-medium text-red-800 dark:text-red-200">
-                          Delete Account
-                        </h4>
-                        <p className="text-sm text-red-700 dark:text-red-300 mt-1 mb-3">
-                          Permanently delete your account and all associated data. This action cannot be undone.
-                        </p>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={handleDeleteAccount}
-                          disabled={deleteUserMutation.isPending}
-                        >
-                          {deleteUserMutation.isPending ? (
-                            <>
-                              <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                              Deleting...
-                            </>
-                          ) : (
-                            'Delete Account'
-                          )}
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Contact Information */}
-              <div className="space-y-4 w-full max-w-2xl">
-                <h3 className="text-lg font-semibold">Privacy Contact</h3>
-                <div className="p-4 border rounded-lg bg-purple-50 dark:bg-purple-900/20">
-                  <p className="text-sm text-muted-foreground">
-                    If you have any questions about your privacy or data handling, please contact our
-                    privacy team at{' '}
-                    <a href="mailto:privacy@meditrack.com" className="font-medium hover:underline text-purple-600">
-                      privacy@meditrack.com
-                    </a>
-                    {' '}or review our{' '}
-                    <a href="#" className="font-medium hover:underline">
-                      Privacy Policy
-                    </a>
-                    {' '}and{' '}
-                    <a href="#" className="font-medium hover:underline">
-                      Terms of Service
-                    </a>
-                    .
-                  </p>
+                  <Button
+                    variant="outline"
+                    onClick={handleDeleteAccount}
+                    className="text-red-600 hover:text-red-700"
+                  >
+                    Delete Account
+                  </Button>
                 </div>
               </div>
             </CardContent>

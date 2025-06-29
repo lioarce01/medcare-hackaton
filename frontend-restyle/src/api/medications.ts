@@ -1,5 +1,5 @@
 import apiClient from "../config/api";
-import { Medication, PaginationResult } from "../types";
+import { Medication, PaginationResult, CreateMedicationData, UpdateMedicationData } from "../types";
 
 export interface CreateMedicationDto {
   user_id: string;
@@ -33,65 +33,36 @@ export interface CreateMedicationDto {
 }
 
 // Get all medications for the current user
-export const getMedications = async (
-  page?: number,
-  limit?: number,
-  searchTerm?: string,
-  filterType?: string
-): Promise<PaginationResult<Medication>> => {
-  try {
-    const params: Record<string, string | number> = {}
+export const getMedications = async (page = 1, limit = 10, searchTerm?: string, filterType?: string) => {
+  const params = new URLSearchParams();
+  params.append('page', page.toString());
+  params.append('limit', limit.toString());
+  if (searchTerm) params.append('searchTerm', searchTerm);
+  if (filterType) params.append('filterType', filterType);
 
-    // Always include page and limit with defaults if not provided
-    params.page = page || 1
-    params.limit = limit || 10
-
-    // Only add search and filter params if they have meaningful values
-    if (searchTerm && searchTerm.trim() !== '') {
-      params.searchTerm = searchTerm.trim()
-    }
-
-    if (filterType && filterType !== 'all' && filterType.trim() !== '') {
-      params.filterType = filterType.trim()
-    }
-
-    const response = await apiClient.get("/medications", { params });
-    console.log("Medications Response:", response.data)
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching medications:", error);
-    throw error; // Re-throw to let the calling component handle it
-  }
+  const response = await apiClient.get(`/medications?${params.toString()}`);
+  return response.data;
 };
 
 // Get active medications for the current user
-export const getActiveMedications = async (
-  page?: number,
-  limit?: number
-): Promise<PaginationResult<Medication>> => {
-  const params: any = {}
-  if (page) params.page = page
-  if (limit) params.limit = limit
-  const response = await apiClient.get("/medications/active", { params });
+export const getActiveMedications = async (page = 1, limit = 10) => {
+  const params = new URLSearchParams();
+  params.append('page', page.toString());
+  params.append('limit', limit.toString());
+
+  const response = await apiClient.get(`/medications/active?${params.toString()}`);
   return response.data;
 };
 
 // Get medication by ID
-export const getMedicationById = async (id: string): Promise<Medication> => {
+export const getMedicationById = async (id: string) => {
   const response = await apiClient.get(`/medications/${id}`);
   return response.data;
 };
 
-// Create new medication (with adherence records)
-export const createMedication = async (
-  medication: CreateMedicationDto
-): Promise<Medication> => {
-  const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  const payload = {
-    ...medication,
-    user_timezone: userTimezone,
-  };
-  const response = await apiClient.post("/medications", payload);
+// Create medication
+export const createMedication = async (medicationData: CreateMedicationData) => {
+  const response = await apiClient.post('/medications', medicationData);
   return response.data;
 };
 
@@ -104,15 +75,13 @@ export const createSimpleMedication = async (
 };
 
 // Update medication
-export const updateMedication = async (
-  id: string,
-  medication: Partial<CreateMedicationDto>
-): Promise<Medication> => {
-  const response = await apiClient.put(`/medications/${id}`, medication);
+export const updateMedication = async (id: string, medicationData: UpdateMedicationData) => {
+  const response = await apiClient.put(`/medications/${id}`, medicationData);
   return response.data;
 };
 
 // Delete medication
-export const deleteMedication = async (id: string): Promise<void> => {
-  await apiClient.delete(`/medications/${id}`);
+export const deleteMedication = async (id: string) => {
+  const response = await apiClient.delete(`/medications/${id}`);
+  return response.data;
 };

@@ -16,10 +16,8 @@ export const updateUserProfile = async (
 };
 
 // Update user settings
-export const updateUserSettings = async (
-  settings: Partial<UserSettings>
-): Promise<UserSettings> => {
-  const response = await apiClient.patch(`/users/me/settings`, settings);
+export const updateUserSettings = async (settings: Partial<UserSettings>): Promise<UserSettings> => {
+  const response = await apiClient.patch('/users/me/settings', settings);
   return response.data;
 };
 

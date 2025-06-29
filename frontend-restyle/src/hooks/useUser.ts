@@ -38,22 +38,22 @@ export const useUpdateUserProfile = () => {
 export const useUpdateUserSettings = () => {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: ({
-      settings,
-    }: {
-      userId: string;
-      settings: Partial<UserSettings>;
-    }) => updateUserSettings(settings),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["userSettings"] });
-      queryClient.invalidateQueries({ queryKey: ["userProfile"] });
-      toast.success("Settings updated successfully");
+  const updateUserSettingsMutation = useMutation({
+    mutationFn: updateUserSettings,
+    onSuccess: (data) => {
+      // Update the user profile in the cache
+      queryClient.setQueryData(['userProfile'], (oldData: any) => ({
+        ...oldData,
+        settings: data.settings
+      }));
+      queryClient.invalidateQueries({ queryKey: ['userProfile'] });
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || "Failed to update settings");
-    },
+    onError: (error) => {
+      // Error handling is done in the mutation
+    }
   });
+
+  return updateUserSettingsMutation;
 };
 
 // Delete user account
