@@ -43,13 +43,12 @@ export class ReminderController {
   async getAllReminders(
     @GetUserId() userId: string,
     @Query() pagination: PaginationDto,
-    @Query('startDate') startDate?: string,
-    @Query('endDate') endDate?: string,
   ) {
+    const { page = 1, limit = 10, startDate, endDate } = pagination;
     const result = await this.getAllRemindersUseCase.execute(
       userId,
-      pagination.page || 1,
-      pagination.limit || 10,
+      page,
+      limit,
       startDate,
       endDate,
     );

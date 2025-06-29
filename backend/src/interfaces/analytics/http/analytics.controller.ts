@@ -23,11 +23,9 @@ export class AnalyticsController {
   @UseGuards(JwtAuthGuard)
   async getRiskHistoryByUser(
     @GetUserId() userId: string,
-    @Query('startDate') startDate?: string,
-    @Query('endDate') endDate?: string,
     @Query() pagination?: PaginationDto,
   ) {
-    const { page = 1, limit = 10 } = pagination ?? {}
+    const { page = 1, limit = 10, startDate, endDate } = pagination ?? {}
 
     if (!startDate || !endDate) {
       throw new BadRequestException('startDate and endDate are required');
@@ -47,11 +45,9 @@ export class AnalyticsController {
   async getRiskHistoryByUserMedication(
     @GetUserId() userId: string,
     @Param('medicationId') medicationId: string,
-    @Query('startDate') startDate?: string,
-    @Query('endDate') endDate?: string,
     @Query() pagination?: PaginationDto
   ) {
-    const { page = 1, limit = 10 } = pagination ?? {}
+    const { page = 1, limit = 10, startDate, endDate } = pagination ?? {}
 
     // Backend-side UUID validation
     if (!isUuid(medicationId)) {

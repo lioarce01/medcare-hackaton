@@ -9,9 +9,10 @@ export const getUserProfile = async (): Promise<User> => {
 
 // Update user profile
 export const updateUserProfile = async (
-  userData: Partial<User>
+  userData: Partial<User> & { id: string }
 ): Promise<User> => {
-  const response = await apiClient.put(`/users/${userData.id}`, userData);
+  const { id, ...updateData } = userData;
+  const response = await apiClient.put(`/users/${id}`, updateData);
   return response.data;
 };
 
@@ -22,6 +23,6 @@ export const updateUserSettings = async (settings: Partial<UserSettings>): Promi
 };
 
 // Delete user account
-export const deleteUser = async (userId: string): Promise<void> => {
+export const deleteUser = async (userId: string) => {
   await apiClient.delete(`/users/${userId}`);
 };

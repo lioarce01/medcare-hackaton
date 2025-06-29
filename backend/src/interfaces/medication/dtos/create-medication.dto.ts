@@ -55,8 +55,9 @@ export class CreateMedicationDto {
   @IsString()
   name: string;
 
+  @IsOptional()
   @IsString()
-  user_id: string;
+  user_id?: string;
 
   @ValidateNested()
   @Type(() => DosageDto)

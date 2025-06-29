@@ -30,9 +30,8 @@ export class AdherenceController {
   async getHistory(
     @GetUserId() userId: string,
     @Query() query: GetAdherenceHistoryDto,
-    @Query() pagination?: PaginationDto,
   ) {
-    const { page = 1, limit = 10 } = pagination ?? {}
+    const { page = 1, limit = 10 } = query;
     const result = await this.getAdherenceHistoryUseCase.execute(
       userId,
       page,
@@ -90,13 +89,11 @@ export class AdherenceController {
   async getTimeline(
     @GetUserId() userId: string,
     @Query() query: GetAdherenceHistoryDto,
-    @Query() pagination?: PaginationDto,
   ) {
     if (!query.startDate || !query.endDate) {
       throw new Error('startDate and endDate are required');
     }
-    const { page = 1, limit = 10 } = pagination ?? {}
-    const timezone: string = (query as any).timezone || 'UTC';
+    const { page = 1, limit = 10, timezone = 'UTC' } = query;
     // Inclusive: start of first local day to start of day after last local day
     const startUtc = DateTime.fromISO(query.startDate, { zone: timezone }).startOf('day').toUTC().toISO() || '';
     const endUtc = DateTime.fromISO(query.endDate, { zone: timezone }).plus({ days: 1 }).startOf('day').toUTC().toISO() || '';

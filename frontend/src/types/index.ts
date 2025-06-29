@@ -86,13 +86,10 @@ export interface Medication {
   dosage: {
     amount: number;
     unit: string;
-    form: string;
   };
   frequency: {
-    type: "daily" | "weekly" | "as_needed";
-    interval: number;
-    times_per_day?: number;
-    specific_days?: string[];
+    times_per_day: number;
+    specific_days: string[];
   };
   scheduled_times: string[];
   instructions?: string;
@@ -264,13 +261,10 @@ export interface CreateMedicationData {
   dosage: {
     amount: number;
     unit: string;
-    form: string;
   };
   frequency: {
-    type: string;
-    interval: number;
-    times_per_day?: number;
-    specific_days?: string[];
+    times_per_day: number;
+    specific_days: string[];
   };
   scheduled_times: string[];
   instructions?: string;
@@ -279,25 +273,26 @@ export interface CreateMedicationData {
   refill_reminder?: {
     enabled: boolean;
     threshold: number;
+    days_before: number;
     last_refill?: string | null;
     next_refill?: string | null;
     supply_amount: number;
     supply_unit: string;
   } | null;
-  side_effects_to_watch: string[];
+  side_effects_to_watch?: string[];
   medication_type?: "prescription" | "otc" | "supplement";
+  active?: boolean;
+  image_url?: string;
+  user_timezone?: string;
 }
 
 export interface UpdateMedicationData {
   name?: string;
   dosage?: {
-    amount: number;
-    unit: string;
-    form: string;
+    amount?: number;
+    unit?: string;
   };
   frequency?: {
-    type: string;
-    interval: number;
     times_per_day?: number;
     specific_days?: string[];
   };
@@ -306,15 +301,18 @@ export interface UpdateMedicationData {
   start_date?: string;
   end_date?: string;
   refill_reminder?: {
-    enabled: boolean;
-    threshold: number;
+    enabled?: boolean;
+    threshold?: number;
+    days_before?: number;
     last_refill?: string | null;
     next_refill?: string | null;
-    supply_amount: number;
-    supply_unit: string;
+    supply_amount?: number;
+    supply_unit?: string;
   } | null;
   side_effects_to_watch?: string[];
   medication_type?: "prescription" | "otc" | "supplement";
+  active?: boolean;
+  image_url?: string;
 }
 
 export interface CreateReminderData {

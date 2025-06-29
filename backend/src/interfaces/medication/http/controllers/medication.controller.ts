@@ -42,10 +42,8 @@ export class MedicationController {
   async getAll(
     @GetUserId() userId: string,
     @Query() pagination?: PaginationDto,
-    @Query('searchTerm') searchTerm?: string,
-    @Query('filterType') filterType?: string,
   ) {
-    const { page = 1, limit = 10 } = pagination ?? {}
+    const { page = 1, limit = 10, searchTerm, filterType } = pagination ?? {}
     const result = await this.getMedicationsByUserUseCase.execute(
       userId,
       page,
@@ -95,6 +93,10 @@ export class MedicationController {
     @GetUserId() userId: string,
     @Body() medication: CreateMedicationDto,
   ) {
+    console.log('=== BACKEND: Received medication creation request ===');
+    console.log('userId:', userId);
+    console.log('medication data:', JSON.stringify(medication, null, 2));
+
     const created = await this.createMedicationWithAdherenceUseCase.execute({
       ...medication,
       user_id: userId,
