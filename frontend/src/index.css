@@ -1,3 +1,341 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  font-weight: 500;
+  color: #059669;
+  /* emerald-600 */
+  text-decoration: inherit;
+}
+
+a:hover {
+  color: #047857;
+  /* emerald-700 */
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+  overflow-x: hidden;
+  /* Prevent horizontal scroll on mobile */
+}
+
+/* Mobile-specific improvements */
+@media (max-width: 768px) {
+  body {
+    overflow-x: hidden;
+  }
+
+  /* Ensure dropdowns don't cause horizontal overflow */
+  [data-radix-popper-content-wrapper] {
+    max-width: calc(100vw - 2rem) !important;
+  }
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+
+button:hover {
+  border-color: #059669;
+  /* emerald-600 */
+}
+
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+
+  a:hover {
+    color: #047857;
+    /* emerald-700 */
+  }
+
+  button {
+    background-color: #f9f9f9;
+  }
+}
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 3.9%;
+    --primary: 0 0% 9%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 220 14.3% 95.9%;
+    --secondary-foreground: 220.9 39.3% 11%;
+    --muted: 220 14.3% 95.9%;
+    --muted-foreground: 220 8.9% 46.1%;
+    --accent: 220 14.3% 95.9%;
+    --accent-foreground: 220.9 39.3% 11%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 220.9 39.3% 11%;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+    --radius: 0.5rem;
+
+    /* Friendly colors for light mode */
+    --success-bg: 142 76% 96%;
+    --success-text: 142 71% 45%;
+    --success-border: 142 76% 88%;
+    --warning-bg: 48 96% 95%;
+    --warning-text: 32 95% 44%;
+    --warning-border: 48 96% 85%;
+    --info-bg: 214 95% 96%;
+    --info-text: 214 84% 56%;
+    --info-border: 214 95% 88%;
+    --emerald-bg: 142 76% 96%;
+    --emerald-text: 142 71% 45%;
+    --emerald-border: 142 76% 88%;
+  }
+
+  .dark {
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 9%;
+    --secondary: 0 0% 14.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+    --accent: 0 0% 14.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 0 0% 83.1%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+
+    /* Friendly colors for dark mode */
+    --success-bg: 142 71% 8%;
+    --success-text: 142 76% 80%;
+    --success-border: 142 71% 15%;
+    --warning-bg: 32 95% 8%;
+    --warning-text: 48 96% 80%;
+    --warning-border: 32 95% 15%;
+    --info-bg: 214 84% 8%;
+    --info-text: 214 95% 80%;
+    --info-border: 214 84% 15%;
+    --emerald-bg: 142 71% 8%;
+    --emerald-text: 142 76% 80%;
+    --emerald-border: 142 71% 15%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  .bg-success-light {
+    background-color: hsl(var(--success-bg));
+    color: hsl(var(--success-text));
+    border-color: hsl(var(--success-border));
+  }
+
+  .bg-warning-light {
+    background-color: hsl(var(--warning-bg));
+    color: hsl(var(--warning-text));
+    border-color: hsl(var(--warning-border));
+  }
+
+  .bg-info-light {
+    background-color: hsl(var(--info-bg));
+    color: hsl(var(--info-text));
+    border-color: hsl(var(--info-border));
+  }
+
+  .bg-emerald-light {
+    background-color: hsl(var(--emerald-bg));
+    color: hsl(var(--emerald-text));
+    border-color: hsl(var(--emerald-border));
+  }
+}
+
+@layer components {
+
+  /* Botones estándar - Light Mode: fondo oscuro + texto claro */
+  button:not([role="combobox"]):not([role="tab"]):not([data-state]):not(.tab-trigger) {
+    background-color: hsl(0, 0%, 3.9%) !important;
+    /* Mismo bg que dark mode */
+    color: white !important;
+    border: 1px solid hsl(0, 0%, 3.9%) !important;
+  }
+
+  button:not([role="combobox"]):not([role="tab"]):not([data-state]):not(.tab-trigger):hover {
+    background-color: hsl(0, 0%, 14.9%) !important;
+    /* Ligeramente más claro para hover */
+    border-color: hsl(0, 0%, 14.9%) !important;
+  }
+
+  /* Botones estándar - Dark Mode: fondo oscuro + texto claro + borde claro */
+  .dark button:not([role="combobox"]):not([role="tab"]):not([data-state]):not(.tab-trigger) {
+    background-color: hsl(0, 0%, 3.9%) !important;
+    /* Mismo bg que dark mode */
+    color: white !important;
+    border: 1px solid rgb(156, 163, 175) !important;
+    /* gray-400 */
+  }
+
+  .dark button:not([role="combobox"]):not([role="tab"]):not([data-state]):not(.tab-trigger):hover {
+    background-color: hsl(0, 0%, 14.9%) !important;
+    /* Ligeramente más claro para hover */
+    border-color: rgb(209, 213, 219) !important;
+    /* gray-300 */
+  }
+
+  /* Botones destructivos */
+  button[class*="destructive"]:not([role="tab"]),
+  button[class*="bg-red"]:not([role="tab"]) {
+    background-color: rgb(220, 38, 38) !important;
+    /* red-600 */
+    color: white !important;
+    border: 1px solid rgb(220, 38, 38) !important;
+  }
+
+  .dark button[class*="destructive"]:not([role="tab"]),
+  .dark button[class*="bg-red"]:not([role="tab"]) {
+    background-color: rgb(220, 38, 38) !important;
+    color: white !important;
+    border: 1px solid rgb(248, 113, 113) !important;
+    /* red-400 */
+  }
+
+  /* Botones de colores específicos */
+  button[class*="bg-emerald-6"]:not([role="tab"]),
+  button[class*="bg-green-6"]:not([role="tab"]),
+  button[class*="bg-blue-6"]:not([role="tab"]),
+  button[class*="bg-yellow-6"]:not([role="tab"]),
+  button[class*="bg-orange-6"]:not([role="tab"]),
+  button[class*="bg-indigo-6"]:not([role="tab"]) {
+    color: white !important;
+  }
+
+  .dark button[class*="bg-emerald-6"]:not([role="tab"]),
+  .dark button[class*="bg-green-6"]:not([role="tab"]),
+  .dark button[class*="bg-blue-6"]:not([role="tab"]),
+  .dark button[class*="bg-yellow-6"]:not([role="tab"]),
+  .dark button[class*="bg-orange-6"]:not([role="tab"]),
+  .dark button[class*="bg-indigo-6"]:not([role="tab"]) {
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  }
+
+  /* Botones disabled */
+  button:disabled:not([role="tab"]) {
+    background-color: rgb(156, 163, 175) !important;
+    /* gray-400 */
+    color: rgb(255, 255, 255) !important;
+    border-color: rgb(156, 163, 175) !important;
+    opacity: 0.6 !important;
+  }
+
+  .dark button:disabled:not([role="tab"]) {
+    background-color: rgb(75, 85, 99) !important;
+    /* gray-600 */
+    color: rgb(209, 213, 219) !important;
+    /* gray-300 */
+    border-color: rgb(107, 114, 128) !important;
+    /* gray-500 */
+  }
+
+  /* Asegurar que el language selector tenga texto apropiado */
+  button[role="combobox"],
+  [data-radix-select-trigger] {
+    background-color: transparent !important;
+    color: hsl(var(--foreground)) !important;
+    border: 1px solid hsl(var(--border)) !important;
+  }
+
+  /* Preservar estilos de tabs (NO TOCAR) - Las tabs mantienen sus estilos originales */
+
+  /* Asegurar contraste correcto en badges */
+  .badge,
+  [data-badge],
+  span[class*="badge"] {
+    color: white !important;
+  }
+
+  /* Badges específicos con fondos claros necesitan texto oscuro */
+  .bg-yellow-100,
+  .bg-green-100,
+  .bg-emerald-100,
+  .bg-blue-100,
+  .bg-red-100,
+  .bg-orange-100 {
+    color: rgb(17, 24, 39) !important;
+    /* gray-900 */
+  }
+
+  /* En dark mode, mantener texto claro para badges con fondos claros */
+  .dark .bg-yellow-100,
+  .dark .bg-green-100,
+  .dark .bg-emerald-100,
+  .dark .bg-blue-100,
+  .dark .bg-red-100,
+  .dark .bg-orange-100 {
+    color: white !important;
+  }
+}

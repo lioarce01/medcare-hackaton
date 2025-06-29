@@ -1,34 +1,28 @@
-import { supabase } from "../config/supabase";
+import apiClient from "../config/api";
+import { User, UserSettings } from "../types";
 
-export const getUserProfile = async () => {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("No authenticated user");
-
-  const { data, error } = await supabase
-    .from("users")
-    .select("*")
-    .eq("id", user.id)
-    .single();
-
-  if (error) throw error;
-  return data;
+// Get current user profile
+export const getUserProfile = async (): Promise<User> => {
+  const response = await apiClient.get("/users/me");
+  return response.data;
 };
 
-export const updateUserProfile = async (profile: any) => {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("No authenticated user");
+// Update user profile
+export const updateUserProfile = async (
+  userData: Partial<User> & { id: string }
+): Promise<User> => {
+  const { id, ...updateData } = userData;
+  const response = await apiClient.put(`/users/${id}`, updateData);
+  return response.data;
+};
 
-  const { data, error } = await supabase
-    .from("users")
-    .update(profile)
-    .eq("id", user.id)
-    .select()
-    .single();
+// Update user settings
+export const updateUserSettings = async (settings: Partial<UserSettings>): Promise<UserSettings> => {
+  const response = await apiClient.patch('/users/me/settings', settings);
+  return response.data;
+};
 
-  if (error) throw error;
-  return data;
+// Delete user account
+export const deleteUser = async (userId: string) => {
+  await apiClient.delete(`/users/${userId}`);
 };

@@ -1,220 +1,103 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useAuth } from "./useAuth";
-import { useToast } from "./useToast";
-import { reminderKeys } from "../api/reminders";
-import type { ReminderSettings } from "../types/reminder";
-import { supabase } from "../config/supabase";
+import {
+  getAllReminders,
+  getUpcomingReminders,
+  createReminder,
+  sendReminderManually,
+  deleteReminder,
+  updateReminderSettings,
+} from "../api/reminders";
+import { toast } from "sonner";
+import { getUserSettings } from "@/api/auth";
 
-export const useReminders = () => {
-  const { user } = useAuth();
-  const { showToast } = useToast();
-  const queryClient = useQueryClient();
-
-  const { data: reminders = [], error } = useQuery({
-    queryKey: ["reminders", user?.id],
-    queryFn: async () => {
-      if (!user?.id) return [];
-
-      const { data, error } = await supabase
-        .from("reminders")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!user?.id,
+// Get all reminders
+export const useReminders = (page: number = 1, limit: number = 10) => {
+  return useQuery({
+    queryKey: ["reminders", page, limit],
+    queryFn: () => getAllReminders(page, limit),
+    staleTime: 2 * 60 * 1000, // 2 minutes
   });
-
-  const createReminder = useMutation({
-    mutationFn: async (newReminder: any) => {
-      const { data, error } = await supabase
-        .from("reminders")
-        .insert([{ ...newReminder, user_id: user?.id }])
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["reminders"] });
-      showToast("Recordatorio creado exitosamente", "success");
-    },
-    onError: (error: any) => {
-      showToast(error.message || "Error al crear el recordatorio", "error");
-    },
-  });
-
-  const deleteReminder = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from("reminders").delete().eq("id", id);
-
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["reminders"] });
-      showToast("Recordatorio eliminado exitosamente", "success");
-    },
-    onError: (error: any) => {
-      showToast(error.message || "Error al eliminar el recordatorio", "error");
-    },
-  });
-
-  const sendReminderManually = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.functions.invoke("send-reminder", {
-        body: { reminderId: id },
-      });
-
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      showToast("Recordatorio enviado exitosamente", "success");
-    },
-    onError: (error: any) => {
-      showToast(error.message || "Error al enviar el recordatorio", "error");
-    },
-  });
-
-  return {
-    reminders,
-    error,
-    createReminder,
-    deleteReminder,
-    sendReminderManually,
-  };
 };
 
-export const useRemindersList = () => {
-  const { reminders, error } = useReminders();
-  const { showToast } = useToast();
-
-  return {
-    reminders,
-    error,
-    showToast,
-  };
-};
-
-export const useUpcomingRemindersList = () => {
-  const reminders = useUpcomingReminders();
-  const { showToast } = useToast();
-
-  return {
-    reminders,
-    showToast,
-  };
-};
-
-export const useCreateReminderForm = () => {
-  const queryClient = useQueryClient();
-  const { showToast } = useToast();
-  const { createReminder } = useReminders();
-
-  const handleCreateReminder = (data: {
-    medicationId: string;
-    scheduledTime: string;
-    scheduledDate: string;
-    message?: string;
-  }) => {
-    createReminder.mutate(data, {
-      onSuccess: () => {
-        showToast("Recordatorio creado exitosamente", "success");
-        queryClient.invalidateQueries({ queryKey: reminderKeys.lists() });
-      },
-      onError: () => {
-        showToast("Error al crear el recordatorio", "error");
-      },
-    });
-  };
-
-  return {
-    createReminder: handleCreateReminder,
-    isLoading: createReminder.isPending,
-  };
-};
-
-export const useSendReminder = () => {
-  const { showToast } = useToast();
-  const { sendReminderManually } = useReminders();
-
-  const handleSendReminder = (reminderId: string) => {
-    sendReminderManually.mutate(reminderId, {
-      onSuccess: () => {
-        showToast("Recordatorio enviado exitosamente", "success");
-      },
-      onError: () => {
-        showToast("Error al enviar el recordatorio", "error");
-      },
-    });
-  };
-
-  return {
-    sendReminder: handleSendReminder,
-    isLoading: sendReminderManually.isPending,
-  };
-};
-
-export const useReminderSettings = () => {
-  const { showToast } = useToast();
-  const { mutate: updateSettings } = useUpdateReminderSettings();
-
-  const handleUpdateSettings = (settings: ReminderSettings) => {
-    updateSettings(settings, {
-      onSuccess: () => {
-        showToast("Configuración actualizada exitosamente", "success");
-      },
-      onError: () => {
-        showToast("Error al actualizar la configuración", "error");
-      },
-    });
-  };
-
-  return {
-    updateSettings: handleUpdateSettings,
-  };
-};
-
+// Get upcoming reminders (premium feature)
 export const useUpcomingReminders = () => {
-  const { reminders } = useReminders();
-  const now = new Date();
-
-  return reminders.filter((reminder) => {
-    const reminderDate = new Date(reminder.scheduled_for);
-    return reminderDate > now;
+  return useQuery({
+    queryKey: ["reminders", "upcoming"],
+    queryFn: () => getUpcomingReminders(10), // Pass default limit
+    staleTime: 1 * 60 * 1000, // 1 minute
   });
 };
 
-export const useUpdateReminderSettings = () => {
-  const { user } = useAuth();
-  const { showToast } = useToast();
+// Get user settings
+export const useUserSettings = () => {
+  return useQuery({
+    queryKey: ["userSettings"],
+    queryFn: getUserSettings,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+};
+
+// Create reminder (premium feature)
+export const useCreateReminder = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (settings: ReminderSettings) => {
-      const { data, error } = await supabase
-        .from("user_settings")
-        .upsert({
-          user_id: user?.id,
-          ...settings,
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
-    },
+    mutationFn: (reminder: any) => createReminder(reminder),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["userSettings"] });
-      showToast("Configuración actualizada exitosamente", "success");
+      queryClient.invalidateQueries({ queryKey: ["reminders"] });
+      toast.success("Reminder created successfully");
     },
     onError: (error: any) => {
-      showToast(
-        error.message || "Error al actualizar la configuración",
-        "error"
-      );
+      toast.error(error.response?.data?.message || "Failed to create reminder");
+    },
+  });
+};
+
+// Send reminder manually (premium feature)
+export const useSendReminderManually = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: sendReminderManually,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["reminders"] });
+      toast.success("Reminder sent successfully");
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || "Failed to send reminder");
+    },
+  });
+};
+
+// Delete reminder
+export const useDeleteReminder = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: deleteReminder,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["reminders"] });
+      toast.success("Reminder deleted successfully");
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || "Failed to delete reminder");
+    },
+  });
+};
+
+// Update reminder settings
+export const useUpdateReminderSettings = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: updateReminderSettings,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["userSettings"] });
+      queryClient.invalidateQueries({ queryKey: ["reminders"] });
+      toast.success("Reminder settings updated successfully");
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || "Failed to update reminder settings");
     },
   });
 };

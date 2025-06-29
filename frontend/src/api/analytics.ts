@@ -1,35 +1,72 @@
-import { supabase } from "../config/supabase";
+import apiClient from "../config/api";
 
-export const analyticsApi = {
-  getStats: async (startDate?: string, endDate?: string) => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) throw new Error("No authenticated user");
+// Get risk history for a medication
+export const getRiskHistoryByMedication = async (medicationId: string, startDate?: string, endDate?: string, page = 1, limit = 10): Promise<RiskHistory[]> => {
+  try {
+    const params = new URLSearchParams();
+    if (startDate) params.append('startDate', startDate);
+    if (endDate) params.append('endDate', endDate);
+    params.append('page', page.toString());
+    params.append('limit', limit.toString());
 
-    let query = supabase
-      .from("adherence")
-      .select(
-        `
-        status,
-        medication:medications (
-          id,
-          name
-        )
-      `
-      )
-      .eq("user_id", user.id);
+    const response = await apiClient.get(`/analytics/risk-history/${medicationId}?${params.toString()}`);
+    return response.data.data || [];
+  } catch (error) {
+    // Return empty array if endpoint is not available
+    return [];
+  }
+};
 
-    if (startDate) {
-      query = query.gte("scheduled_date", startDate);
+// Get all risk history for the current user
+export const getRiskHistoryByUser = async (startDate?: string, endDate?: string, page = 1, limit = 10): Promise<RiskHistory[]> => {
+  try {
+    const params = new URLSearchParams();
+    if (startDate) params.append('startDate', startDate);
+    if (endDate) params.append('endDate', endDate);
+    params.append('page', page.toString());
+    params.append('limit', limit.toString());
+
+    const response = await apiClient.get(`/analytics/risk-history/user?${params.toString()}`);
+    return response.data.data || [];
+  } catch (error) {
+    // Return empty array if endpoint is not available
+    return [];
+  }
+};
+
+// Get latest risk score for a medication
+export const getLatestRiskScore = async (medicationId?: string): Promise<RiskScore> => {
+  try {
+    if (medicationId) {
+      const response = await apiClient.get(`/analytics/risk-score/latest/${medicationId}`);
+      return response.data;
+    } else {
+      // Return default risk score if no medication ID provided
+      return {
+        score: 0,
+        level: 'low',
+        factors: [],
+        date: new Date().toISOString(),
+      };
     }
-    if (endDate) {
-      query = query.lte("scheduled_date", endDate);
-    }
+  } catch (error) {
+    // Return default risk score if endpoint is not available
+    return {
+      score: 0,
+      level: 'low',
+      factors: [],
+      date: new Date().toISOString(),
+    };
+  }
+};
 
-    const { data, error } = await query;
-
-    if (error) throw error;
-    return data;
-  },
+// Get risk predictions
+export const getRiskPredictions = async (): Promise<RiskPrediction[]> => {
+  try {
+    const response = await apiClient.get(`/analytics/risks`);
+    return response.data || [];
+  } catch (error) {
+    // Return empty array if endpoint is not available
+    return [];
+  }
 };

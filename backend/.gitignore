@@ -1,72 +1,61 @@
-# Node modules
-node_modules/
+# compiled output
+/dist
+/node_modules
+/build
 
 # Logs
-logs/
+logs
 *.log
 npm-debug.log*
+pnpm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+lerna-debug.log*
 
-# Dependency directories
-jspm_packages/
+# OS
+.DS_Store
 
-# Build output
-dist/
-build/
+# Tests
+/coverage
+/.nyc_output
+
+# IDEs and editors
+/.idea
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# dotenv environment variable files
+.env
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
+
+# temp directory
+.temp
+.tmp
 
 # Runtime data
-pids/
+pids
 *.pid
 *.seed
 *.pid.lock
 
-# Optional npm cache directory
-.npm/
+# Diagnostic reports (https://nodejs.org/api/report.html)
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
-# Optional eslint cache
-.eslintcache
+/generated/prisma
+/prisma/migrations
+scripts/
 
-# Optional REPL history
-.node_repl_history
-
-# Environment files
-.env
-.env.local
-.env.*.local
-
-# IDE files
-.vscode/
-.idea/
-*.sublime-workspace
-*.sublime-project
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# Coverage reports
-coverage/
-
-# Parcel cache
-.cache/
-
-# Next.js
-.next/
-
-# Nuxt.js
-.nuxt/
-
-# SvelteKit
-.svelte-kit/
-
-# Turborepo
-turbo/
-
-# PM2 logs
-pids/
-*.pid
-*.log
-
-# TypeScript
-*.tsbuildinfo

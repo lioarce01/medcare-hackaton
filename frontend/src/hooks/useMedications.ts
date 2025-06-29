@@ -1,189 +1,154 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { medicationApi } from "../api/medications";
-import { useUser } from "./useUser";
+import {
+  getMedications,
+  getActiveMedications,
+  getMedicationById,
+  createMedication,
+  updateMedication,
+  deleteMedication,
+} from "../api/medications";
+import { CreateMedicationData, UpdateMedicationData } from "../types";
+import { toast } from "sonner";
+import { useEffect, useState } from "react";
+import { Medication, PaginationResult } from "@/types";
+import { useAuth } from "./useAuthContext";
 
-// Constants for cache configuration
-const CACHE_TIME = 5 * 60 * 1000; // 5 minutes
-const STALE_TIME = 2 * 60 * 1000; // 2 minutes
-const RETRY_ATTEMPTS = 2;
+// Get all medications
+export const useMedications = (page = 1, limit = 10, searchTerm?: string, filterType?: string) => {
+  const { user } = useAuth();
 
-// Get all medications with optimized caching
-export const useMedications = () => {
-  const { data: user, isPending: isUserLoading } = useUser();
+  return useQuery<PaginationResult<Medication>>({
+    queryKey: ["medications", page, limit, searchTerm, filterType],
+    queryFn: () => getMedications(page, limit, searchTerm, filterType),
+    placeholderData: (prev) => prev, //keep prev data
+    enabled: !!user,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+};
 
-  return useQuery({
-    queryKey: ["medications"],
-    queryFn: medicationApi.getAll,
-    enabled: !!user && !isUserLoading,
-    retry: RETRY_ATTEMPTS,
-    staleTime: STALE_TIME,
-    gcTime: CACHE_TIME,
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
-    refetchOnReconnect: true,
-    select: (data) => {
-      // Sort medications by active status and creation date
-      const sorted = [...data].sort((a, b) => {
-        if (a.active !== b.active) return b.active ? 1 : -1;
-        return (
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        );
-      });
-      // Normalize by ID
-      const byId = sorted.reduce((acc, med) => {
-        acc[med.id] = med;
-        return acc;
-      }, {} as Record<string, (typeof sorted)[0]>);
-      return { byId, all: sorted };
+export const useMedicationsWithFilters = (
+  searchTerm?: string,
+  filterType?: string,
+  page = 1,
+  limit = 10,
+  debounceMs = 500
+) => {
+  const { user } = useAuth();
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
+
+  // Debounce search term
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, debounceMs);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm, debounceMs]);
+
+  return useQuery<PaginationResult<Medication>>({
+    queryKey: ["medications", page, limit, debouncedSearchTerm, filterType],
+    queryFn: () => getMedications(page, limit, debouncedSearchTerm, filterType),
+    placeholderData: (prev) => prev,
+    enabled: !!user,
+    staleTime: 5 * 60 * 1000,
+  });
+};
+
+export const useMedicationsList = (
+  searchTerm?: string,
+  filterType?: string,
+  page = 1,
+  limit = 10
+) => {
+  const queryResult = useMedicationsWithFilters(searchTerm, filterType, page, limit);
+
+  return {
+    medications: queryResult.data?.data || [],
+    pagination: {
+      page: queryResult.data?.page || page,
+      limit: queryResult.data?.limit || limit,
+      total: queryResult.data?.total || 0,
+      totalPages: Math.ceil((queryResult.data?.total || 0) / limit),
     },
+    isLoading: queryResult.isLoading,
+    isError: queryResult.isError,
+    error: queryResult.error,
+    refetch: queryResult.refetch,
+    isFetching: queryResult.isFetching,
+  };
+};
+
+// Get active medications
+export const useActiveMedications = (page = 1, limit = 10) => {
+  const { user } = useAuth();
+
+  return useQuery<PaginationResult<Medication>>({
+    queryKey: ["medications", "active", page, limit],
+    queryFn: () => getActiveMedications(page, limit),
+    placeholderData: (prev) => prev, // keep previous data
+    enabled: !!user,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 };
 
-// Get active medications with optimized caching
-export const useActiveMedications = () => {
-  const { data: user, isPending: isUserLoading } = useUser();
-
-  return useQuery({
-    queryKey: ["medications", "active"],
-    queryFn: medicationApi.getActive,
-    enabled: !!user && !isUserLoading,
-    retry: RETRY_ATTEMPTS,
-    staleTime: STALE_TIME,
-    gcTime: CACHE_TIME,
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
-    refetchOnReconnect: true,
-  });
-};
-
-// Get single medication with optimized caching
+// Get medication by ID
 export const useMedicationById = (id: string) => {
-  return useQuery({
+  const { user } = useAuth();
+
+  return useQuery<Medication>({
     queryKey: ["medications", id],
-    queryFn: () => medicationApi.getById(id),
+    queryFn: () => getMedicationById(id),
     enabled: !!id,
-    retry: RETRY_ATTEMPTS,
-    staleTime: STALE_TIME,
-    gcTime: CACHE_TIME,
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
-    refetchOnReconnect: true,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 };
 
-// Create medication with optimistic updates
+// Create medication
 export const useCreateMedication = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: medicationApi.create,
-    onMutate: async (newMedication) => {
-      // Cancel any outgoing refetches
-      await queryClient.cancelQueries({ queryKey: ["medications"] });
-
-      // Snapshot the previous value
-      const previousMedications = queryClient.getQueryData(["medications"]);
-
-      // Optimistically update to the new value
-      queryClient.setQueryData(["medications"], (old: any[]) => [
-        ...(old || []),
-        newMedication,
-      ]);
-
-      // Return a context object with the snapshotted value
-      return { previousMedications };
-    },
-    onError: (err, newMedication, context) => {
-      // If the mutation fails, use the context returned from onMutate to roll back
-      if (context?.previousMedications) {
-        queryClient.setQueryData(["medications"], context.previousMedications);
-      }
-    },
-    onSettled: () => {
-      // Always refetch after error or success to ensure cache consistency
+    mutationFn: (medicationData: CreateMedicationData) => createMedication(medicationData),
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["medications"] });
+      toast.success("Medication created successfully");
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || "Failed to create medication");
     },
   });
 };
 
-// Update medication with optimistic updates
+// Update medication
 export const useUpdateMedication = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, medication }: { id: string; medication: any }) =>
-      medicationApi.update(id, medication),
-    onMutate: async ({ id, medication }) => {
-      // Cancel any outgoing refetches
-      await queryClient.cancelQueries({ queryKey: ["medications"] });
-      await queryClient.cancelQueries({ queryKey: ["medications", id] });
-
-      // Snapshot the previous values
-      const previousMedications = queryClient.getQueryData(["medications"]);
-      const previousMedication = queryClient.getQueryData(["medications", id]);
-
-      // Optimistically update to the new value
-      queryClient.setQueryData(["medications"], (old: any[]) =>
-        old?.map((med) => (med.id === id ? { ...med, ...medication } : med))
-      );
-      queryClient.setQueryData(["medications", id], (old: any) => ({
-        ...old,
-        ...medication,
-      }));
-
-      // Return a context object with the snapshotted values
-      return { previousMedications, previousMedication };
-    },
-    onError: (err, { id }, context) => {
-      // If the mutation fails, use the context returned from onMutate to roll back
-      if (context?.previousMedications) {
-        queryClient.setQueryData(["medications"], context.previousMedications);
-      }
-      if (context?.previousMedication) {
-        queryClient.setQueryData(
-          ["medications", id],
-          context.previousMedication
-        );
-      }
-    },
-    onSettled: (data, error, { id }) => {
-      // Always refetch after error or success to ensure cache consistency
+    mutationFn: ({ id, medicationData }: { id: string; medicationData: UpdateMedicationData }) =>
+      updateMedication(id, medicationData),
+    onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: ["medications"] });
       queryClient.invalidateQueries({ queryKey: ["medications", id] });
+      toast.success("Medication updated successfully");
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || "Failed to update medication");
     },
   });
 };
 
-// Delete medication with optimistic updates
+// Delete medication
 export const useDeleteMedication = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) => medicationApi.delete(id),
-    onMutate: async (id) => {
-      // Cancel any outgoing refetches
-      await queryClient.cancelQueries({ queryKey: ["medications"] });
-
-      // Snapshot the previous value
-      const previousMedications = queryClient.getQueryData(["medications"]);
-
-      // Optimistically update to the new value
-      queryClient.setQueryData(["medications"], (old: any[]) =>
-        old?.filter((med) => med.id !== id)
-      );
-
-      // Return a context object with the snapshotted value
-      return { previousMedications };
-    },
-    onError: (err, id, context) => {
-      // If the mutation fails, use the context returned from onMutate to roll back
-      if (context?.previousMedications) {
-        queryClient.setQueryData(["medications"], context.previousMedications);
-      }
-    },
-    onSettled: () => {
-      // Always refetch after error or success to ensure cache consistency
+    mutationFn: deleteMedication,
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["medications"] });
+      toast.success("Medication deleted successfully");
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || "Failed to delete medication");
     },
   });
 };

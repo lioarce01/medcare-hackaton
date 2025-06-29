@@ -1,7 +1,9 @@
-import { supabase } from "../config/supabase";
+import apiClient from "@/config/api";
+import { supabase } from "@/config/supabase";
+import { User, UserSettings } from "@/types";
 
 export const signUp = async (name: string, email: string, password: string) => {
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
@@ -12,7 +14,11 @@ export const signUp = async (name: string, email: string, password: string) => {
     },
   });
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
+
+  return data;
 };
 
 export const signIn = async (email: string, password: string) => {
@@ -20,6 +26,7 @@ export const signIn = async (email: string, password: string) => {
     email,
     password,
   });
+
   if (error) throw error;
   return data;
 };
@@ -27,5 +34,44 @@ export const signIn = async (email: string, password: string) => {
 export const signOut = async () => {
   const { error } = await supabase.auth.signOut();
   if (error) throw error;
-  return true;
+  return { success: true };
+};
+
+// Get user settings from database
+export const getUserSettings = async (): Promise<UserSettings> => {
+  try {
+    const response = await apiClient.get('/users/me');
+    return response.data.settings || {
+      id: 'default',
+      user_id: 'default',
+      email_enabled: true,
+      preferred_times: [],
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      notification_preferences: {
+        email: true,
+        sms: false,
+        push: false,
+        reminder_before: 15,
+      },
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+  } catch (error) {
+    // Return default settings if endpoint is not available
+    return {
+      id: 'default',
+      user_id: 'default',
+      email_enabled: true,
+      preferred_times: [],
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      notification_preferences: {
+        email: true,
+        sms: false,
+        push: false,
+        reminder_before: 15,
+      },
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+  }
 };

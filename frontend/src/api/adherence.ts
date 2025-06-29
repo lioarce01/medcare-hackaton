@@ -1,75 +1,59 @@
-import { supabase } from "../config/supabase";
+import apiClient from "../config/api";
+import {
+  Adherence,
+  AdherenceStats,
+  ConfirmDoseDto,
+  PaginationResult,
+  SkipDoseDto,
+} from "../types";
 
-export const adherenceApi = {
-  getHistory: async (date?: string) => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) throw new Error("No authenticated user");
+// Get adherence history
+export const getAdherenceHistory = async (
+  page?: number,
+  limit?: number,
+  date?: string
+): Promise<PaginationResult<Adherence>> => {
+  const params: any = {}
+  if (page) params.page = page;
+  if (limit) params.limit = limit;
+  if (date) params.date = date
+  const response = await apiClient.get("/adherence/history", { params });
+  console.log('Adherence History Response:', response.data);
+  return response.data;
+};
 
-    let query = supabase
-      .from("adherence")
-      .select(
-        `
-        *,
-        medication:medications (
-          id,
-          name,
-          dosage,
-          instructions
-        )
-      `
-      )
-      .eq("user_id", user.id)
-      .order("scheduled_time", { ascending: true });
+// Confirm dose taken
+export const confirmDose = async (data: ConfirmDoseDto): Promise<Adherence> => {
+  const response = await apiClient.post("/adherence/confirm", data);
+  return response.data;
+};
 
-    if (date) {
-      query = query.eq("scheduled_date", date);
-    }
+// Skip dose
+export const skipDose = async (data: SkipDoseDto): Promise<Adherence> => {
+  const response = await apiClient.post("/adherence/skip", data);
+  return response.data;
+};
 
-    const { data, error } = await query;
-    if (error) throw error;
-    return data;
-  },
+// Get adherence statistics
+export const getAdherenceStats = async (): Promise<AdherenceStats> => {
+  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const response = await apiClient.get("/adherence/stats", { params: { timezone } });
+  console.log('Adherence Stats Response:', response.data); // Log para depuración
+  return response.data;
+};
 
-  confirmDose: async (adherenceId: string) => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) throw new Error("No authenticated user");
-
-    const { data, error } = await supabase
-      .from("adherence")
-      .update({
-        status: "taken",
-        taken_time: new Date().toISOString(),
-      })
-      .eq("id", adherenceId)
-      .eq("user_id", user.id)
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
-  },
-
-  skipDose: async (adherenceId: string) => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) throw new Error("No authenticated user");
-
-    const { data, error } = await supabase
-      .from("adherence")
-      .update({
-        status: "skipped",
-      })
-      .eq("id", adherenceId)
-      .eq("user_id", user.id)
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
-  },
+// Get adherence timeline
+export const getAdherenceTimeline = async (
+  startDate: string,
+  endDate: string,
+  page?: number,
+  limit?: number
+): Promise<PaginationResult<Adherence>> => {
+  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const params: any = { startDate, endDate, timezone };
+  if (page) params.page = page;
+  if (limit) params.limit = limit;
+  const response = await apiClient.get("/adherence/timeline", { params });
+  console.log('Adherence Timeline Response:', response.data); // Log for debugging
+  return response.data;
 };

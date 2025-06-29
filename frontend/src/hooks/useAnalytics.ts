@@ -1,33 +1,120 @@
 import { useQuery } from "@tanstack/react-query";
-import { analyticsApi } from "../api/analytics";
-import { useUser } from "./useUser";
+import {
+  getRiskHistoryByMedication,
+  getRiskHistoryByUser,
+  getLatestRiskScore,
+  getRiskPredictions,
+} from "../api/analytics";
+import { getAdherenceTimeline } from "../api/adherence";
+import { DateTime } from "luxon";
+import { useAuth } from "./useAuthContext";
 
-export const useGetAnalyticsStats = (startDate?: string, endDate?: string) => {
-  const { data: user, isPending: isUserLoading } = useUser();
+// Helper to check if a string is a valid UUID (v4)
+function isValidUUID(uuid: string) {
+  return /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(uuid);
+}
 
-  // Generar la query key según los parámetros para cachear por rango de fechas
+// Helper to get start/end date for a given time range
+export function getDateRangeForTimeRange(timeRange: "7d" | "30d" | "90d") {
+  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const endDate =
+    DateTime.now().setZone(timezone).endOf("day").toISODate() || undefined;
+  const days = timeRange === "7d" ? 7 : timeRange === "30d" ? 30 : 90;
+  const startDate =
+    DateTime.now()
+      .setZone(timezone)
+      .minus({ days: days - 1 })
+      .startOf("day")
+      .toISODate() || undefined;
+  return { startDate, endDate };
+}
+
+// Get risk history for a medication
+export const useRiskHistoryByMedication = (
+  medicationId: string,
+  startDate?: string,
+  endDate?: string,
+  page = 1,
+  limit = 10
+) => {
+  const { user } = useAuth();
   return useQuery({
-    queryKey: ["analytics", { startDate, endDate }],
-    queryFn: () => analyticsApi.getStats(startDate, endDate),
-    enabled: !!user && !isUserLoading,
-    retry: false,
-    staleTime: 5 * 60 * 1000, // 5 minutos
+    queryKey: ["analytics", "risk-history", medicationId, startDate, endDate, page, limit],
+    queryFn: () => getRiskHistoryByMedication(medicationId, startDate, endDate, page, limit),
+    enabled: !!user && !!medicationId && isValidUUID(medicationId),
+    staleTime: 0,
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
   });
 };
 
-export function summarizeAnalytics(records: any[]) {
-  const total = records.length;
-  const taken = records.filter((r) => r.status === "taken").length;
-  const missed = records.filter((r) => r.status === "missed").length;
-  const skipped = records.filter((r) => r.status === "skipped").length;
-  const adherenceRate = total > 0 ? (taken / total) * 100 : 0;
-  return {
-    overall: {
-      total,
-      taken,
-      missed,
-      skipped,
-      adherenceRate,
+// Get all risk history for the current user
+export const useRiskHistoryByUser = (
+  startDate?: string,
+  endDate?: string,
+  page = 1,
+  limit = 10
+) => {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["analytics", "risk-history", "user", startDate, endDate, page, limit],
+    queryFn: () => getRiskHistoryByUser(startDate, endDate, page, limit),
+    enabled: !!user,
+    staleTime: 0,
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
+  });
+};
+
+// Get latest risk score for a medication
+export const useLatestRiskScore = (medicationId: string) => {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["analytics", "risk-score", "latest", medicationId],
+    queryFn: () => getLatestRiskScore(medicationId),
+    enabled: !!user && !!medicationId,
+    staleTime: 1 * 60 * 1000,
+  });
+};
+
+// Get risk predictions
+export const useRiskPredictions = () => {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["analytics", "risks"],
+    queryFn: () => getRiskPredictions(),
+    enabled: !!user,
+    staleTime: 1 * 60 * 1000, // 10 minutes
+  });
+};
+
+// Adherence timeline
+export const useAdherenceTimeline = (
+  days: number = 30,
+  page?: number,
+  limit?: number
+) => {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["adherence", "timeline", days, page, limit],
+    queryFn: async () => {
+      const endDate = new Date();
+      const startDate = new Date();
+      startDate.setDate(endDate.getDate() - days + 1);
+      const startStr = startDate.toISOString().slice(0, 10);
+      const endStr = endDate.toISOString().slice(0, 10);
+      return getAdherenceTimeline(startStr, endStr, page, limit);
     },
-  };
-}
+    enabled: !!user,
+    staleTime: 1 * 60 * 1000,
+  });
+};
+
+// Always use this for medication-specific risk history to ensure date range is passed
+export const useRiskHistoryByMedicationWithRange = (
+  medicationId: string,
+  timeRange: "7d" | "30d" | "90d" = "30d"
+) => {
+  const { startDate, endDate } = getDateRangeForTimeRange(timeRange);
+  return useRiskHistoryByMedication(medicationId, startDate, endDate);
+};

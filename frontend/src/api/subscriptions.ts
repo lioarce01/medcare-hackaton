@@ -1,34 +1,32 @@
-import { useMutation } from "@tanstack/react-query";
-import axios from "../config/axios";
+import apiClient from "@/config/api"
 
-interface CreateCheckoutSessionParams {
-  priceId: number;
-  paymentProvider: "stripe" | "mercadopago";
-  currency: string;
-  cardToken?: string;
-  email?: string;
+export interface CreateCheckoutSessionParams {
+  priceId: string
+  paymentProvider: "stripe" | "mercadopago"
+  currency: string
+  email: string
 }
 
-interface CheckoutSessionResponse {
+export interface CheckoutSessionResponse {
   url?: string;
   preferenceId?: string;
   initPoint?: string;
   preApprovalId?: string;
+  sessionId?: string;
 }
 
-export const useCreateCheckoutSession = () => {
-  return useMutation({
-    mutationFn: async (params: CreateCheckoutSessionParams) => {
-      const response = await axios.post(
-        "/api/subscriptions/create-checkout-session",
-        params
-      );
-      return response.data as CheckoutSessionResponse;
-    },
-    onSuccess: (data) => {
-      if (data.url) {
-        window.location.href = data.url;
-      }
-    },
-  });
-};
+export const createCheckoutSession = async (params: CreateCheckoutSessionParams) => {
+  const response = await apiClient.post(
+    "/subscriptions/create-checkout-session",
+    params
+  );
+  return response.data as CheckoutSessionResponse;
+}
+
+export const verifyStripeSession = async (sessionId: string) => {
+  const response = await apiClient.post(
+    "/subscriptions/verify-session",
+    { sessionId }
+  );
+  return response.data;
+}
