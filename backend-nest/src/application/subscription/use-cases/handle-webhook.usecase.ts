@@ -7,6 +7,7 @@ export interface HandleWebhookCommand {
   paymentProvider: PaymentProviderType;
   payload: any;
   signature?: string;
+  isSessionVerification?: boolean;
 }
 
 @Injectable()
@@ -15,16 +16,26 @@ export class HandleWebhookUseCase {
     @Inject('StripePaymentProvider') private readonly stripeProvider: PaymentProvider,
     @Inject('MercadoPagoPaymentProvider') private readonly mercadoPagoProvider: PaymentProvider,
     private readonly updateSubscriptionStatusUseCase: UpdateSubscriptionStatusUseCase,
-  ) {}
+  ) { }
 
   async execute(command: HandleWebhookCommand): Promise<{ received: boolean }> {
     try {
       const provider = this.getPaymentProvider(command.paymentProvider);
-      const result = await provider.handleWebhook(command.payload, command.signature);
+
+      let result: WebhookResult;
+
+      if (command.isSessionVerification && command.paymentProvider === PaymentProviderType.STRIPE) {
+        // Handle session verification for Stripe
+        const sessionId = command.payload.sessionId;
+        result = await (provider as any).verifySession(sessionId);
+      } else {
+        // Handle regular webhook
+        result = await provider.handleWebhook(command.payload, command.signature);
+      }
 
       if (result.success && result.shouldUpdateSubscription && result.userId) {
         console.log('Payment approved, updating subscription for user:', result.userId);
-        
+
         try {
           await this.updateSubscriptionStatusUseCase.execute({
             userId: result.userId,

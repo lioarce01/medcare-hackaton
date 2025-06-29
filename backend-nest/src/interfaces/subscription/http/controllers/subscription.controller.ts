@@ -111,4 +111,13 @@ export class SubscriptionController {
       `${frontendUrl}/subscription/pending?userId=${externalReference}`,
     );
   }
+
+  @Post('verify-session')
+  async verifySession(@Body() body: { sessionId: string }) {
+    return await this.handleWebhookUseCase.execute({
+      paymentProvider: PaymentProviderType.STRIPE,
+      payload: { sessionId: body.sessionId },
+      isSessionVerification: true,
+    });
+  }
 }

@@ -2,6 +2,7 @@ import { CheckCircle } from 'lucide-react';
 import React, { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from "sonner"
+import { verifyStripeSession } from '../api/subscriptions';
 
 export const SubscriptionSuccess: React.FC = () => {
   const navigate = useNavigate();
@@ -12,18 +13,34 @@ export const SubscriptionSuccess: React.FC = () => {
     const paymentId = searchParams.get('payment_id');
     const status = searchParams.get('status');
 
-    if (status === 'approved' || sessionId || paymentId) {
-      toast.success('Subscription activated successfully!');
+    const handleSuccess = async () => {
+      if (sessionId) {
+        // Verify Stripe session with backend
+        try {
+          await verifyStripeSession(sessionId);
+          toast.success('Subscription activated successfully!');
+        } catch (error) {
+          console.error('Error verifying session:', error);
+          toast.error('Error activating subscription. Please contact support.');
+        }
+      } else if (status === 'approved' || paymentId) {
+        // Handle MercadoPago or other payment providers
+        toast.success('Subscription activated successfully!');
+      } else {
+        navigate('/subscription');
+        return;
+      }
+
       // Redirect to subscription page after 3 seconds
       const timer = setTimeout(() => {
         navigate('/subscription');
       }, 3000);
 
       return () => clearTimeout(timer);
-    } else {
-      navigate('/subscription');
-    }
-  }, [searchParams, navigate, toast]);
+    };
+
+    handleSuccess();
+  }, [searchParams, navigate]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 flex items-center justify-center" >

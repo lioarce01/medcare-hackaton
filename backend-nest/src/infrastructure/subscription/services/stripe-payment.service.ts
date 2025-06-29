@@ -66,10 +66,14 @@ export class StripePaymentService implements PaymentProvider {
       switch (event.type) {
         case 'checkout.session.completed':
           return await this.handleCheckoutSessionCompleted(event.data.object);
+        case 'customer.subscription.created':
+          return await this.handleSubscriptionCreated(event.data.object);
         case 'customer.subscription.updated':
           return await this.handleSubscriptionUpdated(event.data.object);
         case 'customer.subscription.deleted':
           return await this.handleSubscriptionDeleted(event.data.object);
+        case 'invoice.payment_succeeded':
+          return await this.handleInvoicePaymentSucceeded(event.data.object);
         default:
           return { success: true };
       }
@@ -91,6 +95,21 @@ export class StripePaymentService implements PaymentProvider {
       paymentId: subscriptionId,
       status: 'completed',
       shouldUpdateSubscription: true,
+    };
+  }
+
+  private async handleSubscriptionCreated(
+    subscription: any,
+  ): Promise<WebhookResult> {
+    const userId = subscription.metadata?.userId;
+    const status = subscription.status;
+
+    return {
+      success: true,
+      userId,
+      paymentId: subscription.id,
+      status,
+      shouldUpdateSubscription: status === 'active',
     };
   }
 
@@ -123,6 +142,21 @@ export class StripePaymentService implements PaymentProvider {
     };
   }
 
+  private async handleInvoicePaymentSucceeded(
+    invoice: any,
+  ): Promise<WebhookResult> {
+    const userId = invoice.metadata?.userId;
+    const status = 'paid';
+
+    return {
+      success: true,
+      userId,
+      paymentId: invoice.id,
+      status,
+      shouldUpdateSubscription: true,
+    };
+  }
+
   async getPaymentDetails(paymentId: string): Promise<PaymentDetails> {
     try {
       // const subscription = await this.stripe.subscriptions.retrieve(paymentId);
@@ -130,7 +164,7 @@ export class StripePaymentService implements PaymentProvider {
       // Mock response
       const subscription = {
         id: paymentId,
-        status: 'active',
+        status: 'premium',
         items: {
           data: [{ price: { unit_amount: 1500, currency: 'usd' } }],
         },
@@ -145,6 +179,36 @@ export class StripePaymentService implements PaymentProvider {
     } catch (error) {
       console.error('Error getting Stripe payment details:', error);
       throw error;
+    }
+  }
+
+  async verifySession(sessionId: string): Promise<WebhookResult> {
+    try {
+      const session = await this.stripe.checkout.sessions.retrieve(sessionId);
+
+      if (session.payment_status === 'paid' && session.status === 'complete') {
+        const userId = session.client_reference_id || undefined;
+        const subscriptionId = typeof session.subscription === 'string'
+          ? session.subscription
+          : session.subscription?.id || undefined;
+
+        return {
+          success: true,
+          userId,
+          paymentId: subscriptionId,
+          status: 'completed',
+          shouldUpdateSubscription: true,
+        };
+      }
+
+      return {
+        success: false,
+        status: session.payment_status,
+        shouldUpdateSubscription: false,
+      };
+    } catch (error) {
+      console.error('Error verifying Stripe session:', error);
+      return { success: false };
     }
   }
 }

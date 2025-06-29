@@ -1,7 +1,7 @@
 import { User } from "../types";
 
 export type SubscriptionPlan = 'free' | 'premium'
-export type SubscriptionStatus = 'free' | 'active'
+export type SubscriptionStatus = 'free' | 'premium'
 
 export interface SubscriptionFeatures {
   // Core features
@@ -72,7 +72,7 @@ export class SubscriptionService {
 
   static isPremium(user: User | null): boolean {
     return user?.subscription_status === 'premium' &&
-      (user.subscription_plan === 'premium' || user.subscription_plan === 'family');
+      (user.subscription_plan === 'premium');
   }
 
   static isActive(user: User | null): boolean {

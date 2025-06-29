@@ -22,3 +22,11 @@ export const createCheckoutSession = async (params: CreateCheckoutSessionParams)
   );
   return response.data as CheckoutSessionResponse;
 }
+
+export const verifyStripeSession = async (sessionId: string) => {
+  const response = await apiClient.post(
+    "/subscriptions/verify-session",
+    { sessionId }
+  );
+  return response.data;
+}

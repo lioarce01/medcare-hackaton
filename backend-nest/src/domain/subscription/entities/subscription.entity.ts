@@ -64,7 +64,7 @@ export class SubscriptionFeatures {
   constructor(
     public advanced_analytics: boolean = false,
     public data_export: boolean = false,
-    public custom_analytics: boolean = false,
+    public custom_reminders: boolean = false,
     public risk_predictions: boolean = false,
   ) { }
 
@@ -85,7 +85,7 @@ export class SubscriptionFeatures {
     return new SubscriptionFeatures(
       json.advanced_analytics || false,
       json.data_export || false,
-      json.custom_analytics || false,
+      json.custom_reminders || false,
       json.risk_predictions || false,
     );
   }
@@ -94,7 +94,7 @@ export class SubscriptionFeatures {
     return {
       advanced_analytics: this.advanced_analytics,
       data_export: this.data_export,
-      custom_analytics: this.custom_analytics,
+      custom_reminders: this.custom_reminders,
       risk_predictions: this.risk_predictions,
     };
   }
