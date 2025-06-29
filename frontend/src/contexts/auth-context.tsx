@@ -21,137 +21,133 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const [isInitializing, setIsInitializing] = useState(true);
   const [authError, setAuthError] = useState<string | null>(null);
-  const [isSigningIn, setIsSigningIn] = useState(false);
-  const [isSigningUp, setIsSigningUp] = useState(false);
-  const [isSigningOut, setIsSigningOut] = useState(false);
 
   const signInMutation = useSignIn();
   const signUpMutation = useSignUp();
   const signOutMutation = useSignOut();
 
-  // Función para manejar la invalidación de queries
+  // Function to handle query invalidation
   const invalidateAuthQueries = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ["session"] });
     queryClient.invalidateQueries({ queryKey: ["user"] });
-    queryClient.invalidateQueries({ queryKey: ["profile"] }); // Por si tienes datos de perfil
+    queryClient.invalidateQueries({ queryKey: ["profile"] });
   }, []);
 
-  // Función para manejar errores de autenticación
+  // Function to handle auth errors
   const handleAuthError = useCallback((error: any) => {
-    setAuthError(error?.message || 'Error de autenticación');
-
-    // Limpiar error después de 5 segundos
+    setAuthError(error?.message || 'Authentication error');
     setTimeout(() => setAuthError(null), 5000);
   }, []);
 
-  // Combinar errores de queries y operaciones
+  // Handle query errors
   useEffect(() => {
     if (authQueryError) {
       handleAuthError(authQueryError);
     }
   }, [authQueryError, handleAuthError]);
 
-  // Effect adicional para manejar el estado inicial cuando ya tenemos sesión
+  // Handle initial loading state
   useEffect(() => {
     if (!authLoading && session !== undefined) {
       setIsInitializing(false);
     }
   }, [authLoading, session]);
 
-  // Helper: Retry fetching user profile/settings with backoff
-  async function waitForUserProfile(userId: string, maxAttempts = 6, delayMs = 500): Promise<void> {
-    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-      try {
-        // Try to fetch both profile and settings
-        await Promise.all([
-          import('@/api/auth').then(m => m.getUserProfile(userId)),
-          import('@/api/auth').then(m => m.getUserSettings(userId)),
-        ]);
-        return; // Success
-      } catch (err) {
-        if (attempt === maxAttempts) throw err;
-        await new Promise(res => setTimeout(res, delayMs * attempt)); // Exponential backoff
-      }
-    }
-  }
+  // Listen to auth state changes from Supabase
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event: AuthChangeEvent, session: Session | null) => {
+        console.log('Auth state changed:', event, session?.user?.id);
 
-  // Funciones de autenticación con manejo de errores mejorado
+        // Invalidate queries when auth state changes
+        invalidateAuthQueries();
+
+        // Handle specific auth events
+        if (event === 'SIGNED_IN' && session) {
+          console.log('User signed in:', session.user.email);
+        } else if (event === 'SIGNED_OUT') {
+          console.log('User signed out');
+          // Clear all cached data on sign out
+          queryClient.clear();
+        } else if (event === 'TOKEN_REFRESHED' && session) {
+          console.log('Token refreshed for:', session.user.email);
+          invalidateAuthQueries();
+        }
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, [invalidateAuthQueries]);
+
+  // Auth functions using React Query mutations
   const login = async (email: string, password: string, redirectTo?: string) => {
-    setIsSigningIn(true);
     setAuthError(null);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      await signInMutation.mutateAsync({ email, password });
 
-      if (error) {
-        setAuthError(error.message);
-      } else if (redirectTo) {
-        window.location.href = redirectTo;
+      if (redirectTo) {
+        navigate(redirectTo);
+      } else {
+        navigate('/dashboard');
       }
-    } catch (error) {
-      setAuthError('An unexpected error occurred');
-    } finally {
-      setIsSigningIn(false);
+    } catch (error: any) {
+      handleAuthError(error);
+      throw error;
     }
   };
 
   const register = async (name: string, email: string, password: string, redirectTo?: string) => {
-    setIsSigningUp(true);
     setAuthError(null);
 
     try {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: { name },
-        },
-      });
+      await signUpMutation.mutateAsync({ name, email, password });
 
-      if (error) {
-        setAuthError(error.message);
-      } else if (redirectTo) {
-        window.location.href = redirectTo;
+      if (redirectTo) {
+        navigate(redirectTo);
+      } else {
+        navigate('/dashboard');
       }
-    } catch (error) {
-      setAuthError('An unexpected error occurred');
-    } finally {
-      setIsSigningUp(false);
+    } catch (error: any) {
+      handleAuthError(error);
+      throw error;
     }
   };
 
   const logout = async (redirectTo?: string) => {
-    setIsSigningOut(true);
-
     try {
-      await supabase.auth.signOut();
+      await signOutMutation.mutateAsync();
+
       if (redirectTo) {
-        window.location.href = redirectTo;
+        navigate(redirectTo);
+      } else {
+        navigate('/login');
       }
-    } catch (error) {
-      // Error handling is done in the component
-    } finally {
-      setIsSigningOut(false);
+    } catch (error: any) {
+      handleAuthError(error);
+      throw error;
     }
   };
 
-  // Función para limpiar errores manualmente
+  // Function to clear errors manually
   const clearError = useCallback(() => {
     setAuthError(null);
   }, []);
 
-  // Función para reautenticar (útil cuando el token expira)
+  // Function to refresh session
   const refreshSession = async () => {
     try {
       const { data, error } = await supabase.auth.refreshSession();
       if (error) {
-        // Error handling is done in the component
+        handleAuthError(error);
+        return { data: null, error };
       }
-      return { data, error };
-    } catch (error) {
+
+      // Invalidate queries after successful refresh
+      invalidateAuthQueries();
+      return { data, error: null };
+    } catch (error: any) {
+      handleAuthError(error);
       return { data: null, error };
     }
   };
@@ -161,14 +157,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isInitializing ||
     signInMutation.isPending ||
     signUpMutation.isPending ||
-    signOutMutation.isPending ||
-    isSigningIn ||
-    isSigningUp ||
-    isSigningOut;
+    signOutMutation.isPending;
 
   const contextValue: AuthContextType = {
     user: currentUser || null,
-    session: session || null,
+    session: session as any, // Type assertion to match AuthContextType
     isAuthenticated: isAuthenticated || false,
     isLoading,
     isInitializing,
@@ -179,10 +172,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     logout,
     clearError,
     refreshSession,
-    // Estados de las mutaciones para UI feedback
-    isSigningIn: signInMutation.isPending || isSigningIn,
-    isSigningUp: signUpMutation.isPending || isSigningUp,
-    isSigningOut: signOutMutation.isPending || isSigningOut,
+    // Mutation states for UI feedback
+    isSigningIn: signInMutation.isPending,
+    isSigningUp: signUpMutation.isPending,
+    isSigningOut: signOutMutation.isPending,
   };
 
   return (

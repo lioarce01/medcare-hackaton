@@ -19,12 +19,14 @@
 
 a {
   font-weight: 500;
-  color: #646cff;
+  color: #059669;
+  /* emerald-600 */
   text-decoration: inherit;
 }
 
 a:hover {
-  color: #535bf2;
+  color: #047857;
+  /* emerald-700 */
 }
 
 body {
@@ -67,7 +69,8 @@ button {
 }
 
 button:hover {
-  border-color: #646cff;
+  border-color: #059669;
+  /* emerald-600 */
 }
 
 button:focus,
@@ -82,7 +85,8 @@ button:focus-visible {
   }
 
   a:hover {
-    color: #747bff;
+    color: #047857;
+    /* emerald-700 */
   }
 
   button {
@@ -128,9 +132,9 @@ button:focus-visible {
     --info-bg: 214 95% 96%;
     --info-text: 214 84% 56%;
     --info-border: 214 95% 88%;
-    --purple-bg: 270 95% 96%;
-    --purple-text: 270 91% 65%;
-    --purple-border: 270 95% 88%;
+    --emerald-bg: 142 76% 96%;
+    --emerald-text: 142 71% 45%;
+    --emerald-border: 142 76% 88%;
   }
 
   .dark {
@@ -169,9 +173,9 @@ button:focus-visible {
     --info-bg: 214 84% 8%;
     --info-text: 214 95% 80%;
     --info-border: 214 84% 15%;
-    --purple-bg: 270 91% 8%;
-    --purple-text: 270 95% 80%;
-    --purple-border: 270 91% 15%;
+    --emerald-bg: 142 71% 8%;
+    --emerald-text: 142 76% 80%;
+    --emerald-border: 142 71% 15%;
   }
 }
 
@@ -204,10 +208,10 @@ button:focus-visible {
     border-color: hsl(var(--info-border));
   }
 
-  .bg-purple-light {
-    background-color: hsl(var(--purple-bg));
-    color: hsl(var(--purple-text));
-    border-color: hsl(var(--purple-border));
+  .bg-emerald-light {
+    background-color: hsl(var(--emerald-bg));
+    color: hsl(var(--emerald-text));
+    border-color: hsl(var(--emerald-border));
   }
 }
 
@@ -261,18 +265,18 @@ button:focus-visible {
   }
 
   /* Botones de colores específicos */
+  button[class*="bg-emerald-6"]:not([role="tab"]),
   button[class*="bg-green-6"]:not([role="tab"]),
   button[class*="bg-blue-6"]:not([role="tab"]),
-  button[class*="bg-purple-6"]:not([role="tab"]),
   button[class*="bg-yellow-6"]:not([role="tab"]),
   button[class*="bg-orange-6"]:not([role="tab"]),
   button[class*="bg-indigo-6"]:not([role="tab"]) {
     color: white !important;
   }
 
+  .dark button[class*="bg-emerald-6"]:not([role="tab"]),
   .dark button[class*="bg-green-6"]:not([role="tab"]),
   .dark button[class*="bg-blue-6"]:not([role="tab"]),
-  .dark button[class*="bg-purple-6"]:not([role="tab"]),
   .dark button[class*="bg-yellow-6"]:not([role="tab"]),
   .dark button[class*="bg-orange-6"]:not([role="tab"]),
   .dark button[class*="bg-indigo-6"]:not([role="tab"]) {
@@ -317,9 +321,9 @@ button:focus-visible {
   /* Badges específicos con fondos claros necesitan texto oscuro */
   .bg-yellow-100,
   .bg-green-100,
+  .bg-emerald-100,
   .bg-blue-100,
   .bg-red-100,
-  .bg-purple-100,
   .bg-orange-100 {
     color: rgb(17, 24, 39) !important;
     /* gray-900 */
@@ -328,9 +332,9 @@ button:focus-visible {
   /* En dark mode, mantener texto claro para badges con fondos claros */
   .dark .bg-yellow-100,
   .dark .bg-green-100,
+  .dark .bg-emerald-100,
   .dark .bg-blue-100,
   .dark .bg-red-100,
-  .dark .bg-purple-100,
   .dark .bg-orange-100 {
     color: white !important;
   }

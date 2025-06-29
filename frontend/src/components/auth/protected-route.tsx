@@ -1,6 +1,7 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth-context';
 import { Header } from '@/components/layout/header';
+import { Loader2 } from 'lucide-react';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -13,7 +14,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   if (isLoading || isInitializing) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+        <Loader2 className="animate-spin rounded-full h-8 w-8 text-emerald-600" />
         <span className="ml-2">Verifying authentication...</span>
       </div>
     );

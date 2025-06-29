@@ -1,3 +1,6 @@
+import { useMemo } from "react";
+import { useAuth as useAuthContext } from "@/contexts/auth-context";
+
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/config/supabase";
@@ -19,9 +22,16 @@ export const useSignUp = () => {
       password: string;
     }) => signUp(name, email, password),
     onSuccess: async (data) => {
-      queryClient.invalidateQueries({ queryKey: ["session"] });
-      queryClient.invalidateQueries({ queryKey: ["user"] });
+      // Invalidate all auth-related queries
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["session"] }),
+        queryClient.invalidateQueries({ queryKey: ["user"] }),
+        queryClient.invalidateQueries({ queryKey: ["profile"] }),
+      ]);
       navigate("/dashboard");
+    },
+    onError: (error) => {
+      console.error("Sign up error:", error);
     },
   });
 };
@@ -41,23 +51,33 @@ export const useSignIn = () => {
       return data;
     },
     onSuccess: async (data) => {
-      queryClient.invalidateQueries({ queryKey: ["session"] });
-      queryClient.invalidateQueries({ queryKey: ["user"] });
+      // Invalidate all auth-related queries
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["session"] }),
+        queryClient.invalidateQueries({ queryKey: ["user"] }),
+        queryClient.invalidateQueries({ queryKey: ["profile"] }),
+      ]);
+    },
+    onError: (error) => {
+      console.error("Sign in error:", error);
     },
   });
 };
 
 export const useSignOut = () => {
   const queryClient = useQueryClient();
-  const navigate = useNavigate();
 
   return useMutation({
     mutationFn: async () => {
       await signOut();
     },
     onSuccess: () => {
-      queryClient.clear(); // Clear all cached data
-      navigate("/login");
+      // Clear all cached data on sign out
+      queryClient.clear();
+      // Remove navigation from here - let the context handle it
+    },
+    onError: (error) => {
+      console.error("Sign out error:", error);
     },
   });
 };
@@ -70,6 +90,9 @@ export const useAuth = () => {
       const { data: { session: supabaseSession } } = await supabase.auth.getSession();
       return supabaseSession;
     },
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
   });
 
   // Enhanced user query that fetches from backend
@@ -87,12 +110,13 @@ export const useAuth = () => {
         const userProfile = await getUserProfile();
         return userProfile;
       } catch (error) {
+        console.error("Error fetching user profile:", error);
         // If there's an error, return null
         return null;
       }
     },
     enabled: !!session?.user,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 1000 * 60 * 5, // 5 minutes
     refetchOnWindowFocus: false,
     retry: (failureCount, error) => {
       // Don't retry if it's a database error

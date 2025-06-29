@@ -35,7 +35,7 @@ export function ProgressBar({ isLoading, className }: ProgressBarProps) {
   return (
     <div className={cn('fixed top-0 left-0 right-0 z-50 h-1', className)}>
       <div
-        className="h-full bg-primary transition-all duration-300 ease-out"
+        className="h-full bg-emerald-600 transition-all duration-300 ease-out"
         style={{
           width: `${progress}%`,
           opacity: progress === 100 ? 0 : 1,

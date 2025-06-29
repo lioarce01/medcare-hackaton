@@ -216,7 +216,7 @@ export interface AdherenceStats {
 export interface AuthContextType {
   // Estado del usuario
   user: User | null;
-  session: Session | null;
+  session: any; // Use any to accommodate Supabase Session type
   isAuthenticated: boolean;
   isLoading: boolean;
   isInitializing: boolean;

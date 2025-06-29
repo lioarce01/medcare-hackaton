@@ -46,7 +46,6 @@ export function Header() {
 
   const handleLogout = () => {
     logout();
-    navigate('/');
   };
 
   const getInitials = (name: string | null | undefined) => {
@@ -82,7 +81,7 @@ export function Header() {
               }}
             >
               <Pill className="h-6 w-6 text-primary" />
-              <span className="font-bold text-lg">MedCare+</span>
+              <span className="font-bold text-lg text-emerald-600 dark:text-emerald-400">MedCare+</span>
             </Link>
 
             <nav className="hidden md:flex items-center space-x-2">

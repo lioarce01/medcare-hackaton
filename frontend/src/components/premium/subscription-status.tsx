@@ -128,7 +128,15 @@ export function SubscriptionStatus() {
               </div>
               <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50 dark:bg-muted/30 border-border hover:bg-accent/50">
                 <Zap className="h-4 w-4 text-primary" />
-                <span className="text-sm font-medium text-foreground">Priority Support</span>
+                <span className="text-sm font-medium text-foreground">Custom Reminders</span>
+              </div>
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50 dark:bg-muted/30 border-border hover:bg-accent/50">
+                <Zap className="h-4 w-4 text-primary" />
+                <span className="text-sm font-medium text-foreground">Data Export</span>
+              </div>
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50 dark:bg-muted/30 border-border hover:bg-accent/50">
+                <Zap className="h-4 w-4 text-primary" />
+                <span className="text-sm font-medium text-foreground">Risk Predictions</span>
               </div>
             </div>
 
@@ -144,7 +152,7 @@ export function SubscriptionStatus() {
             </Link>
 
             <p className="text-xs text-gray-400 mt-4">
-              Only $9.99/month • Cancel anytime
+              Only $9.99/month
             </p>
           </CardContent>
         </Card>

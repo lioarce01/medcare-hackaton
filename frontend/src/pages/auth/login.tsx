@@ -99,7 +99,7 @@ export function LoginPage() {
               )}
             </div>
 
-            <div className="flex items-center justify-between">
+            {/* <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <Checkbox
                   id="rememberMe"
@@ -109,14 +109,14 @@ export function LoginPage() {
                 <Label htmlFor="rememberMe" className="text-sm">
                   Remember me
                 </Label>
-              </div>
-              <Link
+              </div> */}
+            {/* <Link
                 to="/forgot-password"
                 className="text-sm text-primary hover:underline"
               >
                 Forgot password?
-              </Link>
-            </div>
+              </Link> */}
+            {/* </div> */}
 
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? (
@@ -130,7 +130,7 @@ export function LoginPage() {
             </Button>
           </form>
 
-          <div className="relative">
+          {/* <div className="relative">
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t" />
             </div>
@@ -164,7 +164,7 @@ export function LoginPage() {
               />
             </svg>
             Continue with Google
-          </Button>
+          </Button> */}
 
           <div className="text-center text-sm text-muted-foreground">
             Don't have an account?{' '}
@@ -176,11 +176,11 @@ export function LoginPage() {
           <div className="text-center">
             <p className="text-xs text-muted-foreground mb-2">Demo Account:</p>
             <p className="text-xs text-muted-foreground">
-              Email: demo@example.com | Password: any
+              Email: demo@demo.com | Password: !Demo123
             </p>
           </div>
         </CardContent>
       </Card>
-    </div>
+    </div >
   );
 }

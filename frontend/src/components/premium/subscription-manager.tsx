@@ -33,8 +33,6 @@ interface FeatureCardProps {
 
 type PaymentProvider = "stripe" | "mercadopago"
 
-const currentCurrency = "USD" as const
-
 const FeatureCard: React.FC<FeatureCardProps> = ({ icon: Icon, title, description, included }) => (
   <div
     className={`group relative overflow-hidden rounded-lg border transition-all duration-300 hover:shadow-md ${included
@@ -81,6 +79,7 @@ export const SubscriptionManager: React.FC = () => {
   const createCheckoutSession = useCreateCheckoutSession()
 
   const isPremium = user?.subscription_status === "premium"
+  const currentCurrency = selectedPaymentMethod === "mercadopago" ? "ARS" : "USD"
   const { symbol, amount } = SUBSCRIPTION_CONFIG.currency[currentCurrency]
 
   const priceId =
@@ -293,7 +292,7 @@ export const SubscriptionManager: React.FC = () => {
               } disabled:opacity-50 disabled:cursor-not-allowed`}
           >
             <CreditCard className="w-5 h-5 mr-3" />
-            <span className="text-sm font-medium">Stripe</span>
+            <span className="text-sm font-medium">Stripe (Credit Card)</span>
             <span className="ml-2">💳</span>
           </button>
 
@@ -306,7 +305,7 @@ export const SubscriptionManager: React.FC = () => {
               } disabled:opacity-50 disabled:cursor-not-allowed`}
           >
             <Wallet className="w-5 h-5 mr-3" />
-            <span className="text-sm font-medium">MercadoPago</span>
+            <span className="text-sm font-medium">MercadoPago (Only Argentina)</span>
             <span className="ml-2">💰</span>
           </button>
         </div>
@@ -334,9 +333,8 @@ export const SubscriptionManager: React.FC = () => {
         <div className="text-center mt-4 space-y-1">
           <p className="text-sm text-muted-foreground">
             Only {symbol}
-            {amount}/month • Cancel anytime
+            {amount}/month
           </p>
-          <p className="text-xs text-muted-foreground">🔒 Secure payment processing • 30-day money-back guarantee</p>
         </div>
       </div>
 

@@ -267,7 +267,7 @@ export function ProfilePage() {
   return (
     <div className="max-w-6xl mx-auto space-y-8 p-6">
       {/* Enhanced Header Section */}
-      <div className="bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 dark:from-primary/10 dark:via-primary/20 dark:to-primary/10 rounded-xl p-6 border shadow-sm">
+      <div className="">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-primary/10 rounded-full">
