@@ -4,14 +4,25 @@ import { useAuth } from "./useAuth";
 import { useMutation } from "@tanstack/react-query";
 import { createCheckoutSession } from "@/api/subscriptions";
 import { SubscriptionFeatures, SubscriptionService } from "@/services/subscription";
+import { toast } from "sonner";
 
 export const useCreateCheckoutSession = () => {
   return useMutation({
     mutationFn: createCheckoutSession,
     onSuccess: (data: any) => {
       if (data.url) {
+        // Stripe checkout URL
         window.location.href = data.url;
+      } else if (data.initPoint) {
+        // MercadoPago checkout URL
+        window.location.href = data.initPoint;
+      } else {
+        toast.error("Failed to create checkout session");
       }
+    },
+    onError: (error: any) => {
+      console.error("Checkout session error:", error);
+      toast.error("Failed to process payment. Please try again.");
     },
   })
 }

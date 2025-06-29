@@ -4,8 +4,7 @@ export interface CreateCheckoutSessionParams {
   priceId: string
   paymentProvider: "stripe" | "mercadopago"
   currency: string
-  cardToken?: string
-  email?: string
+  email: string
 }
 
 export interface CheckoutSessionResponse {
@@ -13,6 +12,7 @@ export interface CheckoutSessionResponse {
   preferenceId?: string;
   initPoint?: string;
   preApprovalId?: string;
+  sessionId?: string;
 }
 
 export const createCheckoutSession = async (params: CreateCheckoutSessionParams) => {

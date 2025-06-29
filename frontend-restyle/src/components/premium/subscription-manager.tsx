@@ -33,7 +33,7 @@ interface FeatureCardProps {
 
 type PaymentProvider = "stripe" | "mercadopago"
 
-const currentCurrency = "ARS" as const
+const currentCurrency = "USD" as const
 
 const FeatureCard: React.FC<FeatureCardProps> = ({ icon: Icon, title, description, included }) => (
   <div
@@ -73,7 +73,7 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ icon: Icon, title, descriptio
 
 export const SubscriptionManager: React.FC = () => {
   const { data: user } = useUserProfile()
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentProvider>("mercadopago")
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentProvider>("stripe")
   const createCheckoutSession = useCreateCheckoutSession()
 
   const isPremium = user?.subscription_status === "premium"
@@ -85,23 +85,23 @@ export const SubscriptionManager: React.FC = () => {
       : SUBSCRIPTION_CONFIG.prices.stripe
 
   const handleUpgrade = async () => {
-    if (!user) return;
+    if (!user) {
+      toast.error("Please log in to upgrade your subscription")
+      return;
+    }
 
     try {
       const checkoutData = {
         priceId: priceId,
-        userId: user.id,
-        successUrl: `${window.location.origin}/dashboard?success=true`,
-        cancelUrl: `${window.location.origin}/dashboard?canceled=true`,
+        paymentProvider: selectedPaymentMethod,
+        currency: currentCurrency,
+        email: user.email,
       };
 
-      const response = await createCheckoutSession(checkoutData);
-
-      if (response.url) {
-        window.location.href = response.url;
-      }
+      await createCheckoutSession.mutateAsync(checkoutData);
     } catch (error) {
-      // Error handling is done in the component
+      // Error handling is done in the useCreateCheckoutSession hook
+      console.error("Payment error:", error)
     }
   }
 
