@@ -1,4 +1,4 @@
-import { IsBoolean, IsOptional, IsArray, IsString, IsObject } from 'class-validator';
+import { IsBoolean, IsOptional, IsArray, IsString, IsObject, IsNumber } from 'class-validator';
 
 export class UpdateReminderSettingsDto {
   @IsOptional()
@@ -18,7 +18,8 @@ export class UpdateReminderSettingsDto {
   @IsObject()
   notificationPreferences?: {
     email?: boolean;
-    push?: boolean;
     sms?: boolean;
+    push?: boolean;
+    reminder_before?: number;
   };
 }

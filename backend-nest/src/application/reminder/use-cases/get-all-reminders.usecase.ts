@@ -7,9 +7,15 @@ export class GetAllRemindersUseCase {
   constructor(
     @Inject('ReminderRepository')
     private readonly reminderRepository: ReminderRepository,
-  ) {}
+  ) { }
 
-  async execute(userId: string, startDate?: string, endDate?: string): Promise<Reminder[]> {
-    return this.reminderRepository.findByUser(userId, startDate, endDate);
+  async execute(
+    userId: string,
+    page: number = 1,
+    limit: number = 10,
+    startDate?: string,
+    endDate?: string
+  ): Promise<{ data: Reminder[]; total: number; page: number; limit: number }> {
+    return this.reminderRepository.findByUserWithPagination(userId, page, limit, startDate, endDate);
   }
 }

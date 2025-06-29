@@ -13,12 +13,12 @@ export class SendReminderManuallyUseCase {
     private readonly notificationService: NotificationService,
     @Inject('UserRepository')
     private readonly userRepository: UserRepository,
-  ) {}
+  ) { }
 
   async execute(reminderId: string, userId: string): Promise<{ success: boolean; message: string }> {
     // Get the reminder and verify it belongs to the user
     const reminder = await this.reminderRepository.findById(reminderId);
-    
+
     if (!reminder || reminder.user_id !== userId) {
       throw new NotFoundException('Reminder not found or unauthorized');
     }
@@ -29,13 +29,28 @@ export class SendReminderManuallyUseCase {
       throw new NotFoundException('User not found');
     }
 
-    const isPremium = user.subscription_status === 'premium' && 
-                     user.subscription_expires_at && 
-                     new Date(user.subscription_expires_at) > new Date();
+    const isPremium = user.subscription_status === 'premium' &&
+      user.subscription_expires_at &&
+      new Date(user.subscription_expires_at) > new Date();
 
     if (!isPremium) {
       throw new ForbiddenException('Premium subscription required');
     }
+
+    // Debug logging
+    console.log('Reminder data:', {
+      id: reminder.id,
+      userId: reminder.user_id,
+      hasUser: !!reminder.user,
+      hasUserUser: !!reminder.user?.user,
+      userEmail: reminder.user?.user?.email,
+      userData: reminder.user ? {
+        id: reminder.user.id,
+        authUserId: reminder.user.authUserId,
+        userName: reminder.user.user?.name,
+        userEmail: reminder.user.user?.email
+      } : null
+    });
 
     try {
       // Send the reminder via email
@@ -51,7 +66,7 @@ export class SendReminderManuallyUseCase {
     } catch (error) {
       // Mark as failed
       await this.reminderRepository.markAsFailed(reminderId);
-      
+
       throw new Error(`Failed to send reminder: ${error.message}`);
     }
   }

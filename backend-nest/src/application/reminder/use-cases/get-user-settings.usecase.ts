@@ -3,7 +3,7 @@ import { PrismaService } from 'src/infrastructure/prisma/prisma.service';
 
 @Injectable()
 export class GetUserSettingsUseCase {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   async execute(userId: string): Promise<{
     emailEnabled: boolean;
@@ -29,17 +29,30 @@ export class GetUserSettingsUseCase {
         timezone: 'UTC',
         notificationPreferences: {
           email: true,
-          push: false,
           sms: false,
+          push: false,
+          reminder_before: 15,
         },
       };
     }
+
+    // Ensure notification preferences have all required properties
+    const notificationPreferences = settings.notification_preferences as any || {};
+    const defaultPreferences = {
+      email: true,
+      sms: false,
+      push: false,
+      reminder_before: 15,
+    };
 
     return {
       emailEnabled: settings.email_enabled,
       preferredTimes: settings.preferred_times as string[],
       timezone: settings.timezone,
-      notificationPreferences: settings.notification_preferences,
+      notificationPreferences: {
+        ...defaultPreferences,
+        ...notificationPreferences,
+      },
     };
   }
 }

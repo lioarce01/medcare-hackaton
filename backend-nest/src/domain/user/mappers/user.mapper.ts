@@ -8,6 +8,17 @@ export class UserMapper {
     authUserId: string,
     prismaSettings?: any,
   ): UserAggregate {
+    // Debug logging
+    console.log('UserMapper.toDomain called with:', {
+      prismaUser: prismaUser ? {
+        id: prismaUser.id,
+        email: prismaUser.email,
+        name: prismaUser.name
+      } : null,
+      authUserId,
+      hasSettings: !!prismaSettings
+    });
+
     const user = new User(
       prismaUser.id,
       prismaUser.auth_user_id,
@@ -31,17 +42,28 @@ export class UserMapper {
 
     const settings = prismaSettings
       ? new UserSettings(
-          prismaSettings.id,
-          prismaSettings.user_id,
-          prismaSettings.email_enabled,
-          prismaSettings.preferred_times,
-          prismaSettings.timezone,
-          prismaSettings.notification_preferences,
-          prismaSettings.created_at,
-          prismaSettings.updated_at,
-        )
+        prismaSettings.id,
+        prismaSettings.user_id,
+        prismaSettings.email_enabled,
+        prismaSettings.preferred_times,
+        prismaSettings.timezone,
+        prismaSettings.notification_preferences,
+        prismaSettings.created_at,
+        prismaSettings.updated_at,
+      )
       : null;
 
-    return new UserAggregate(prismaUser.id, authUserId, user, settings);
+    const userAggregate = new UserAggregate(prismaUser.id, authUserId, user, settings);
+
+    // Debug logging
+    console.log('UserAggregate created:', {
+      id: userAggregate.id,
+      authUserId: userAggregate.authUserId,
+      hasUser: !!userAggregate.user,
+      userEmail: userAggregate.user?.email,
+      hasSettings: !!userAggregate.settings
+    });
+
+    return userAggregate;
   }
 }

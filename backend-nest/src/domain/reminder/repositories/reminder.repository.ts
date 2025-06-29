@@ -12,6 +12,13 @@ export interface ReminderRepository {
     startDate?: string,
     endDate?: string,
   ): Promise<Reminder[]>;
+  findByUserWithPagination(
+    userId: string,
+    page: number,
+    limit: number,
+    startDate?: string,
+    endDate?: string,
+  ): Promise<{ data: Reminder[]; total: number; page: number; limit: number }>;
   findUpcomingByUser(userId: string, limit?: number): Promise<Reminder[]>;
   findPendingReminders(
     userId?: string,

@@ -4,7 +4,20 @@ import { UserMapper } from 'src/domain/user/mappers/user.mapper';
 
 export class ReminderMapper {
   static toDomain(prismaReminder: any): Reminder {
-    return new Reminder(
+    // Debug logging
+    console.log('ReminderMapper.toDomain called with:', {
+      id: prismaReminder.id,
+      userId: prismaReminder.user_id,
+      hasUser: !!prismaReminder.users,
+      hasMedication: !!prismaReminder.medications,
+      userData: prismaReminder.users ? {
+        id: prismaReminder.users.id,
+        email: prismaReminder.users.email,
+        name: prismaReminder.users.name
+      } : null
+    });
+
+    const reminder = new Reminder(
       prismaReminder.id,
       prismaReminder.user_id,
       prismaReminder.medication_id,
@@ -17,16 +30,27 @@ export class ReminderMapper {
       prismaReminder.adherence_id,
       prismaReminder.created_at ? new Date(prismaReminder.created_at) : null,
       prismaReminder.updated_at ? new Date(prismaReminder.updated_at) : null,
-      prismaReminder.medication
-        ? MedicationMapper.toDomain(prismaReminder.medication)
+      prismaReminder.medications
+        ? MedicationMapper.toDomain(prismaReminder.medications)
         : undefined,
-      prismaReminder.user
+      prismaReminder.users
         ? UserMapper.toDomain(
-          prismaReminder.user,
-          prismaReminder.user.auth_user_id || prismaReminder.user.id,
+          prismaReminder.users,
+          prismaReminder.users.id,
         )
         : undefined,
     );
+
+    // Debug logging
+    console.log('Reminder created:', {
+      id: reminder.id,
+      userId: reminder.user_id,
+      hasUser: !!reminder.user,
+      hasUserUser: !!reminder.user?.user,
+      userEmail: reminder.user?.user?.email
+    });
+
+    return reminder;
   }
 
   static toDomainList(prismaReminders: any[]): Reminder[] {

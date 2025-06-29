@@ -76,6 +76,23 @@ export class SupabaseReminderRepository implements ReminderRepository {
         users: true,
       },
     });
+
+    // Debug logging
+    console.log('Raw reminder data from database:', {
+      id: found?.id,
+      userId: found?.user_id,
+      hasUser: !!found?.users,
+      userData: found?.users ? {
+        id: found.users.id,
+        email: found.users.email,
+        name: found.users.name
+      } : null,
+      medicationData: found?.medications ? {
+        id: found.medications.id,
+        name: found.medications.name
+      } : null
+    });
+
     if (!found) return null;
     return ReminderMapper.toDomain(found);
   }
@@ -109,6 +126,54 @@ export class SupabaseReminderRepository implements ReminderRepository {
       orderBy: [{ scheduled_datetime: 'asc' }],
     });
     return ReminderMapper.toDomainList(found);
+  }
+
+  async findByUserWithPagination(
+    userId: string,
+    page: number,
+    limit: number,
+    startDatetime?: string,
+    endDatetime?: string,
+  ): Promise<{ data: Reminder[]; total: number; page: number; limit: number }> {
+    const whereClause: any = { user_id: userId };
+
+    if (startDatetime) {
+      whereClause.scheduled_datetime = {
+        ...whereClause.scheduled_datetime,
+        gte: new Date(startDatetime),
+      };
+    }
+    if (endDatetime) {
+      whereClause.scheduled_datetime = {
+        ...whereClause.scheduled_datetime,
+        lte: new Date(endDatetime),
+      };
+    }
+
+    const skip = (page - 1) * limit;
+
+    const [found, total] = await Promise.all([
+      this.prisma.reminders.findMany({
+        where: whereClause,
+        include: {
+          medications: true,
+          users: true,
+        },
+        orderBy: [{ scheduled_datetime: 'asc' }],
+        skip,
+        take: limit,
+      }),
+      this.prisma.reminders.count({
+        where: whereClause,
+      }),
+    ]);
+
+    return {
+      data: ReminderMapper.toDomainList(found),
+      total,
+      page,
+      limit,
+    };
   }
 
   async findUpcomingByUser(

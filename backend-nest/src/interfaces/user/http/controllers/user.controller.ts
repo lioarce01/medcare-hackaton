@@ -27,7 +27,7 @@ export class UserController {
     readonly updateUserSettingsUseCase: UpdateUserSettingsUseCase,
     readonly getMeUseCase: GetMeUseCase,
     readonly deleteUserUseCase: DeleteUserUseCase,
-  ) {}
+  ) { }
 
   @Get('me')
   @UseGuards(JwtAuthGuard)
@@ -67,10 +67,55 @@ export class UserController {
     @GetUserId() userId: string,
     @Body() updateSettingsDto: UpdateUserSettingsDto,
   ) {
+    console.log('=== BACKEND: Received settings update request ===');
+    console.log('userId:', userId);
+    console.log('updateSettingsDto:', updateSettingsDto);
+    console.log('notification_preferences:', updateSettingsDto.notification_preferences);
+    console.log('notification_preferences type:', typeof updateSettingsDto.notification_preferences);
+    console.log('notification_preferences keys:', updateSettingsDto.notification_preferences ? Object.keys(updateSettingsDto.notification_preferences) : 'null/undefined');
+
     const updatedSettings = await this.updateUserSettingsUseCase.execute(
       userId,
       updateSettingsDto,
     );
-    return UserPresenter.toSettingsJson(updatedSettings);
+
+    console.log('=== BACKEND: Updated settings result ===');
+    console.log('updatedSettings:', updatedSettings);
+    console.log('updatedSettings.notification_preferences:', updatedSettings.notification_preferences);
+
+    // Return the full user profile with updated settings
+    const userAggregate = await this.getMeUseCase.execute(userId);
+
+    console.log('=== BACKEND: Final user aggregate ===');
+    console.log('userAggregate.settings:', userAggregate.settings);
+    console.log('userAggregate.settings?.notification_preferences:', userAggregate.settings?.notification_preferences);
+
+    const response = UserPresenter.toHttp(userAggregate);
+
+    console.log('=== BACKEND: Final response ===');
+    console.log('response.settings:', response.settings);
+    console.log('response.settings?.notification_preferences:', response.settings?.notification_preferences);
+
+    return response;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('me/debug-settings')
+  async debugSettings(@GetUserId() userId: string) {
+    const userAggregate = await this.getMeUseCase.execute(userId);
+
+    console.log('Debug settings - User aggregate:', {
+      userId,
+      hasSettings: !!userAggregate.settings,
+      settings: userAggregate.settings,
+      notification_preferences: userAggregate.settings?.notification_preferences
+    });
+
+    return {
+      userId,
+      hasSettings: !!userAggregate.settings,
+      settings: userAggregate.settings,
+      notification_preferences: userAggregate.settings?.notification_preferences
+    };
   }
 }

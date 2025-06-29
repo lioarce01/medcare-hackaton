@@ -1,6 +1,5 @@
 generator client {
   provider        = "prisma-client-js"
-  output          = "../generated/prisma"
   previewFeatures = ["multiSchema"]
 }
 
@@ -130,7 +129,7 @@ model users {
   subscription_status     String?        @default("free")
   subscription_plan       String?        @default("free")
   subscription_expires_at DateTime?      @db.Timestamp(6)
-  subscription_features   Json?          @default("{\"data_export\": false, \"basic reminders\": true, \"custom_reminders\": false, \"risk_predictions\": false, \"advanced_analytics\": false, \"medication_tracking\": true}")
+  subscription_features   Json?          @default("{\"data_export\": false, \"basic_reminders\": true, \"custom_reminders\": false, \"risk_predictions\": false, \"advanced_analytics\": false, \"medication_tracking\": true}")
   adherence               adherence[]
   medications             medications[]
   reminders               reminders[]

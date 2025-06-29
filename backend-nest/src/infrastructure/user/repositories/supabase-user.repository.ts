@@ -18,8 +18,32 @@ export class SupabaseUserRepository implements UserRepository {
       where: { user_id: id },
     });
 
+    // Fix empty notification_preferences if they exist
+    let fixedSettings = prismaSettings;
+    if (prismaSettings && (!prismaSettings.notification_preferences ||
+      Object.keys(prismaSettings.notification_preferences as any).length === 0)) {
+
+      console.log('Fixing empty notification_preferences for user:', id);
+
+      // Update the database with proper notification preferences
+      const updatedSettings = await this.prisma.user_settings.update({
+        where: { user_id: id },
+        data: {
+          notification_preferences: {
+            email: true,
+            sms: false,
+            push: false,
+            reminder_before: 15,
+          },
+          updated_at: new Date(),
+        },
+      });
+
+      fixedSettings = updatedSettings;
+    }
+
     // Como ahora `id` es el authUserId (del token), lo usamos directamente
-    return UserMapper.toDomain(prismaUser, id, prismaSettings);
+    return UserMapper.toDomain(prismaUser, id, fixedSettings);
   }
 
   async findById(id: string): Promise<User | null> {
@@ -105,13 +129,73 @@ export class SupabaseUserRepository implements UserRepository {
     userId: string,
     partialSettings: Partial<UserSettings>,
   ): Promise<UserSettings> {
+    console.log('Repository updateSettings - Input:', {
+      userId,
+      partialSettings,
+      notification_preferences: partialSettings.notification_preferences
+    });
+
     const updateData: any = { ...partialSettings, updated_at: new Date() };
     delete updateData.user_id; // Remove user_id from update data
 
-    const updated = await this.prisma.user_settings.update({
+    // Ensure notification_preferences are properly structured
+    if (updateData.notification_preferences) {
+      console.log('Processing notification_preferences:', updateData.notification_preferences);
+      console.log('Type:', typeof updateData.notification_preferences);
+      console.log('Keys:', Object.keys(updateData.notification_preferences));
+      console.log('Is empty object:', Object.keys(updateData.notification_preferences).length === 0);
+
+      // Check if it's an empty object or has missing properties
+      const hasAllProperties = updateData.notification_preferences.email !== undefined &&
+        updateData.notification_preferences.sms !== undefined &&
+        updateData.notification_preferences.push !== undefined &&
+        updateData.notification_preferences.reminder_before !== undefined;
+
+      if (Object.keys(updateData.notification_preferences).length === 0 || !hasAllProperties) {
+        console.log('Detected invalid notification_preferences object, using defaults');
+        const defaultPrefs = {
+          email: true,
+          sms: false,
+          push: false,
+          reminder_before: 15,
+        };
+
+        updateData.notification_preferences = {
+          ...defaultPrefs,
+          ...updateData.notification_preferences
+        };
+
+        console.log('Fixed notification_preferences:', updateData.notification_preferences);
+      }
+    } else if (updateData.notification_preferences === null || updateData.notification_preferences === undefined) {
+      console.log('notification_preferences is null/undefined, using defaults');
+      updateData.notification_preferences = {
+        email: true,
+        sms: false,
+        push: false,
+        reminder_before: 15,
+      };
+    }
+
+    console.log('Repository updateSettings - Final data to upsert:', updateData);
+
+    // Use upsert to handle cases where settings don't exist yet
+    const updated = await this.prisma.user_settings.upsert({
       where: { user_id: userId },
-      data: updateData,
+      update: updateData,
+      create: {
+        user_id: userId,
+        email_enabled: partialSettings.email_enabled ?? true,
+        preferred_times: partialSettings.preferred_times ?? ['08:00', '14:00', '20:00'],
+        timezone: partialSettings.timezone ?? 'UTC',
+        notification_preferences: updateData.notification_preferences,
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
     });
+
+    console.log('Repository updateSettings - Database result:', updated);
+    console.log('Database notification_preferences:', updated.notification_preferences);
 
     return new UserSettings(
       updated.id,

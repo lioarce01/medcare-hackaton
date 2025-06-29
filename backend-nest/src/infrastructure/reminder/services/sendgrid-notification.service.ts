@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import * as sgMail from '@sendgrid/mail';
+import sgMail from '@sendgrid/mail';
 import { NotificationService } from 'src/domain/reminder/services/notification.service';
 import { Reminder } from 'src/domain/reminder/entities/reminder.entity';
 import { PrismaService } from 'src/infrastructure/prisma/prisma.service';
@@ -24,8 +24,19 @@ export class SendGridNotificationService extends NotificationService {
 
   async sendEmailReminder(reminder: Reminder): Promise<boolean> {
     try {
-      if (!reminder.user?.user?.email) {
-        throw new Error('User email not found');
+      // Check if user data exists
+      if (!reminder.user) {
+        throw new Error('User data not found in reminder');
+      }
+
+      // Check if user.user exists (the actual User entity)
+      if (!reminder.user.user) {
+        throw new Error('User entity not found in reminder');
+      }
+
+      // Check if email exists and is not null/empty
+      if (!reminder.user.user.email || reminder.user.user.email.trim() === '') {
+        throw new Error(`User email is null or empty. User ID: ${reminder.user.id}, Email: "${reminder.user.user.email}"`);
       }
 
       const emailData = this.buildEmailReminderData(reminder);

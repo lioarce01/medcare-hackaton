@@ -7,9 +7,11 @@ export class UserSettings {
     public timezone: string,
     public notification_preferences?: {
       email: boolean;
+      sms: boolean;
       push: boolean;
+      reminder_before: number;
     } | null,
     public created_at?: Date,
     public updated_at?: Date,
-  ) {}
+  ) { }
 }

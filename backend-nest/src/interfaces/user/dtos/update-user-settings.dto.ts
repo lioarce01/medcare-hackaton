@@ -4,14 +4,22 @@ import {
   IsArray,
   IsString,
   ValidateNested,
+  IsNumber,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 
 class NotificationPreferencesDto {
   @IsBoolean()
   email!: boolean;
 
   @IsBoolean()
+  sms!: boolean;
+
+  @IsBoolean()
   push!: boolean;
+
+  @IsNumber()
+  reminder_before!: number;
 }
 
 export class UpdateUserSettingsDto {
@@ -30,5 +38,6 @@ export class UpdateUserSettingsDto {
 
   @IsOptional()
   @ValidateNested()
+  @Type(() => NotificationPreferencesDto)
   notification_preferences?: NotificationPreferencesDto | null;
 }

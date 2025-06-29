@@ -24,6 +24,7 @@ import { CreateReminderDto } from 'src/interfaces/reminder/dtos/create-reminder.
 import { UpdateReminderSettingsDto } from 'src/interfaces/reminder/dtos/update-reminder-settings.dto';
 import { ReminderPresenter } from 'src/domain/reminder/presenters/reminder.presenter';
 import { SubscriptionGuard } from 'src/interfaces/common/guards/subscription.guard';
+import { PaginationDto } from 'src/interfaces/common/dto/pagination.dto';
 
 @Controller('reminders')
 export class ReminderController {
@@ -35,21 +36,29 @@ export class ReminderController {
     private readonly deleteReminderUseCase: DeleteReminderUseCase,
     private readonly updateReminderSettingsUseCase: UpdateReminderSettingsUseCase,
     private readonly getUserSettingsUseCase: GetUserSettingsUseCase,
-  ) {}
+  ) { }
 
   @Get()
   @UseGuards(JwtAuthGuard)
   async getAllReminders(
     @GetUserId() userId: string,
+    @Query() pagination: PaginationDto,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
   ) {
-    const reminders = await this.getAllRemindersUseCase.execute(
+    const result = await this.getAllRemindersUseCase.execute(
       userId,
+      pagination.page || 1,
+      pagination.limit || 10,
       startDate,
       endDate,
     );
-    return ReminderPresenter.toHttpList(reminders);
+    return {
+      data: ReminderPresenter.toHttpList(result.data),
+      page: result.page,
+      limit: result.limit,
+      total: result.total,
+    };
   }
 
   @Get('upcoming')
