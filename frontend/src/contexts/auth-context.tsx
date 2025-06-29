@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { AuthContextType } from '@/types';
 import { useAuth as useSupabaseAuth, useSignIn, useSignUp, useSignOut } from '@/hooks/useAuth';
 import { supabase } from '@/config/supabase';
-import { queryClient } from '@/App';
 import type { AuthChangeEvent, Session } from '@supabase/supabase-js';
+import { queryClient } from '@/lib/query-client';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
