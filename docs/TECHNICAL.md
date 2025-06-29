@@ -7,234 +7,536 @@
 The frontend is built using React with TypeScript and follows a component-based architecture. Key architectural decisions include:
 
 1. **State Management**
-
    - React Query for server state
    - Local state for component-specific data
+   - Context API for global state (auth, theme)
 
 2. **Routing**
-
    - React Router v6 for navigation
    - Protected routes with authentication checks
+   - Premium feature guards
    - Lazy loading for code splitting
 
 3. **Styling**
-
    - Tailwind CSS for utility-first styling
+   - Shadcn/ui component library
    - Custom components for reusability
    - Responsive design patterns
+   - Dark/light theme support
 
 4. **Performance Optimizations**
    - Code splitting with dynamic imports
    - Bundle size optimization
    - Image optimization
    - Caching strategies
+   - Progressive Web App (PWA) capabilities
 
 ### Backend Architecture
 
-The backend follows a layered architecture:
+The backend follows a Clean Architecture pattern with NestJS:
 
-1. **Controllers Layer**
-
-   - Request validation
+1. **Controllers Layer (Interfaces)**
+   - Request validation with DTOs
    - Response formatting
-   - Error handling
+   - Error handling with custom filters
+   - JWT authentication guards
+   - Subscription guards for premium features
 
-2. **Services Layer**
+2. **Application Layer (Use Cases)**
+   - Business logic orchestration
+   - Command/Query separation
+   - Transaction management
+   - Domain event handling
 
-   - Business logic
-   - Data processing
-   - External service integration
+3. **Domain Layer**
+   - Entity definitions
+   - Domain services
+   - Value objects
+   - Repository interfaces
+   - Domain exceptions
 
-3. **Data Access Layer**
-   - Supabase Client
-   - Database queries
-   - Real-time subscriptions
+4. **Infrastructure Layer**
+   - Repository implementations
+   - External service integrations
+   - Database connections
+   - Payment provider integrations
+
+## Payment Integration Architecture
+
+### Payment Provider Interface
+
+```typescript
+interface PaymentProvider {
+  createCheckoutSession(request: CreateCheckoutSessionRequest): Promise<CheckoutSessionResponse>;
+  handleWebhook(payload: any, signature?: string): Promise<WebhookResult>;
+  getPaymentDetails(paymentId: string): Promise<PaymentDetails>;
+  verifySession?(sessionId: string): Promise<WebhookResult>;
+}
+```
+
+### Supported Payment Providers
+
+#### Stripe Integration
+- **Global payment processing**
+- **Features:**
+  - Credit/debit card payments
+  - Subscription management
+  - Webhook handling
+  - Session verification
+  - Automatic billing
+
+```typescript
+// Stripe checkout session creation
+const session = await stripe.checkout.sessions.create({
+  payment_method_types: ['card'],
+  line_items: [{ price: priceId, quantity: 1 }],
+  mode: 'subscription',
+  success_url: `${frontendUrl}/subscription/success?session_id={CHECKOUT_SESSION_ID}`,
+  client_reference_id: userId,
+  metadata: { userId }
+});
+```
+
+#### MercadoPago Integration
+- **Latin America focused**
+- **Features:**
+  - Multiple payment methods
+  - Local currency support
+  - Webhook handling
+  - Success redirect handling
+
+### Webhook Processing
+
+```typescript
+// Webhook event handling
+switch (event.type) {
+  case 'checkout.session.completed':
+    return await handleCheckoutSessionCompleted(event.data.object);
+  case 'customer.subscription.created':
+    return await handleSubscriptionCreated(event.data.object);
+  case 'customer.subscription.updated':
+    return await handleSubscriptionUpdated(event.data.object);
+  case 'invoice.payment_succeeded':
+    return await handleInvoicePaymentSucceeded(event.data.object);
+}
+```
+
+## Subscription System
+
+### Subscription Entity
+
+```typescript
+export class Subscription {
+  constructor(
+    public readonly id: string,
+    public readonly userId: string,
+    public status: SubscriptionStatus,
+    public plan: SubscriptionPlan,
+    public expiresAt: Date | null,
+    public features: SubscriptionFeatures,
+    public paymentProviderId?: string | null,
+    public createdAt?: Date,
+    public updatedAt?: Date,
+  ) {}
+}
+
+export class SubscriptionFeatures {
+  constructor(
+    public advanced_analytics: boolean = false,
+    public data_export: boolean = false,
+    public custom_reminders: boolean = false,
+    public risk_predictions: boolean = false,
+  ) {}
+}
+```
+
+### Subscription Management
+
+```typescript
+// Premium subscription creation
+createPremiumSubscription(userId: string, paymentProviderId?: string, months: number = 1): Subscription {
+  const expiresAt = this.calculateExpirationDate(months);
+  return new Subscription(
+    '', userId, SubscriptionStatus.PREMIUM, SubscriptionPlan.PREMIUM,
+    expiresAt, SubscriptionFeatures.createPremiumFeatures(), paymentProviderId
+  );
+}
+```
 
 ## API Documentation
 
-### Supabase Authentication
+### Authentication
 
 ```typescript
-// Sign Up
-supabase.auth.signUp({
-  email: string,
-  password: string,
-});
-
-// Sign In
-supabase.auth.signInWithPassword({
-  email: string,
-  password: string,
-});
-
-// Sign Out
-supabase.auth.signOut();
-
-// Get User
-supabase.auth.getUser();
+// JWT Strategy
+@Injectable()
+export class JwtStrategy extends PassportStrategy(Strategy) {
+  constructor() {
+    super({
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      ignoreExpiration: false,
+      secretOrKey: process.env.JWT_SECRET,
+    });
+  }
+}
 ```
 
-### Medication Endpoints
+### Subscription Endpoints
 
 ```typescript
-// Get all medications
-supabase.from("medications").select("*");
+// Create checkout session
+POST /subscriptions/create-checkout-session
+{
+  priceId: string,
+  paymentProvider: "stripe" | "mercadopago",
+  currency: string,
+  email: string
+}
 
-// Create medication
-supabase.from("medications").insert(medicationData);
+// Verify session (Stripe)
+POST /subscriptions/verify-session
+{
+  sessionId: string
+}
 
-// Update medication
-supabase.from("medications").update(medicationData).eq("id", id);
+// Get subscription status
+GET /subscriptions/status
 
-// Delete medication
-supabase.from("medications").delete().eq("id", id);
+// Webhook handlers
+POST /subscriptions/webhooks/stripe
+POST /subscriptions/mercadopago/webhook
 ```
 
-### Adherence Endpoints
+### Analytics Endpoints
 
 ```typescript
-// Get adherence records
-supabase.from("adherence").select("*");
+// Risk prediction
+POST /analytics/risk-prediction
+{
+  userId: string,
+  medicationId: string,
+  historicalData: AdherenceRecord[]
+}
 
-// Log adherence
-supabase.from("adherence").insert(adherenceData);
+// Daily risk scores
+GET /analytics/daily-risk-scores
 
-// Get analytics
-supabase
-  .from("adherence")
-  .select("*")
-  .gte("takenAt", startDate)
-  .lte("takenAt", endDate);
+// Risk history
+GET /analytics/risk-history/:medicationId
 ```
 
 ## Database Schema
 
-```sql
--- Users table (managed by Supabase Auth)
-create table public.users (
-  id uuid references auth.users on delete cascade,
-  name text,
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
-  updated_at timestamp with time zone default timezone('utc'::text, now()) not null,
-  primary key (id)
-);
+### Updated Users Table
 
--- Medications table
-create table public.medications (
-  id uuid default uuid_generate_v4() primary key,
-  name text not null,
-  dosage text not null,
-  frequency text not null,
-  start_date timestamp with time zone not null,
-  end_date timestamp with time zone,
-  user_id uuid references public.users(id) on delete cascade,
+```sql
+-- Enhanced users table with subscription fields
+create table public.users (
+  id uuid references auth.users on delete cascade primary key,
+  name text,
+  email text,
+  subscription_status text default 'free',
+  subscription_plan text default 'free',
+  subscription_expires_at timestamp with time zone,
+  subscription_features jsonb default '{"advanced_analytics": false, "data_export": false, "custom_reminders": false, "risk_predictions": false}',
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,
   updated_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
+```
 
--- Adherence table
-create table public.adherence (
+### Analytics Tables
+
+```sql
+-- Risk history table
+create table public.risk_history (
   id uuid default uuid_generate_v4() primary key,
-  medication_id uuid references public.medications(id) on delete cascade,
   user_id uuid references public.users(id) on delete cascade,
-  taken_at timestamp with time zone not null,
-  status text not null,
+  medication_id uuid references public.medications(id) on delete cascade,
+  risk_score decimal(3,2) not null,
+  factors jsonb,
+  predicted_date date not null,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
--- Enable Row Level Security
-alter table public.users enable row level security;
-alter table public.medications enable row level security;
-alter table public.adherence enable row level security;
+-- Daily adherence generation
+create table public.daily_adherence (
+  id uuid default uuid_generate_v4() primary key,
+  user_id uuid references public.users(id) on delete cascade,
+  medication_id uuid references public.medications(id) on delete cascade,
+  scheduled_date date not null,
+  status text default 'pending',
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+```
 
--- Create policies
-create policy "Users can view own data" on public.users
-  for select using (auth.uid() = id);
+### Reminders Table
 
-create policy "Users can view own medications" on public.medications
-  for select using (auth.uid() = user_id);
+```sql
+-- Enhanced reminders table
+create table public.reminders (
+  id uuid default uuid_generate_v4() primary key,
+  user_id uuid references public.users(id) on delete cascade,
+  medication_id uuid references public.medications(id) on delete cascade,
+  time time not null,
+  days_of_week integer[],
+  is_active boolean default true,
+  notification_type text default 'email',
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+```
 
-create policy "Users can insert own medications" on public.medications
-  for insert with check (auth.uid() = user_id);
+## Real-time Features
 
-create policy "Users can update own medications" on public.medications
-  for update using (auth.uid() = user_id);
+### Supabase Realtime
 
-create policy "Users can delete own medications" on public.medications
-  for delete using (auth.uid() = user_id);
+```typescript
+// Real-time adherence updates
+const adherenceChannel = supabase
+  .channel('adherence-updates')
+  .on('postgres_changes', {
+    event: '*',
+    schema: 'public',
+    table: 'adherence',
+    filter: `user_id=eq.${userId}`
+  }, (payload) => {
+    // Handle real-time updates
+  })
+  .subscribe();
+```
+
+## Scheduler System
+
+### Daily Adherence Generation
+
+```typescript
+@Injectable()
+export class AppSchedulerService {
+  @Cron('0 0 * * *') // Daily at midnight
+  async generateDailyAdherence() {
+    // Generate adherence records for all active medications
+  }
+}
+```
+
+## Notification System
+
+### Email Notifications
+
+```typescript
+@Injectable()
+export class SendGridNotificationService {
+  async sendReminderEmail(user: User, medication: Medication, reminder: Reminder) {
+    // Send personalized reminder emails
+  }
+}
 ```
 
 ## Security Measures
 
-1. **Authentication**
+### Enhanced Authentication
 
-   - Supabase Auth
-   - JWT tokens
-   - Session management
+1. **JWT Authentication**
+   - Bearer token strategy
+   - Token expiration handling
+   - Refresh token mechanism
 
 2. **Authorization**
-
    - Row Level Security (RLS)
+   - Premium feature guards
    - Resource ownership validation
    - API endpoint protection
 
-3. **Data Protection**
-   - Input validation
+3. **Payment Security**
+   - Webhook signature verification
+   - Session verification
+   - Secure payment processing
+   - PCI compliance
+
+4. **Data Protection**
+   - Input validation with class-validator
    - SQL injection prevention
    - XSS protection
    - CSRF protection
+   - Data encryption at rest
 
-## Performance Monitoring
+## Performance Optimizations
 
-1. **Sentry Integration**
+### Backend Optimizations
 
-   - Error tracking
-   - Performance monitoring
-   - User session tracking
+1. **Database**
+   - Connection pooling
+   - Query optimization
+   - Indexing strategies
+   - Caching with Redis (planned)
 
-2. **Custom Metrics**
-   - API response times
-   - Database query performance
-   - Client-side performance
+2. **API Performance**
+   - Response compression
+   - Pagination
+   - Rate limiting
+   - Caching headers
+
+### Frontend Optimizations
+
+1. **Bundle Optimization**
+   - Tree shaking
+   - Code splitting
+   - Dynamic imports
+   - Bundle analysis
+
+2. **Runtime Performance**
+   - React.memo for components
+   - useMemo and useCallback hooks
+   - Virtual scrolling for large lists
+   - Image lazy loading
 
 ## Testing Strategy
 
-1. **Unit Tests**
+### Backend Testing
 
-   - Controller testing
+```typescript
+// Unit tests for use cases
+describe('UpdateSubscriptionStatusUseCase', () => {
+  it('should upgrade user to premium', async () => {
+    // Test implementation
+  });
+});
 
-## Deployment
+// Integration tests for controllers
+describe('SubscriptionController', () => {
+  it('should create checkout session', async () => {
+    // Test implementation
+  });
+});
+```
 
-1. **Frontend Deployment**
+### Frontend Testing
 
-   - Vite build optimization
-   - Static asset handling
-   - Environment configuration
+```typescript
+// Component testing
+describe('SubscriptionManager', () => {
+  it('should handle payment provider selection', () => {
+    // Test implementation
+  });
+});
+```
 
-2. **Backend Deployment**
+## Deployment Architecture
 
-   - Node.js server setup
-   - Supabase configuration
-   - Environment variables
+### Environment Configuration
 
-3. **CI/CD Pipeline**
-   - Automated testing
-   - Build process
-   - Deployment automation
+```env
+# Database
+DATABASE_URL=postgresql://...
 
-## Maintenance
+# Authentication
+JWT_SECRET=your-jwt-secret
+SUPABASE_URL=your-supabase-url
+SUPABASE_ANON_KEY=your-supabase-anon-key
 
-1. **Logging**
+# Payment Providers
+STRIPE_SECRET_KEY=sk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+MERCADOPAGO_ACCESS_TOKEN=your-mercadopago-token
 
-   - Error logging
-   - Access logging
-   - Performance logging
+# Email
+SENDGRID_API_KEY=your-sendgrid-key
+
+# Application
+FRONTEND_URL=http://localhost:5173
+NODE_ENV=production
+```
+
+### CI/CD Pipeline
+
+1. **Build Process**
+   - TypeScript compilation
+   - Bundle optimization
+   - Environment-specific builds
+
+2. **Testing**
+   - Unit tests
+   - Integration tests
+   - E2E tests
+
+3. **Deployment**
+   - Automated deployment
+   - Blue-green deployment
+   - Rollback capabilities
+
+## Monitoring and Observability
+
+### Application Monitoring
+
+1. **Error Tracking**
+   - Structured logging
+   - Error aggregation
+   - Performance monitoring
+
+2. **Business Metrics**
+   - Subscription conversion rates
+   - Payment success rates
+   - User engagement metrics
+
+3. **Infrastructure Monitoring**
+   - Server health checks
+   - Database performance
+   - API response times
+
+## Data Export System
+
+### PDF Generation
+
+```typescript
+// PDF export service
+@Injectable()
+export class PDFExportService {
+  async generateUserDataPDF(userId: string): Promise<Buffer> {
+    // Generate comprehensive PDF report
+  }
+}
+```
+
+## Risk Prediction System
+
+### AI/ML Integration
+
+```typescript
+// Risk prediction service
+@Injectable()
+export class RiskPredictionService {
+  async calculateRiskScore(userId: string, medicationId: string): Promise<number> {
+    // Analyze historical data and predict adherence risk
+  }
+}
+```
+
+## Maintenance and Operations
+
+### Database Maintenance
+
+1. **Backups**
+   - Automated daily backups
+   - Point-in-time recovery
+   - Cross-region replication
+
+2. **Performance**
+   - Query optimization
+   - Index maintenance
+   - Vacuum operations
+
+### Application Maintenance
+
+1. **Updates**
+   - Dependency updates
+   - Security patches
+   - Feature releases
 
 2. **Monitoring**
+   - Health checks
+   - Performance alerts
+   - Error tracking
 
-   - Server health checks
-   - Database monitoring
-   - Application metrics
-   - Database backups
-   - Configuration backups
-   - Disaster recovery plan
+---
+
+*This documentation is continuously updated as new features are implemented.*

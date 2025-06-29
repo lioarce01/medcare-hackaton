@@ -1,152 +1,153 @@
-[![Netlify Status](https://api.netlify.com/api/v1/badges/2620bd12-4eb5-451d-ac75-6b9553ee72fc/deploy-status)](https://app.netlify.com/projects/medcare-hackaton/deploys)
+# MedTracker - Your Personal Medication Companion
 
-# MedTracker - Medication Adherence Tracking System
+> Never miss a dose again with intelligent medication tracking and personalized insights
 
-A comprehensive medication management and adherence tracking system built with React, TypeScript, and modern web technologies.
+MedTracker is a comprehensive medication management system designed to help you stay on top of your health. Whether you're managing a single medication or a complex regimen, our smart tracking system ensures you never miss a dose while providing valuable insights into your adherence patterns.
 
-## Features
+## ✨ Why Choose MedTracker?
 
-- 📱 **User Authentication**: Secure login and registration system with Supabase Auth
-- 💊 **Medication Management**: Add, edit, and track medications
-- 📊 **Adherence Analytics**: Visualize medication adherence patterns
-- 🔔 **Reminder System**: Smart notifications for medication schedules
-- 🌐 **Multi-language Support**: Internationalization with i18n
-- ♿ **Accessibility**: WCAG 2.1 compliant
-- 📈 **Performance Monitoring**: Real-time error tracking with Sentry
+- **Smart Tracking**: Log your medications with just one tap
+- **Intelligent Reminders**: Get personalized notifications when you need them most
+- **Visual Insights**: See your progress with beautiful, easy-to-understand charts
+- **Secure & Private**: Your health data is protected with enterprise-grade security
+- **Works Everywhere**: Access your medication info on any device, anywhere
 
-## Tech Stack
+## 🚀 Core Features
 
-- **Frontend**:
+### 📱 Easy Medication Management
+- Add medications with dosage, frequency, and timing
+- Set custom schedules for complex regimens
+- Track start and end dates
+- Add personal notes and instructions
 
-  - React 18
-  - TypeScript
-  - Tailwind CSS
-  - React Query
-  - React Router
-  - i18next
-  - Sentry
-  - PWA Support
+### 📊 Smart Adherence Tracking
+- Log when you take your medications
+- View your adherence history and patterns
+- Get insights into your medication habits
+- Track missed doses and trends
 
-- **Backend**:
-  - Supabase
-    - Authentication
-    - PostgreSQL Database
-    - Real-time subscriptions
-    - Storage
-  - Node.js
-  - Express
+### 🔔 Intelligent Reminders
+- Personalized notification schedules
+- Multiple reminder times per day
+- Email and in-app notifications
+- Never miss a dose again
 
-## Getting Started
+### 📈 Basic Analytics
+- Visual adherence charts
+- Daily, weekly, and monthly views
+- Medication-specific tracking
+- Progress over time
 
-### Prerequisites
+## ⭐ Premium Features - Unlock Your Full Potential
 
-- Node.js 18+
-- pnpm
-- Supabase Account
+Upgrade to Premium and transform your medication management experience:
 
-### Installation
+### 🧠 Advanced Analytics & Insights
+- **Detailed trend analysis** to understand your patterns
+- **Predictive insights** to forecast future adherence
+- **Comparative analysis** across all your medications
+- **Custom date ranges** for focused analysis
 
-1. Clone the repository:
+### 📋 Smart Data Export
+- **Professional PDF reports** for healthcare providers
+- **Complete medication history** with adherence data
+- **Analytics summaries** for better health discussions
+- **Share with your doctor** to improve your care
 
-   ```bash
-   git clone https://github.com/yourusername/medtracker.git
-   cd medtracker
-   ```
+### ⚡ Custom Reminders
+- **Multiple daily reminders** for each medication
+- **Advanced scheduling** for complex regimens
+- **Conditional reminders** based on your patterns
+- **Precise timing** for medication interactions
 
-2. Install dependencies:
+### 🎯 AI-Powered Risk Predictions
+- **Predictive risk scoring** to prevent missed doses
+- **Personalized recommendations** based on your history
+- **Early warning system** for potential adherence issues
+- **Smart interventions** to keep you on track
 
-   ```bash
-   # Install frontend dependencies
-   cd frontend
-   pnpm install
+### 🎁 Priority Support
+- **Faster response times** (within 24 hours)
+- **Direct support access** for urgent questions
+- **Personalized assistance** for complex setups
+- **Feature request priority** for future updates
 
-   # Install backend dependencies
-   cd ../backend
-   pnpm install
-   ```
+## 💳 Simple Pricing
 
-3. Set up environment variables:
+### Free Plan
+- Basic medication management
+- Simple adherence tracking
+- Standard reminders
+- Basic analytics
+- Community support
 
-   ```bash
-   # Frontend (.env)
-   VITE_SUPABASE_URL=your-supabase-project-url
-   VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
-   VITE_SENTRY_DSN=your-sentry-dsn
-   VITE_APP_VERSION=1.0.0
+### Premium Plan - $9.99/month
+- All Free features
+- Advanced analytics & insights
+- Data export capabilities
+- Custom reminders
+- AI risk predictions
+- Priority support
 
-   # Backend (.env)
-   SUPABASE_URL=your-supabase-project-url
-   SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
-   ```
+*Start with our free plan and upgrade anytime to unlock premium features!*
 
-4. Start the development servers:
+## 🌍 Global Payment Support
 
-   ```bash
-   # Start backend
-   cd backend
-   pnpm dev
+We accept payments worldwide:
+- **Credit/Debit Cards** (Visa, Mastercard, American Express)
+- **MercadoPago** (Popular in Latin America)
+- **Multiple currencies** supported
 
-   # Start frontend (in a new terminal)
-   cd frontend
-   pnpm dev
-   ```
+## 🔒 Your Privacy & Security
 
-## Project Structure
+- **End-to-end encryption** for all your data
+- **HIPAA-compliant** security measures
+- **No data sharing** with third parties
+- **You own your data** - export or delete anytime
+- **Regular security audits** and updates
 
-```
-medtracker/
-├── frontend/
-│   ├── src/
-│   │   ├── components/     # Reusable UI components
-│   │   ├── pages/         # Page components
-│   │   ├── hooks/         # Custom React hooks
-│   │   ├── lib/           # Utility functions and configurations
-│   │   ├── types/         # TypeScript type definitions
-│   │   └── i18n/          # Internationalization files
-│   └── public/            # Static assets
-└── backend/
-    ├── src/
-    │   ├── controllers/   # Route controllers
-    │   ├── routes/        # API routes
-    │   └── services/      # Business logic
-    └── supabase/          # Supabase configuration and migrations
-```
+## 📱 Works on All Devices
 
-## Available Scripts
+- **Web application** accessible from any browser
+- **Mobile-optimized** for smartphones and tablets
+- **Responsive design** that adapts to your screen
+- **Offline capability** for logging when you're away
 
-### Frontend
+## 🎯 Perfect For
 
-- `pnpm dev` - Start development server
-- `pnpm build` - Build for production
-- `pnpm preview` - Preview production build
-- `pnpm test` - Run tests
-- `pnpm lint` - Run linter
-- `pnpm format` - Format code
+- **Individuals** managing daily medications
+- **Seniors** who need reliable reminders
+- **Families** tracking multiple members' medications
+- **Patients** with complex medication regimens
+- **Caregivers** monitoring loved ones' adherence
 
-### Backend
+## 🚀 Getting Started
 
-- `pnpm dev` - Start development server
-- `pnpm build` - Build for production
-- `pnpm start` - Start production server
-- `pnpm test` - Run tests
-- `pnpm supabase:generate` - Generate Supabase types
+1. **Sign up** for a free account
+2. **Add your medications** with dosage and schedule
+3. **Set up reminders** that work for you
+4. **Start tracking** your adherence
+5. **Upgrade to Premium** when you're ready for advanced features
 
-## Contributing
+## 🆘 Need Help?
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+- **Help Center**: Comprehensive guides and FAQs
+- **Email Support**: Get help within 24 hours
+- **Premium Support**: Priority assistance for subscribers
+- **Community Forum**: Connect with other users
 
-## License
+## 🔄 Regular Updates
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+We're constantly improving MedTracker with:
+- New features and improvements
+- Enhanced security updates
+- Performance optimizations
+- User experience enhancements
 
-## Acknowledgments
+*Premium users get early access to new features!*
 
-- [React](https://reactjs.org/)
-- [Tailwind CSS](https://tailwindcss.com/)
-- [Supabase](https://supabase.com/)
-- [Sentry](https://sentry.io/)
-- [i18next](https://www.i18next.com/)
+---
+
+**Ready to take control of your medication management?** [Start today](https://medcare-hackaton.netlify.app/) and experience the difference that intelligent tracking can make in your health journey.
+
+*MedTracker - Because your health deserves the best care.* 
