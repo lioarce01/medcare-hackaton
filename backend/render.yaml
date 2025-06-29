@@ -2,7 +2,7 @@ services:
   - type: web
     name: medcare-backend
     env: node
-    buildCommand: chmod +x build.sh && ./build.sh
+    buildCommand: chmod +x build-render.sh && ./build-render.sh
     startCommand: npm run start:prod
     envVars:
       - key: NODE_ENV
