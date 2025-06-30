@@ -7,11 +7,9 @@ async function bootstrap() {
 
   app.setGlobalPrefix('/api');
 
-  // Configure CORS to allow multiple origins
-  const allowedOrigins = [
-    process.env.FRONTEND_URL,
-    'https://medcare-hackaton.netlify.app',
-  ].filter(Boolean); // Remove undefined values
+  // Configure CORS using environment variables
+  const frontendUrl = process.env.FRONTEND_URL;
+  const allowedOrigins = frontendUrl ? [frontendUrl] : [];
 
   app.enableCors({
     origin: allowedOrigins,
