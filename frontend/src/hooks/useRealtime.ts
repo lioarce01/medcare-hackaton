@@ -18,9 +18,8 @@ class RealtimeSubscriptionManager {
   }
 
   private cleanupSubscriptions() {
-    this.subscriptions.forEach((subscription, key) => {
+    this.subscriptions.forEach((subscription, _) => {
       if (subscription?.unsubscribe) {
-        console.log(`Unsubscribing from ${key}`);
         subscription.unsubscribe();
       }
     });
@@ -30,7 +29,6 @@ class RealtimeSubscriptionManager {
   setupSubscriptions(userId: string) {
     // Si ya tenemos suscripciones para este usuario, no hacer nada
     if (this.currentUserId === userId && this.subscriptions.size > 0) {
-      console.log('Subscriptions already exist for user:', userId);
       return;
     }
 
@@ -39,7 +37,6 @@ class RealtimeSubscriptionManager {
       this.cleanupSubscriptions();
     }
 
-    console.log('Setting up realtime subscriptions for user:', userId);
     this.currentUserId = userId;
 
     // Configurar subscripciones para datos del usuario
@@ -54,7 +51,6 @@ class RealtimeSubscriptionManager {
           filter: `user_id=eq.${userId}`,
         },
         (payload) => {
-          console.log('Medications change:', payload);
           queryClient.invalidateQueries({ queryKey: ['medications'] });
 
           // Show toast notifications based on event type
@@ -80,7 +76,6 @@ class RealtimeSubscriptionManager {
           filter: `user_id=eq.${userId}`,
         },
         (payload) => {
-          console.log('Reminders change:', payload);
           queryClient.invalidateQueries({ queryKey: ['reminders'] });
 
           // Show toast notifications based on event type
@@ -110,7 +105,6 @@ class RealtimeSubscriptionManager {
           filter: `user_id=eq.${userId}`,
         },
         (payload) => {
-          console.log('Adherence change:', payload);
           queryClient.invalidateQueries({ queryKey: ['adherence'] });
           queryClient.invalidateQueries({ queryKey: ['analytics'] });
 
@@ -139,7 +133,6 @@ class RealtimeSubscriptionManager {
   }
 
   cleanup() {
-    console.log('Cleaning up all realtime subscriptions');
     this.cleanupSubscriptions();
     this.currentUserId = null;
   }
@@ -158,7 +151,6 @@ export const useRealtimeSubscriptions = () => {
     // Solo configurar subscripciones si el usuario está autenticado
     if (!isAuthenticated || !user) {
       if (hasSetupRef.current) {
-        console.log('User logged out, cleaning up subscriptions');
         manager.cleanup();
         hasSetupRef.current = false;
       }
@@ -178,7 +170,6 @@ export const useRealtimeSubscriptions = () => {
     return () => {
       // Solo limpiar si el usuario cambia o se desmonta el componente
       if (manager.getCurrentUserId() !== user.id) {
-        console.log('User changed, cleaning up subscriptions');
         manager.cleanup();
         hasSetupRef.current = false;
       }
@@ -190,7 +181,6 @@ export const useRealtimeSubscriptions = () => {
     return () => {
       // Solo limpiar si este es el último componente que usa las suscripciones
       // En una aplicación real, podrías usar un contador de referencias
-      console.log('Component unmount - checking if cleanup needed');
     };
   }, []);
 };

@@ -6,8 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Pill, Loader2, AlertCircle } from 'lucide-react';
+import { Pill, Loader2 } from 'lucide-react';
 import { useSignIn } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 

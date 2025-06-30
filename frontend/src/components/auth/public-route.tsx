@@ -11,13 +11,6 @@ interface PublicRouteProps {
 export function PublicRoute({ children, redirectTo = '/dashboard' }: PublicRouteProps) {
   const { session, isLoading, isInitialized } = useAuth();
 
-  console.log('PublicRoute state:', {
-    hasSession: !!session,
-    isLoading,
-    isInitialized,
-    redirectTo
-  });
-
   // Mostrar loader solo durante la carga inicial
   if (!isInitialized || isLoading) {
     return (

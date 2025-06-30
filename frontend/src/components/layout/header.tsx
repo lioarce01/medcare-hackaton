@@ -30,12 +30,15 @@ import {
   Menu,
   Crown,
 } from 'lucide-react';
+import { useSignOut } from '@/hooks/useAuth';
 
 export function Header() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const { language, setTheme, setLanguage } = useTheme();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const { mutate: signOut } = useSignOut();
+
 
   const handleNavigation = async (path: string) => {
     setIsLoading(true);
@@ -45,7 +48,7 @@ export function Header() {
   };
 
   const handleLogout = () => {
-    logout();
+    signOut()
   };
 
   const getInitials = (name: string | null | undefined) => {

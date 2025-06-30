@@ -1,5 +1,5 @@
 import apiClient from "../config/api";
-import { Medication, PaginationResult, CreateMedicationData, UpdateMedicationData } from "../types";
+import { Medication, CreateMedicationData, UpdateMedicationData } from "../types";
 
 export interface CreateMedicationDto {
   user_id: string;

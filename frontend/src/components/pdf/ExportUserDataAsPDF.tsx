@@ -72,7 +72,7 @@ export const ExportUserDataPDF: React.FC<ExportUserDataPDFProps> = ({ userData }
       const medicationData = userData.medications.map(med => [
         med.name,
         `${med.dosage.amount} ${med.dosage.unit}`,
-        med.frequency.type,
+        med.frequency.times_per_day,
         formatDate(med.start_date),
         med.active ? 'Active' : 'Inactive'
       ]);

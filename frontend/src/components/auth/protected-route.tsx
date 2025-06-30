@@ -8,17 +8,8 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { session, user, isLoading, isAuthenticated, isInitialized } = useAuth();
+  const { isLoading, isAuthenticated, isInitialized } = useAuth();
   const location = useLocation();
-
-  console.log('ProtectedRoute state:', {
-    hasSession: !!session,
-    hasUser: !!user,
-    isLoading,
-    isAuthenticated,
-    isInitialized,
-    pathname: location.pathname
-  });
 
   // Mostrar loader durante la carga inicial
   if (!isInitialized || isLoading) {

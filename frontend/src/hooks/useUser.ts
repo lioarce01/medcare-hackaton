@@ -5,7 +5,6 @@ import {
   updateUserSettings,
   deleteUser,
 } from "../api/users";
-import { UserSettings } from "../types";
 import { toast } from "sonner";
 import { useAuth } from "./useAuthContext";
 

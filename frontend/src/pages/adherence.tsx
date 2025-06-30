@@ -1,6 +1,5 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Calendar } from '@/components/ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -11,7 +10,6 @@ import { Separator } from '@/components/ui/separator';
 import {
   Calendar as CalendarIcon,
   Clock,
-  TrendingUp,
   CheckCircle2,
   XCircle,
   AlertCircle,
@@ -20,7 +18,7 @@ import {
   BarChart3,
   Target,
 } from 'lucide-react';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, subDays, addDays } from 'date-fns';
+import { format, isSameDay } from 'date-fns';
 // Remove mock data import if not used elsewhere
 // import { mockMedications, mockAdherence, generateAdherenceData } from '@/lib/mock-data';
 import { Medication, Adherence } from '@/types';
@@ -56,9 +54,6 @@ export function AdherencePage() {
   const { data: adherenceData = [], isLoading: isCalendarLoading } = useAdherenceCalendar(selectedMonth);
   // Fetch active medications
   const { data: activeMedications, isLoading: isMedicationsLoading } = useActiveMedications();
-
-  console.log('active meds:', activeMedications)
-
 
   // Update isLoading to include medications loading state
   const isLoading = isStatsLoading || isCalendarLoading || isMedicationsLoading;
@@ -123,17 +118,12 @@ export function AdherencePage() {
 
   // Memoize the result of groupAdherenceByDay
   const groupedData = useMemo(() => {
-    console.log('Regrouping adherence data...'); // Add a log to see when this runs
-    console.log('Adherence data:', adherenceData);
-    console.log('Active medications:', activeMedications?.data);
     const result = groupAdherenceByDay(adherenceData, timezone);
-    console.log('Grouped data result:', result);
     return result;
   }, [adherenceData, timezone, activeMedications?.data]); // Dependencies: re-run only when adherenceData or timezone changes
 
 
   const selectedDayData = useMemo(() => {
-    console.log('Finding selected day data...'); // Add a log
     return groupedData.find(day => isSameDay(day.date, selectedDate));
   }, [groupedData, selectedDate]); // Dependencies: re-run when groupedData or selectedDate changes
 
@@ -184,8 +174,6 @@ export function AdherencePage() {
   };
 
   const monthlyStats = adherenceStats?.month;
-  const todayStats = adherenceStats?.today;
-  const weekStats = adherenceStats?.week;
 
   // Use the derived isLoading state
   if (isLoading) {
@@ -511,8 +499,6 @@ export function AdherencePage() {
                   .slice(-30) // Show last 30 days including future
                   .map((dayData, dayIndex) => {
                     const filteredMeds = filteredMedications(dayData.medications);
-
-                    console.log("filtered meds:", filteredMeds)
 
                     if (filteredMeds.length === 0) return null;
 

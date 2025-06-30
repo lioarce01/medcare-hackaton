@@ -1,6 +1,6 @@
 import apiClient from "@/config/api";
 import { supabase } from "@/config/supabase";
-import { User, UserSettings } from "@/types";
+import { UserSettings } from "@/types";
 
 export const signUp = async (name: string, email: string, password: string) => {
   const { data, error } = await supabase.auth.signUp({
@@ -42,8 +42,6 @@ export const getUserSettings = async (): Promise<UserSettings> => {
   try {
     const response = await apiClient.get('/users/me');
     return response.data.settings || {
-      id: 'default',
-      user_id: 'default',
       email_enabled: true,
       preferred_times: [],
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
@@ -53,14 +51,18 @@ export const getUserSettings = async (): Promise<UserSettings> => {
         push: false,
         reminder_before: 15,
       },
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
+      reminder_settings: {
+        default_reminder_time: '08:00',
+        reminder_frequency: 'daily',
+      },
+      theme_preferences: {
+        theme: 'light',
+        color_scheme: 'blue',
+      },
     };
   } catch (error) {
     // Return default settings if endpoint is not available
     return {
-      id: 'default',
-      user_id: 'default',
       email_enabled: true,
       preferred_times: [],
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
@@ -70,8 +72,14 @@ export const getUserSettings = async (): Promise<UserSettings> => {
         push: false,
         reminder_before: 15,
       },
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
+      reminder_settings: {
+        default_reminder_time: '08:00',
+        reminder_frequency: 'daily',
+      },
+      theme_preferences: {
+        theme: 'light',
+        color_scheme: 'blue',
+      },
     };
   }
 };

@@ -18,7 +18,6 @@ export const getAdherenceHistory = async (
   if (limit) params.limit = limit;
   if (date) params.date = date
   const response = await apiClient.get("/adherence/history", { params });
-  console.log('Adherence History Response:', response.data);
   return response.data;
 };
 
@@ -38,7 +37,6 @@ export const skipDose = async (data: SkipDoseDto): Promise<Adherence> => {
 export const getAdherenceStats = async (): Promise<AdherenceStats> => {
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const response = await apiClient.get("/adherence/stats", { params: { timezone } });
-  console.log('Adherence Stats Response:', response.data); // Log para depuración
   return response.data;
 };
 
@@ -54,6 +52,5 @@ export const getAdherenceTimeline = async (
   if (page) params.page = page;
   if (limit) params.limit = limit;
   const response = await apiClient.get("/adherence/timeline", { params });
-  console.log('Adherence Timeline Response:', response.data); // Log for debugging
   return response.data;
 };

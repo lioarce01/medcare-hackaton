@@ -24,14 +24,18 @@ export interface User {
   allergies?: string[];
   conditions?: string[];
   phone_number?: string;
+  subscription_expires_at?: string;
+}
+
+export interface NotificationPreferences {
+  email: boolean;
+  push: boolean;
+  sms: boolean;
+  reminder_before: number;
 }
 
 export interface UserSettings {
-  notification_preferences: {
-    email: boolean;
-    push: boolean;
-    sms: boolean;
-  };
+  notification_preferences: NotificationPreferences;
   reminder_settings: {
     default_reminder_time: string;
     reminder_frequency: string;
@@ -42,6 +46,8 @@ export interface UserSettings {
   };
   timezone: string;
   language?: string;
+  preferred_times?: string[];
+  email_enabled?: boolean;
 }
 
 // For forms and API calls
@@ -232,6 +238,7 @@ export interface RiskHistory {
   factors: string[];
   date: string;
   created_at: string;
+  updated_at: string;
 }
 
 export interface RiskScore {

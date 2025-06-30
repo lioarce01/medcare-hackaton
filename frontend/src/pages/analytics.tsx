@@ -32,7 +32,6 @@ import {
   Star,
   Trophy,
   Medal,
-  Crown,
   AlertTriangle,
 } from 'lucide-react';
 import { useAnalyticsOverview, useAnalyticsInsights, TimelineDataType } from '@/hooks/useAnalyticsData';
@@ -179,7 +178,7 @@ export function AnalyticsPage() {
   // --- Summary statistics from real data ---
   const monthlyAdherenceWithMeds = combinedAnalyticsData?.monthlyAdherence?.filter((d: any) => d.total > 0) || [];
   const monthlyPercentages = monthlyAdherenceWithMeds.map((d: any) => d.percentage);
-  const averageAdherence = monthlyPercentages.length > 0 ? Math.round(monthlyPercentages.reduce((a, b) => a + b, 0) / monthlyPercentages.length) : 0;
+  const averageAdherence = monthlyPercentages.length > 0 ? Math.round(monthlyPercentages.reduce((a: number, b: number) => a + b, 0) / monthlyPercentages.length) : 0;
   const bestDay = monthlyPercentages.length > 0 ? Math.max(...monthlyPercentages) : 0;
   const consistencyScore = monthlyPercentages.length > 0 ? Math.round(monthlyPercentages.filter((p: number) => p >= 80).length / monthlyPercentages.length * 100) : 0;
 
@@ -386,10 +385,10 @@ export function AnalyticsPage() {
                 <div className="h-80">
                   <Line
                     data={{
-                      labels: combinedAnalyticsData.weeklyAdherence.map(w => w.week),
+                      labels: combinedAnalyticsData.weeklyAdherence.map((w: any) => w.week),
                       datasets: [{
                         label: 'Weekly Adherence %',
-                        data: combinedAnalyticsData.weeklyAdherence.map(w => w.adherence),
+                        data: combinedAnalyticsData.weeklyAdherence.map((w: any) => w.adherence),
                         borderColor: 'rgb(59, 130, 246)',
                         backgroundColor: 'rgba(59, 130, 246, 0.1)',
                         fill: true,
@@ -563,7 +562,7 @@ export function AnalyticsPage() {
         <TabsContent value="medications" className="space-y-6">
           {/* Medication-Specific Progress */}
           <div className="grid gap-4">
-            {combinedAnalyticsData.medicationBreakdown.map((med, index) => (
+            {combinedAnalyticsData.medicationBreakdown.map((med: any, index: number) => (
               <Card key={index}>
                 <CardHeader>
                   <div className="flex items-center justify-between">

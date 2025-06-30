@@ -6,32 +6,24 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
   User,
-  Mail,
-  Phone,
-  Bell,
-  Clock,
-  Shield,
-  Download,
   Edit3,
   Save,
   X,
   AlertTriangle,
   Calendar,
   Loader2,
-  RefreshCw,
+  Shield,
   Crown,
+  Download,
 } from 'lucide-react';
-import { UserSettings } from '@/types';
 import { SubscriptionStatus } from '@/components/premium/subscription-status';
 import {
   useUserProfile,
   useUpdateUserProfile,
-  useUpdateUserSettings,
   useDeleteUser
 } from '@/hooks/useUser'
 import { toast } from 'sonner';
@@ -50,13 +42,6 @@ interface EditedProfile {
     phone_number: string;
     relationship: string;
   };
-}
-
-interface NotificationPreferences {
-  email: boolean;
-  sms: boolean;
-  push: boolean;
-  reminder_before: number;
 }
 
 const defaultEditedProfile: EditedProfile = {
@@ -79,48 +64,11 @@ export function ProfilePage() {
   const [activeTab, setActiveTab] = useState('profile');
   const [isEditing, setIsEditing] = useState(false);
   const [editedProfile, setEditedProfile] = useState<EditedProfile>(defaultEditedProfile);
-  const [detectedTimezone, setDetectedTimezone] = useState(() =>
-    Intl.DateTimeFormat().resolvedOptions().timeZone
-  );
 
   // Queries y Mutations
-  const { data: userProfile, isLoading: isLoadingProfile, error: profileError } = useUserProfile();
+  const { data: userProfile, isLoading: isLoadingProfile } = useUserProfile();
   const updateProfileMutation = useUpdateUserProfile();
-  const updateSettingsMutation = useUpdateUserSettings();
   const deleteUserMutation = useDeleteUser();
-
-  // Funciones memoizadas
-  const getUserTimezone = useCallback(() => {
-    return Intl.DateTimeFormat().resolvedOptions().timeZone;
-  }, []);
-
-  const handleRefreshTimezone = useCallback(async () => {
-    const newTimezone = getUserTimezone();
-    setDetectedTimezone(newTimezone);
-
-    if (userProfile?.id && newTimezone !== userProfile?.settings?.timezone) {
-      try {
-        await handleUpdateSettings({ timezone: newTimezone });
-        toast.success('Timezone updated successfully');
-      } catch (error) {
-        toast.error('Failed to update timezone');
-      }
-    }
-  }, [userProfile?.id, userProfile?.settings?.timezone, getUserTimezone]);
-
-  const handleUpdateSettings = useCallback(async (newSettings: Partial<UserSettings>) => {
-    if (!userProfile?.id) {
-      toast.error('User ID not found');
-      return;
-    }
-
-    try {
-      await updateSettingsMutation.mutateAsync(newSettings);
-      toast.success('Settings updated successfully');
-    } catch (error) {
-      toast.error('Failed to update settings');
-    }
-  }, [userProfile?.id, updateSettingsMutation]);
 
   const handleSaveProfile = useCallback(async () => {
     if (!userProfile?.id) {
@@ -180,56 +128,6 @@ export function ProfilePage() {
     }
   }, [userProfile]);
 
-  const handleUpdateNotificationSettings = async (newSettings: Partial<NotificationPreferences>) => {
-    if (!userProfile?.id) {
-      toast.error('User ID not found');
-      return;
-    }
-
-    try {
-      // Ensure we have default notification preferences if they don't exist
-      const currentPreferences = userProfile.settings?.notification_preferences &&
-        Object.keys(userProfile.settings.notification_preferences).length > 0
-        ? userProfile.settings.notification_preferences
-        : {
-          email: true,
-          sms: false,
-          push: false,
-          reminder_before: 15,
-        };
-
-      const mergedPreferences: NotificationPreferences = {
-        ...currentPreferences,
-        ...newSettings
-      };
-
-      // Ensure we're not sending an empty object
-      if (Object.keys(mergedPreferences).length === 0) {
-        toast.error("Invalid notification preferences");
-        return;
-      }
-
-      // Ensure all required properties are present
-      const requiredProperties: (keyof NotificationPreferences)[] = ['email', 'sms', 'push', 'reminder_before'];
-      const missingProperties = requiredProperties.filter(
-        (prop) => mergedPreferences[prop] === undefined
-      );
-
-      if (missingProperties.length > 0) {
-        toast.error("Invalid notification preferences");
-        return;
-      }
-
-      const settingsToSend = {
-        notification_preferences: mergedPreferences
-      };
-
-      await updateSettingsMutation.mutateAsync(settingsToSend);
-    } catch (error) {
-      // Error handling is done in the mutation
-    }
-  };
-
   const handleDeleteAccount = async () => {
     if (!userProfile?.id) {
       toast.error('User ID not found');
@@ -263,14 +161,6 @@ export function ProfilePage() {
   if (isLoadingProfile) {
     return <LoadingSkeleton />;
   }
-
-  // Safe access to notification preferences
-  const notificationPreferences: NotificationPreferences = {
-    email: userProfile?.settings?.notification_preferences?.email ?? true,
-    sms: userProfile?.settings?.notification_preferences?.sms ?? false,
-    push: userProfile?.settings?.notification_preferences?.push ?? false,
-    reminder_before: userProfile?.settings?.notification_preferences?.reminder_before ?? 15,
-  };
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 p-6">

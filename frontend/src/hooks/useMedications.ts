@@ -93,8 +93,6 @@ export const useActiveMedications = (page = 1, limit = 10) => {
 
 // Get medication by ID
 export const useMedicationById = (id: string) => {
-  const { user } = useAuth();
-
   return useQuery<Medication>({
     queryKey: ["medications", id],
     queryFn: () => getMedicationById(id),

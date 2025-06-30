@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/dialog"
 import { DashboardSkeleton } from "@/components/ui/loading-skeleton"
 import { toast } from "sonner"
-import { Pill, Plus, Search, Edit, Trash2, Clock, Calendar, AlertTriangle, CheckCircle2, Info, X } from "lucide-react"
+import { Pill, Plus, Search, Edit, Trash2, Clock, Calendar, AlertTriangle, CheckCircle2, Info } from "lucide-react"
 import type { Medication } from "@/types"
 import { useMedicationLimits } from "@/hooks/useSubscription"
 import { LimitGuard } from "@/components/premium/premium-guard"
@@ -36,7 +36,6 @@ import {
 } from "@/hooks/useMedications"
 import { DateTime } from "luxon"
 import Pagination from "@/components/Pagination"
-import { useUserProfile } from "@/hooks/useUser"
 import { useAuth } from "@/hooks/useAuthContext"
 
 const medicationSchema = z.object({
@@ -69,7 +68,7 @@ export function MedicationsPage() {
   const [limit, setLimit] = useState(10)
 
   // Use real data hooks
-  const { data: medicationsResult, isLoading: medicationsLoading, error: medicationsError } = useMedicationsWithFilters(searchTerm, filterType, page, limit)
+  const { data: medicationsResult, isLoading: medicationsLoading } = useMedicationsWithFilters(searchTerm, filterType, page, limit)
   const createMedicationMutation = useCreateMedication()
   const updateMedicationMutation = useUpdateMedication()
   const deleteMedicationMutation = useDeleteMedication()
@@ -77,8 +76,6 @@ export function MedicationsPage() {
   const { canAdd, maxMedications, currentCount } = useMedicationLimits(medicationsResult?.data.length || 0)
 
   const { user } = useAuth()
-
-  const { data: userProfile } = useUserProfile();
 
   // Filter medications based on search term and status
   const filteredMedications = useMemo(() => {
@@ -237,8 +234,6 @@ export function MedicationsPage() {
           side_effects_to_watch: newMedication.side_effects_to_watch,
           medication_type: newMedication.medication_type,
         };
-
-        console.log('Creating medication with data:', JSON.stringify(createData, null, 2));
 
         await createMedicationMutation.mutateAsync(createData)
       }

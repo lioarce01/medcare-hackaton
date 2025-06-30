@@ -50,8 +50,6 @@ export const useAdherenceHistoryRange = (
 // Get adherence calendar data
 export const useAdherenceCalendar = (month?: Date) => {
   const currentMonth = month || new Date();
-  const startDate = format(startOfMonth(currentMonth), "yyyy-MM-dd");
-  const endDate = format(endOfMonth(currentMonth), "yyyy-MM-dd");
 
   // Extend the date range to include future data for timeline view
   const extendedStartDate = format(subDays(startOfMonth(currentMonth), 7), "yyyy-MM-dd");

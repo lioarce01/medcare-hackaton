@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -24,7 +24,7 @@ import {
   Phone,
 } from 'lucide-react';
 import { DateTime } from 'luxon';
-import { Medication, Reminder, UserSettings } from '@/types';
+import { Medication, Reminder } from '@/types';
 import {
   useReminders,
   useCreateReminder,
@@ -155,7 +155,7 @@ export function RemindersPage() {
     }
   };
 
-  const filteredReminders = reminders.filter(reminder => {
+  const filteredReminders = reminders.filter((reminder: Reminder) => {
     const medication = medications.find((med: Medication) => med.id === reminder.medication_id);
     const matchesSearch = medication?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       reminder.message?.toLowerCase().includes(searchTerm.toLowerCase());
@@ -338,7 +338,7 @@ export function RemindersPage() {
                 </CardContent>
               </Card>
             ) : (
-              filteredReminders.map((reminder) => {
+              filteredReminders.map((reminder: Reminder) => {
                 const medication = medications.find((med: Medication) => med.id === reminder.medication_id);
 
                 return (

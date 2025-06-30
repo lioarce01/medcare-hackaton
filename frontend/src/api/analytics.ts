@@ -1,4 +1,5 @@
 import apiClient from "../config/api";
+import { RiskHistory, RiskScore, RiskPrediction } from "../types";
 
 // Get risk history for a medication
 export const getRiskHistoryByMedication = async (medicationId: string, startDate?: string, endDate?: string, page = 1, limit = 10): Promise<RiskHistory[]> => {

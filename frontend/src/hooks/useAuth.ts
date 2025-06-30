@@ -10,8 +10,7 @@ export const useSession = () => {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state changed:', event, session?.user?.id);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event) => {
 
       if (event === 'SIGNED_OUT') {
         queryClient.setQueryData(['session'], { session: null, user: null });
@@ -32,7 +31,6 @@ export const useSession = () => {
     queryKey: ["session"],
     queryFn: async () => {
       try {
-        console.log('Fetching session...');
 
         // Obtener sesión de Supabase
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -44,29 +42,24 @@ export const useSession = () => {
 
         // Si no hay sesión, retornar null
         if (!session) {
-          console.log('No session found');
           return { session: null, user: null };
         }
 
-        console.log('Session found, fetching profile...');
 
         // Si hay sesión, obtener el perfil
         try {
           const profile = await getUserProfile();
-          console.log('Profile fetched successfully');
           return { session, user: profile };
         } catch (error) {
           console.error('Error fetching user profile:', error);
 
           // Si es un error de autenticación, limpiar la sesión
           if (error && typeof error === 'object' && 'status' in error && error.status === 401) {
-            console.log('Unauthorized, signing out...');
             await supabase.auth.signOut();
             return { session: null, user: null };
           }
 
           // Para otros errores, retornar sesión sin usuario
-          console.log('Profile fetch failed, but session exists');
           return { session, user: null };
         }
       } catch (error) {

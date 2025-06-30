@@ -4,7 +4,8 @@ import { useActiveMedications } from "./useMedications";
 import { useMemo } from "react";
 import { DateTime } from 'luxon';
 import { getRiskHistoryByUser, getLatestRiskScore } from "../api/analytics";
-import { RiskHistory, LatestRiskScore } from "../types/analytics";
+import { RiskHistory } from "../types/analytics";
+import { RiskPrediction } from "../types";
 import { useAdherenceTimeline, useRiskPredictions } from "./useAnalytics";
 import { useAuth } from "./useAuthContext";
 
@@ -87,8 +88,8 @@ export const useAnalyticsOverview = (
       const results = await Promise.all(
         medications.map(async (med: any) => {
           try {
-            const res: LatestRiskScore = await getLatestRiskScore(med.id);
-            return { medicationId: med.id, riskScore: res.risk_score };
+            const res = await getLatestRiskScore(med.id);
+            return { medicationId: med.id, riskScore: res.score ?? null };
           } catch {
             return { medicationId: med.id, riskScore: null };
           }
@@ -365,7 +366,7 @@ export const useAnalyticsInsights = () => {
 
       // Risk predictions
       if (riskPredictions && riskPredictions.length > 0) {
-        const highRiskMeds = riskPredictions.filter((pred: { risk_level: string }) => pred.risk_level === 'high');
+        const highRiskMeds = riskPredictions.filter((pred: RiskPrediction) => pred.predicted_risk > 0.7);
         if (highRiskMeds.length > 0) {
           insights.push({
             type: 'warning',
