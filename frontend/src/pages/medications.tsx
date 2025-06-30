@@ -302,7 +302,11 @@ export function MedicationsPage() {
 
   useEffect(() => {
     if (timesPerDay) {
-      generateTimeSlots(timesPerDay)
+      const currentTimes = watch("scheduled_times") || []
+      // Only auto-generate if no times are set or if the number of times doesn't match
+      if (currentTimes.length === 0 || currentTimes.length !== timesPerDay) {
+        generateTimeSlots(timesPerDay)
+      }
     }
   }, [timesPerDay])
 
@@ -735,6 +739,80 @@ export function MedicationsPage() {
                         {...register("times_per_day", { valueAsNumber: true })}
                         className="h-11"
                       />
+                    </div>
+
+                    {/* Manual Time Selection */}
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-sm font-medium">
+                          Scheduled Times *
+                        </Label>
+                        <div className="flex gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => generateTimeSlots(timesPerDay)}
+                          >
+                            Auto-generate
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              const currentTimes = watch("scheduled_times") || []
+                              if (currentTimes.length < 6) {
+                                setValue("scheduled_times", [...currentTimes, "08:00"])
+                              }
+                            }}
+                            disabled={(watch("scheduled_times") || []).length >= 6}
+                          >
+                            Add Time
+                          </Button>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        {(watch("scheduled_times") || []).map((time, index) => (
+                          <div key={index} className="flex items-center gap-2">
+                            <Input
+                              type="time"
+                              value={time}
+                              onChange={(e) => {
+                                const currentTimes = [...(watch("scheduled_times") || [])]
+                                currentTimes[index] = e.target.value
+                                setValue("scheduled_times", currentTimes)
+                              }}
+                              className="h-10 w-32"
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                const currentTimes = [...(watch("scheduled_times") || [])]
+                                currentTimes.splice(index, 1)
+                                setValue("scheduled_times", currentTimes)
+                              }}
+                              disabled={(watch("scheduled_times") || []).length <= 1}
+                            >
+                              Remove
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+
+                      {errors.scheduled_times && (
+                        <p className="text-sm text-destructive flex items-center gap-1">
+                          <AlertTriangle className="h-3 w-3" />
+                          {errors.scheduled_times.message}
+                        </p>
+                      )}
+
+                      <p className="text-xs text-muted-foreground">
+                        Set the specific times when you need to take this medication. You can add up to 6 times per day.
+                      </p>
                     </div>
                   </div>
                 </div>

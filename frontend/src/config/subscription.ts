@@ -2,8 +2,8 @@ export const SUBSCRIPTION_CONFIG = {
   prices: {
     stripe: import.meta.env.VITE_STRIPE_PRICE_ID || "price_premium_monthly",
     mercadopago: {
-      USD: 9.99,
-      ARS: 10000.0,
+      USD: "9.99",
+      ARS: "10000",
     },
   },
   currency: {
@@ -14,7 +14,7 @@ export const SUBSCRIPTION_CONFIG = {
     },
     ARS: {
       symbol: "$",
-      amount: 10000.0,
+      amount: "10000",
       code: "ARS",
     },
   },

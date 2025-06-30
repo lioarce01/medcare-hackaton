@@ -8,7 +8,7 @@ export class CreateMedicationUseCase {
   constructor(
     @Inject('MedicationRepository')
     private readonly medicationRepository: MedicationRepository,
-  ) {}
+  ) { }
 
   async execute(medication: CreateMedicationDto): Promise<Medication> {
     return this.medicationRepository.create(medication);

@@ -1,4 +1,3 @@
-import { DateTime } from "luxon";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   getAdherenceHistory,
@@ -10,6 +9,8 @@ import { toast } from "sonner";
 import { format, startOfMonth, endOfMonth, subDays, addDays } from "date-fns";
 import { Adherence, PaginationResult } from "@/types";
 import { useAuth } from "./useAuthContext";
+import { getUserTimezone, getCurrentDateInUserTimezone } from "@/lib/utils";
+import { DateTime } from "luxon";
 
 // Get adherence history
 export const useAdherenceHistory = (page?: number, limit?: number, date?: string) => {
@@ -107,22 +108,28 @@ export const useSkipDose = () => {
 // Hook para obtener adherencias de hoy en la zona horaria del usuario
 export const useTodayAdherence = (page?: number, limit?: number) => {
   const { user } = useAuth();
-  const userTimezone =
-    user?.settings?.timezone ||
-    Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const userTimezone = getUserTimezone(user?.settings);
+  const todayLocal = getCurrentDateInUserTimezone(user?.settings);
 
   return useQuery({
-    queryKey: ["adherence", "today", userTimezone, page, limit],
-    queryFn: () => getAdherenceHistory(page, limit),
-    enabled: !!user,
+    queryKey: ["adherence", "today", userTimezone, todayLocal, page, limit],
+    queryFn: () => getAdherenceHistory(page, limit), // Remove date parameter
+    enabled: !!user && !!todayLocal,
     select: (data) => {
       if (!data) return undefined;
-      const todayLocal = DateTime.now().setZone(userTimezone).toISODate();
+
+      // Filter adherence records that belong to the user's local day
+      const userTimezone = getUserTimezone(user?.settings);
+      const todayLocal = getCurrentDateInUserTimezone(user?.settings);
+
       const filtered = data.data.filter((item) => {
         const scheduledUTC = DateTime.fromISO(item.scheduled_datetime, { zone: "utc" });
         const local = scheduledUTC.setZone(userTimezone);
-        return local.toISODate() === todayLocal;
+        const itemLocalDate = local.toISODate();
+
+        return itemLocalDate === todayLocal;
       });
+
       return {
         ...data,
         data: filtered,

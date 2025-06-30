@@ -1,16 +1,15 @@
-import { Expose } from 'class-transformer';
-import { IsString, IsUUID } from 'class-validator';
+import { IsString, IsUUID, IsOptional } from 'class-validator';
 
 export class ConfirmDoseDto {
-  @Expose({ name: 'adherence_id' })
   @IsString()
   @IsUUID()
   adherenceId: string;
 
-  @Expose({ name: 'taken_time' })
+  @IsOptional()
   @IsString()
-  takenTime: string;
+  takenTime?: string;
 
-  @Expose()
+  @IsOptional()
+  @IsString()
   notes?: string;
 }

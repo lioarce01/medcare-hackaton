@@ -9,6 +9,7 @@ import {
 import { useMemo } from "react";
 import { DateTime } from "luxon";
 import { useAuth } from "./useAuthContext";
+import { getUserTimezone } from "@/lib/utils";
 
 // Hook for today's adherence schedule
 export const useTodaySchedule = (page = 1, limit = 10) => {
@@ -42,6 +43,8 @@ export const useTodaySchedule = (page = 1, limit = 10) => {
           },
     }));
 
+    const userTimezone = getUserTimezone(user?.settings);
+
     const mapped = todayAdherence.data
       .map((adh) => {
         const medication = normalizedMedications.find(
@@ -49,10 +52,7 @@ export const useTodaySchedule = (page = 1, limit = 10) => {
         );
         const scheduledLocal = DateTime.fromISO(adh.scheduled_datetime, {
           zone: "utc",
-        }).setZone(
-          user?.settings?.timezone ||
-          Intl.DateTimeFormat().resolvedOptions().timeZone
-        );
+        }).setZone(userTimezone);
         return {
           id: adh.id,
           medication,
@@ -136,6 +136,7 @@ export const useDashboardAlerts = () => {
     queryKey: ["dashboard", "alerts"],
     queryFn: () => {
       const alerts = [];
+      const userTimezone = getUserTimezone(user?.settings);
 
       // Refill reminders
       if (medications) {
@@ -146,17 +147,12 @@ export const useDashboardAlerts = () => {
             const timesPerDay = medication.frequency?.times_per_day ?? 1;
 
             if (last_refill && supply_amount && timesPerDay) {
-              const lastRefillDate = new Date(last_refill);
+              const lastRefillDate = DateTime.fromISO(last_refill, { zone: userTimezone });
               const daysOfSupply = Math.floor(supply_amount / timesPerDay);
 
-              const nextRefillDate = new Date(lastRefillDate);
-              nextRefillDate.setDate(lastRefillDate.getDate() + daysOfSupply);
-
-              const now = new Date();
-              const timeDiff = nextRefillDate.getTime() - now.getTime();
-              const daysUntilRefill = Math.ceil(
-                timeDiff / (1000 * 60 * 60 * 24)
-              );
+              const nextRefillDate = lastRefillDate.plus({ days: daysOfSupply });
+              const now = DateTime.now().setZone(userTimezone);
+              const daysUntilRefill = Math.ceil(nextRefillDate.diff(now, 'days').days);
 
               if (daysUntilRefill <= threshold) {
                 alerts.push({
@@ -177,17 +173,16 @@ export const useDashboardAlerts = () => {
 
       // Upcoming doses
       if (todaySchedule) {
-        const now = new Date();
-        const nowLocal = DateTime.fromJSDate(now);
+        const now = DateTime.now().setZone(userTimezone);
 
         const nextDose = todaySchedule.find(
           (item) =>
             item.status === "pending" &&
-            DateTime.fromISO(item.scheduled_datetime).toLocal() > nowLocal
+            DateTime.fromISO(item.scheduled_datetime, { zone: "utc" }).setZone(userTimezone) > now
         );
 
         if (nextDose && nextDose.medication) {
-          const localTime = DateTime.fromISO(nextDose.scheduled_datetime).toLocal().toFormat('HH:mm');
+          const localTime = DateTime.fromISO(nextDose.scheduled_datetime, { zone: "utc" }).setZone(userTimezone).toFormat('HH:mm');
           alerts.push({
             id: `upcoming-${nextDose.id}`,
             type: "upcoming",
@@ -201,16 +196,16 @@ export const useDashboardAlerts = () => {
 
       // Missed doses (dosis perdidas)
       if (todaySchedule) {
-        const now = new Date();
-        const nowLocal = DateTime.fromJSDate(now);
+        const now = DateTime.now().setZone(userTimezone);
 
         todaySchedule.forEach((item) => {
+          const scheduledTime = DateTime.fromISO(item.scheduled_datetime, { zone: "utc" }).setZone(userTimezone);
           if (
             item.status === "pending" &&
-            DateTime.fromISO(item.scheduled_datetime).toLocal() < nowLocal &&
+            scheduledTime < now &&
             item.medication
           ) {
-            const localTime = DateTime.fromISO(item.scheduled_datetime).toLocal().toFormat('HH:mm');
+            const localTime = scheduledTime.toFormat('HH:mm');
             alerts.push({
               id: `missed-${item.id}`,
               type: "missed",
@@ -223,25 +218,9 @@ export const useDashboardAlerts = () => {
         });
       }
 
-      // Adherence streak (positive alert)
-      // if (timelineData) {
-      //   const streak = calculateStreakFromTimeline(timelineData);
-      //   if (streak >= 7) {
-      //     alerts.push({
-      //       id: "streak",
-      //       type: "achievement",
-      //       priority: "success",
-      //       title: "Great Progress!",
-      //       message: `${streak}-day streak of perfect adherence`,
-      //     });
-      //   }
-      // }
-
       return alerts;
     },
-    // enabled: !!user && !!medications && !!todaySchedule && !timelineLoading,
     enabled: !!user,
-    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 };
 
@@ -257,16 +236,30 @@ export const useDashboardActions = () => {
   ) => {
     try {
       if (action === "take") {
-        await confirmDoseMutation.mutateAsync({
-          adherence_id: adherenceId,
-          taken_time: String(new Date().toISOString()),
-          notes,
-        });
+        const payload: any = {
+          adherenceId: adherenceId,
+          takenTime: new Date().toISOString(),
+        };
+
+        // Only add notes if provided
+        if (notes) {
+          payload.notes = notes;
+        }
+
+        await confirmDoseMutation.mutateAsync(payload);
       } else {
-        await skipDoseMutation.mutateAsync({
-          adherence_id: adherenceId,
-          notes: notes || "Skipped via dashboard",
-        });
+        const payload: any = {
+          adherenceId: adherenceId,
+        };
+
+        // Only add notes if provided
+        if (notes) {
+          payload.notes = notes;
+        } else {
+          payload.notes = "Skipped via dashboard";
+        }
+
+        await skipDoseMutation.mutateAsync(payload);
       }
     } catch (error) {
       // Error handling is done in the mutation

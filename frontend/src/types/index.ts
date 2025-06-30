@@ -140,8 +140,8 @@ export interface Adherence {
 }
 
 export interface ConfirmDoseDto {
-  adherence_id: string;
-  taken_time?: string;
+  adherenceId: string;
+  takenTime?: string;
   notes?: string;
   side_effects_reported?: string[];
   dosage_taken?: {
@@ -151,7 +151,7 @@ export interface ConfirmDoseDto {
 }
 
 export interface SkipDoseDto {
-  adherence_id: string;
+  adherenceId: string;
   notes?: string;
 }
 
