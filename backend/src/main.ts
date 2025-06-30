@@ -6,9 +6,20 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.setGlobalPrefix('/api');
+
+  // Configure CORS to allow multiple origins
+  const allowedOrigins = [
+    process.env.FRONTEND_URL,
+    'https://medcare-hackaton.netlify.app',
+    'http://localhost:5173', // For local development
+    'http://localhost:3000', // For local development
+  ].filter(Boolean); // Remove undefined values
+
   app.enableCors({
-    origin: `${process.env.FRONTEND_URL}`,
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    origin: allowedOrigins,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
   });
 
   // Health check endpoint for Render
@@ -31,6 +42,7 @@ async function bootstrap() {
 
   await app.listen(process.env.PORT ?? 3000);
   console.log(`App running on port ${process.env.PORT ?? 3000}`);
+  console.log('Allowed CORS origins:', allowedOrigins);
 
   // Handle SIGINT (Ctrl+C) to close the app gracefully
   process.on('SIGINT', async () => {
