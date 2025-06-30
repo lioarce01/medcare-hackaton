@@ -11,8 +11,6 @@ async function bootstrap() {
   const allowedOrigins = [
     process.env.FRONTEND_URL,
     'https://medcare-hackaton.netlify.app',
-    'http://localhost:5173', // For local development
-    'http://localhost:3000', // For local development
   ].filter(Boolean); // Remove undefined values
 
   app.enableCors({
