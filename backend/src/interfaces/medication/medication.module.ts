@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MedicationController } from './http/controllers/medication.controller';
 import { SupabaseMedicationRepository } from '../../infrastructure/medication/repositories/supabase-medication.repository';
-import { CreateMedicationUseCase } from '../../application/medication/use-cases/create-medication.usecase';
 import { CreateMedicationWithAdherenceUseCase } from '../../application/medication/use-cases/create-medication-with-adherence.usecase';
 import { UpdateMedicationUseCase } from '../../application/medication/use-cases/update-medication.usecase';
 import { DeleteMedicationUseCase } from '../../application/medication/use-cases/delete-medication.usecase';
@@ -20,7 +19,6 @@ import { ReminderGenerationService } from '../../domain/reminder/services/remind
   controllers: [MedicationController],
   providers: [
     PrismaService,
-    CreateMedicationUseCase,
     CreateMedicationWithAdherenceUseCase,
     UpdateMedicationUseCase,
     DeleteMedicationUseCase,

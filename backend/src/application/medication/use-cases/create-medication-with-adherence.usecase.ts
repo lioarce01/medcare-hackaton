@@ -22,6 +22,18 @@ export class CreateMedicationWithAdherenceUseCase {
     console.log('Creating medication for user_id:', medicationData.user_id);
     console.log('Medication data:', JSON.stringify(medicationData, null, 2));
 
+    // Check for duplicate medication
+    if (medicationData.start_date) {
+      const existing = await this.medicationRepository.findByUserNameAndStartDate(
+        medicationData.user_id!,
+        medicationData.name,
+        new Date(medicationData.start_date)
+      );
+      if (existing) {
+        throw new Error('Medication with this name and start date already exists for this user.');
+      }
+    }
+
     // 1. Create the medication first
     const medication = await this.medicationRepository.create(medicationData);
     console.log('Medication created with ID:', medication.id);

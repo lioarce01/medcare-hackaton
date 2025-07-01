@@ -11,7 +11,6 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { CreateMedicationUseCase } from 'src/application/medication/use-cases/create-medication.usecase';
 import { CreateMedicationWithAdherenceUseCase } from 'src/application/medication/use-cases/create-medication-with-adherence.usecase';
 import { DeleteMedicationUseCase } from 'src/application/medication/use-cases/delete-medication.usecase';
 import { FindActiveMedicationByUserUseCase } from 'src/application/medication/use-cases/find-active-medication-by-user.usecase';
@@ -28,7 +27,6 @@ import { PaginationDto } from 'src/interfaces/common/dto/pagination.dto';
 @Controller('medications')
 export class MedicationController {
   constructor(
-    private readonly createMedicationUseCase: CreateMedicationUseCase,
     private readonly createMedicationWithAdherenceUseCase: CreateMedicationWithAdherenceUseCase,
     private readonly updateMedicationUseCase: UpdateMedicationUseCase,
     private readonly deleteMedicationUseCase: DeleteMedicationUseCase,
@@ -98,19 +96,6 @@ export class MedicationController {
     console.log('medication data:', JSON.stringify(medication, null, 2));
 
     const created = await this.createMedicationWithAdherenceUseCase.execute({
-      ...medication,
-      user_id: userId,
-    });
-    return MedicationPresenter.toHttp(created);
-  }
-
-  @Post('simple')
-  @UseGuards(JwtAuthGuard)
-  async createSimple(
-    @GetUserId() userId: string,
-    @Body() medication: CreateMedicationDto,
-  ) {
-    const created = await this.createMedicationUseCase.execute({
       ...medication,
       user_id: userId,
     });

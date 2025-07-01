@@ -10,55 +10,6 @@ import { MedicationMapper } from 'src/domain/medication/mappers/medication.mappe
 export class SupabaseMedicationRepository implements MedicationRepository {
   constructor(private readonly prisma: PrismaService) { }
 
-  async create(medication: CreateMedicationDto): Promise<Medication> {
-    const refillReminderDefault = {
-      enabled: false,
-      threshold: 7,
-      last_refill: null,
-      next_refill: null,
-      supply_amount: 0,
-      supply_unit: '',
-    };
-
-    const rr = medication.refill_reminder;
-    const refillReminder = rr
-      ? {
-        enabled: rr.enabled ?? false,
-        threshold: rr.threshold ?? rr.days_before ?? 7,
-        last_refill: rr.last_refill ?? null,
-        next_refill: rr.next_refill ?? null,
-        supply_amount: rr.supply_amount ?? 0,
-        supply_unit: rr.supply_unit ?? '',
-      }
-      : null;
-
-    const created = await this.prisma.medications.create({
-      data: {
-        name: medication.name,
-        dosage: medication.dosage as any,
-        frequency: medication.frequency as any,
-        scheduled_times: medication.scheduled_times,
-        instructions: medication.instructions,
-        start_date: medication.start_date
-          ? new Date(medication.start_date)
-          : undefined,
-        end_date: medication.end_date
-          ? new Date(medication.end_date)
-          : undefined,
-        refill_reminder: refillReminder as any,
-        side_effects_to_watch: medication.side_effects_to_watch,
-        active: medication.active,
-        medication_type: medication.medication_type,
-        image_url: medication.image_url,
-        users: {
-          connect: { id: medication.user_id },
-        },
-      },
-    });
-
-    return MedicationMapper.toDomain(created);
-  }
-
   async update(userId: string, id: string, medication: UpdateMedicationDto): Promise<Medication> {
     const updateData: any = { ...medication };
     if (updateData.dosage) updateData.dosage = updateData.dosage as any;
@@ -189,5 +140,56 @@ export class SupabaseMedicationRepository implements MedicationRepository {
         userTimezone: med.user_timezone || 'UTC',
       }),
     );
+  }
+
+  async findByUserNameAndStartDate(userId: string, name: string, startDate: Date): Promise<Medication | null> {
+    const found = await this.prisma.medications.findFirst({
+      where: {
+        user_id: userId,
+        name,
+        start_date: startDate,
+      },
+    });
+    if (!found) return null;
+    return MedicationMapper.toDomain(found);
+  }
+
+  async create(medication: CreateMedicationDto): Promise<Medication> {
+    const rr = medication.refill_reminder;
+    const refillReminder = rr
+      ? {
+        enabled: rr.enabled ?? false,
+        threshold: rr.threshold ?? rr.days_before ?? 7,
+        last_refill: rr.last_refill ?? null,
+        next_refill: rr.next_refill ?? null,
+        supply_amount: rr.supply_amount ?? 0,
+        supply_unit: rr.supply_unit ?? '',
+      }
+      : null;
+
+    const created = await this.prisma.medications.create({
+      data: {
+        name: medication.name,
+        dosage: medication.dosage as any,
+        frequency: medication.frequency as any,
+        scheduled_times: medication.scheduled_times,
+        instructions: medication.instructions,
+        start_date: medication.start_date
+          ? new Date(medication.start_date)
+          : undefined,
+        end_date: medication.end_date
+          ? new Date(medication.end_date)
+          : undefined,
+        refill_reminder: refillReminder as any,
+        side_effects_to_watch: medication.side_effects_to_watch,
+        active: medication.active,
+        medication_type: medication.medication_type,
+        image_url: medication.image_url,
+        users: {
+          connect: { id: medication.user_id },
+        },
+      },
+    });
+    return MedicationMapper.toDomain(created);
   }
 }

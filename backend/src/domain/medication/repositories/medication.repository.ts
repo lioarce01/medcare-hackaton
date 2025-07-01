@@ -3,7 +3,6 @@ import { Medication } from '../entities/medication.entity';
 import { CreateMedicationDto } from 'src/interfaces/medication/dtos/create-medication.dto';
 
 export interface MedicationRepository {
-  create(medication: CreateMedicationDto): Promise<Medication>;
   update(userId: string, id: string, medication: UpdateMedicationDto): Promise<Medication>;
   delete(id: string): Promise<{ message: string }>;
   findById(id: string): Promise<Medication | null>;
@@ -20,4 +19,6 @@ export interface MedicationRepository {
     total: number
   }>;
   findActiveDailyMedications(): Promise<Medication[]>;
+  findByUserNameAndStartDate(userId: string, name: string, startDate: Date): Promise<Medication | null>;
+  create(medication: CreateMedicationDto): Promise<Medication>;
 }
