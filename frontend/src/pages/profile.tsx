@@ -28,6 +28,7 @@ import {
 } from '@/hooks/useUser'
 import { toast } from 'sonner';
 import ExportUserDataCall from '@/components/pdf/ExportUserDataCall';
+import { useUpdateUserSettings } from '@/hooks/useUser';
 
 interface EditedProfile {
   name: string;
@@ -58,6 +59,34 @@ const defaultEditedProfile: EditedProfile = {
     relationship: ''
   }
 };
+
+function UpdateTimezoneButton({ currentTimezone }: { currentTimezone?: string }) {
+  const updateUserSettings = useUpdateUserSettings();
+  const [loading, setLoading] = useState(false);
+
+  const handleUpdate = async () => {
+    const browserTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    if (browserTz === currentTimezone) {
+      toast.info('Your timezone is already up to date.');
+      return;
+    }
+    setLoading(true);
+    try {
+      await updateUserSettings.mutateAsync({ timezone: browserTz });
+      toast.success(`Timezone updated to ${browserTz}`);
+    } catch (e) {
+      toast.error('Failed to update timezone');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Button size="sm" variant="outline" onClick={handleUpdate} disabled={loading}>
+      {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Update Timezone'}
+    </Button>
+  );
+}
 
 export function ProfilePage() {
   // Estados
@@ -166,8 +195,8 @@ export function ProfilePage() {
     <div className="max-w-6xl mx-auto space-y-8 p-6">
       {/* Enhanced Header Section */}
       <div className="">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div className="flex items-center gap-4 w-full mb-4 md:mb-0">
             <div className="p-3 bg-primary/10 rounded-full">
               <User className="h-8 w-8 text-primary" />
             </div>
@@ -180,7 +209,7 @@ export function ProfilePage() {
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-4 p-4 bg-card/50 rounded-lg border">
+          <div className="flex items-center gap-4 p-4 bg-card/50 rounded-lg border w-full md:w-auto">
             <Avatar className="h-12 w-12 border-2 border-primary/20">
               <AvatarFallback className="text-lg font-semibold bg-primary/10 text-primary">
                 {userProfile ? getInitials(userProfile.name || 'User') : 'U'}
@@ -306,23 +335,33 @@ export function ProfilePage() {
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="gender">Gender</Label>
-                  <Select
-                    value={editedProfile.gender}
-                    onValueChange={(value) => setEditedProfile(prev => ({ ...prev, gender: value }))}
-                    disabled={!isEditing}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select gender" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="male">Male</SelectItem>
-                      <SelectItem value="female">Female</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                      <SelectItem value="prefer-not-to-say">Prefer not to say</SelectItem>
-                    </SelectContent>
-                  </Select>
+                {/* Gender and Timezone in one row, full width */}
+                <div className="flex flex-col md:flex-row gap-4 items-end w-full mb-4">
+                  <div className="flex-1 space-y-2">
+                    <Label htmlFor="gender">Gender</Label>
+                    <Select
+                      value={editedProfile.gender}
+                      onValueChange={(value) => setEditedProfile(prev => ({ ...prev, gender: value }))}
+                      disabled={!isEditing}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select gender" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="male">Male</SelectItem>
+                        <SelectItem value="female">Female</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
+                        <SelectItem value="prefer-not-to-say">Prefer not to say</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex flex-col gap-1 flex-shrink-0 min-w-[180px]">
+                    <Label>Timezone</Label>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-sm">{userProfile?.settings?.timezone || 'Not set'}</span>
+                      <UpdateTimezoneButton currentTimezone={userProfile?.settings?.timezone} />
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -489,6 +528,6 @@ export function ProfilePage() {
           </div>
         </TabsContent>
       </Tabs>
-    </div>
+    </div >
   );
 }

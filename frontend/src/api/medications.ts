@@ -41,7 +41,6 @@ export const getMedications = async (page = 1, limit = 10, searchTerm?: string, 
   if (filterType) params.append('filterType', filterType);
 
   const response = await apiClient.get(`/medications?${params.toString()}`);
-  console.log('filteredMedications', response.data);
   return response.data;
 };
 
