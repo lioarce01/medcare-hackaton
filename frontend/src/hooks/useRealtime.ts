@@ -72,7 +72,7 @@ class RealtimeSubscriptionManager {
         {
           event: '*',
           schema: 'public',
-          table: 'medication_reminders',
+          table: 'reminders',
           filter: `user_id=eq.${userId}`,
         },
         (payload) => {
@@ -101,7 +101,7 @@ class RealtimeSubscriptionManager {
         {
           event: '*',
           schema: 'public',
-          table: 'adherence_logs',
+          table: 'adherence',
           filter: `user_id=eq.${userId}`,
         },
         (payload) => {

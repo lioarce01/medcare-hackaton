@@ -49,13 +49,24 @@ export class CreateMedicationWithAdherenceUseCase {
     console.log('Generated adherence records count:', adherenceRecords.length);
     console.log('Adherence records:', JSON.stringify(adherenceRecords, null, 2));
 
-    // 3. Save all adherence records
+    // 3. Save all adherence records (checking for duplicates)
     if (adherenceRecords.length > 0) {
       console.log('Saving adherence records...');
       for (const adherenceRecord of adherenceRecords) {
         try {
-          await this.adherenceRepository.create(adherenceRecord);
-          console.log('Saved adherence record:', adherenceRecord.id);
+          // Check if adherence record already exists to avoid duplicates
+          const exists = await this.adherenceRepository.exists(
+            adherenceRecord.user_id,
+            adherenceRecord.medication_id,
+            adherenceRecord.scheduled_datetime,
+          );
+
+          if (!exists) {
+            await this.adherenceRepository.create(adherenceRecord);
+            console.log('Saved adherence record:', adherenceRecord.id);
+          } else {
+            console.log('Adherence record already exists, skipping:', adherenceRecord.id);
+          }
         } catch (error) {
           console.error('Error saving adherence record:', error);
         }
