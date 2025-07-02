@@ -42,12 +42,17 @@ export const useCreateReminder = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (reminder: any) => createReminder(reminder),
+    mutationFn: (data: { reminder: any; userId: string }) => {
+      console.log('Creating reminder with data:', data.reminder);
+      return createReminder(data.reminder);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["reminders"] });
       toast.success("Reminder created successfully");
     },
     onError: (error: any) => {
+      console.error('Error creating reminder:', error);
+      console.error('Error response:', error.response?.data);
       toast.error(error.response?.data?.message || "Failed to create reminder");
     },
   });

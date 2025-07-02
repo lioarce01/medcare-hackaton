@@ -6,15 +6,18 @@ import {
   IsDateString,
   IsIn,
   ValidateNested,
+  IsBoolean,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ReminderChannels } from 'src/domain/reminder/entities/reminder.entity';
 
 class ChannelDto {
   @IsOptional()
+  @IsBoolean()
   enabled: boolean = true;
 
   @IsOptional()
+  @IsBoolean()
   sent: boolean = false;
 
   @IsOptional()
@@ -33,8 +36,9 @@ class ReminderChannelsDto implements ReminderChannels {
 }
 
 export class CreateReminderDto {
+  @IsOptional()
   @IsString()
-  user_id: string;
+  user_id?: string;
 
   @IsString()
   medication_id: string;

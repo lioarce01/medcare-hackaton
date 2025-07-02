@@ -1,8 +1,9 @@
-import { IsDateString, IsNumber, IsString, IsUUID } from "class-validator";
+import { IsDateString, IsNumber, IsString, IsUUID, IsOptional } from "class-validator";
 
 export class CreateRiskHistoryDto {
+  @IsOptional()
   @IsUUID()
-  user_id: string;
+  user_id?: string;
 
   @IsUUID()
   medication_id: string;

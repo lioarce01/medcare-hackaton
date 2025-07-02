@@ -15,6 +15,7 @@ import { GetUserSettingsUseCase } from '../../application/reminder/use-cases/get
 import { ScheduleRemindersUseCase } from '../../application/reminder/use-cases/schedule-reminders.usecase';
 import { PrismaService } from '../../infrastructure/prisma/prisma.service';
 import { SupabaseUserRepository } from '../../infrastructure/user/repositories/supabase-user.repository';
+import { SupabaseMedicationRepository } from '../../infrastructure/medication/repositories/supabase-medication.repository';
 import { SubscriptionModule } from '../subscription/subscription.module';
 import { UserModule } from '../user/user.module';
 
@@ -36,6 +37,10 @@ import { UserModule } from '../user/user.module';
     {
       provide: 'ReminderRepository',
       useClass: SupabaseReminderRepository,
+    },
+    {
+      provide: 'MedicationRepository',
+      useClass: SupabaseMedicationRepository,
     },
     {
       provide: 'NotificationService',

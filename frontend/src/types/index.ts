@@ -326,9 +326,17 @@ export interface CreateReminderData {
   medication_id: string;
   scheduled_datetime: string;
   message?: string;
-  channels: {
-    email: boolean;
-    sms: boolean;
+  channels?: {
+    email: {
+      enabled: boolean;
+      sent: boolean;
+      sentAt?: string;
+    };
+    sms: {
+      enabled: boolean;
+      sent: boolean;
+      sentAt?: string;
+    };
   };
 }
 
