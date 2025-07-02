@@ -9,6 +9,8 @@ import { useLocation } from 'react-router-dom';
 import { useEffect, useState, useRef } from 'react';
 import { ProgressBar } from '@/components/ui/progress-bar';
 import { queryClient } from '@/lib/query-client';
+import { useHealthCheck } from '@/hooks/useHealthCheck';
+import { getHealthCheckConfig } from '@/config/health-check';
 
 // Pages
 import { LandingPage } from '@/pages/landing';
@@ -112,6 +114,13 @@ function FloatingBoltIcon() {
 }
 
 function App() {
+  // Initialize health check service with configuration
+  const healthCheckConfig = getHealthCheckConfig();
+  useHealthCheck({
+    intervalMinutes: healthCheckConfig.INTERVAL_MINUTES,
+    autoStart: healthCheckConfig.AUTO_START
+  });
+
   return (
     <QueryClientProvider client={queryClient}>
       <Router>

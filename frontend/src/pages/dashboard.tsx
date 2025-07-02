@@ -16,6 +16,7 @@ import { useTodaySchedule, useDashboardStats, useDashboardActions } from '@/hook
 import { DateTime } from 'luxon';
 import { useRealtimeSubscriptions } from '@/hooks/useRealtime';
 import { useAuth } from '@/hooks/useAuthContext';
+import { HealthCheckStatus } from '@/components/HealthCheckStatus';
 
 export function DashboardPage() {
   const { user } = useAuth();
@@ -257,6 +258,13 @@ export function DashboardPage() {
           </CardContent>
         </Card> */}
       </div>
+
+      {/* Health Check Status (Development Only) */}
+      {import.meta.env.DEV && (
+        <div className="mt-6">
+          <HealthCheckStatus showDebug={true} />
+        </div>
+      )}
     </div>
   );
 }
