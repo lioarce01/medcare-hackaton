@@ -13,23 +13,32 @@ echo "Cleaning and installing dependencies..."
 rm -rf node_modules package-lock.json
 npm install --production=false
 
-# Verify NestJS CLI
-echo "Verifying NestJS CLI..."
-ls -la node_modules/.bin/nest || echo "NestJS CLI not found in .bin"
-which nest || echo "NestJS CLI not found globally"
-
 # Generate Prisma client
 echo "Generating Prisma client..."
 npx prisma generate
 
-# Build with explicit path
-echo "Building application..."
-if [ -f "node_modules/.bin/nest" ]; then
-    echo "Using local NestJS CLI..."
-    ./node_modules/.bin/nest build
+# Clean dist directory
+echo "Cleaning dist directory..."
+rm -rf dist
+
+# Build using npm script (which uses the build script from package.json)
+echo "Building application using npm run build..."
+npm run build
+
+# Verify build output
+echo "Verifying build output..."
+if [ -f "dist/main.js" ]; then
+    echo "✅ dist/main.js found successfully"
+    echo "File size: $(ls -lh dist/main.js | awk '{print $5}')"
+    echo "Contents of dist directory:"
+    ls -la dist/
 else
-    echo "Using npx nest..."
-    npx nest build
+    echo "❌ dist/main.js not found!"
+    echo "Contents of current directory:"
+    ls -la
+    echo "Contents of dist directory (if exists):"
+    ls -la dist/ || echo "dist directory does not exist"
+    exit 1
 fi
 
 echo "=== Build Process Completed ===" 
