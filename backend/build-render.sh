@@ -21,9 +21,9 @@ npx prisma generate
 echo "Cleaning dist directory..."
 rm -rf dist
 
-# Build using npm script (which uses the build script from package.json)
-echo "Building application using npm run build..."
-npm run build
+# Build using TypeScript compiler directly
+echo "Building application with TypeScript compiler..."
+npx tsc -p tsconfig.build.json
 
 # Verify build output
 echo "Verifying build output..."
@@ -38,6 +38,14 @@ else
     ls -la
     echo "Contents of dist directory (if exists):"
     ls -la dist/ || echo "dist directory does not exist"
+    
+    # Try to understand what went wrong
+    echo "Checking TypeScript configuration..."
+    echo "tsconfig.build.json contents:"
+    cat tsconfig.build.json
+    echo "tsconfig.json contents:"
+    cat tsconfig.json
+    
     exit 1
 fi
 
