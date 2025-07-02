@@ -45,7 +45,7 @@ export class MedicationMapper {
       prismaMedication.dosage,
       prismaMedication.frequency,
       prismaMedication.scheduled_times,
-      prismaMedication.user?.settings?.timezone || 'UTC', // PASÁ userTimezone acá
+      'UTC', // Default timezone, will be set below
       prismaMedication.instructions,
       prismaMedication.start_date,
       prismaMedication.end_date,
@@ -61,6 +61,7 @@ export class MedicationMapper {
       prismaMedication.user,
     );
 
+    // Set timezone safely
     medication.userTimezone =
       prismaMedication.user?.settings?.timezone || 'UTC';
 

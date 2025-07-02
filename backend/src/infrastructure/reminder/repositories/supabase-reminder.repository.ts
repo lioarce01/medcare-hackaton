@@ -11,6 +11,10 @@ export class SupabaseReminderRepository implements ReminderRepository {
   constructor(private readonly prisma: PrismaService) { }
 
   async create(reminder: CreateReminderDto): Promise<Reminder> {
+    if (!reminder.user_id) {
+      throw new Error('user_id is required to create a reminder');
+    }
+
     const created = await this.prisma.reminders.create({
       data: {
         user_id: reminder.user_id,
@@ -316,9 +320,15 @@ export class SupabaseReminderRepository implements ReminderRepository {
   }
 
   async bulkCreate(reminders: CreateReminderDto[]): Promise<Reminder[]> {
+    // Validate that all reminders have user_id
+    const validReminders = reminders.filter(reminder => reminder.user_id);
+    if (validReminders.length !== reminders.length) {
+      throw new Error('All reminders must have a user_id');
+    }
+
     await this.prisma.reminders.createMany({
-      data: reminders.map((reminder) => ({
-        user_id: reminder.user_id,
+      data: validReminders.map((reminder) => ({
+        user_id: reminder.user_id!,
         medication_id: reminder.medication_id,
         scheduled_datetime: new Date(reminder.scheduled_datetime),
         status: reminder.status || 'pending',
@@ -336,8 +346,8 @@ export class SupabaseReminderRepository implements ReminderRepository {
     // Return the created reminders
     const createdReminders = await this.prisma.reminders.findMany({
       where: {
-        user_id: { in: reminders.map((r) => r.user_id) },
-        medication_id: { in: reminders.map((r) => r.medication_id) },
+        user_id: { in: validReminders.map((r) => r.user_id!) },
+        medication_id: { in: validReminders.map((r) => r.medication_id) },
         created_at: { gte: new Date(Date.now() - 5000) }, // Last 5 seconds
       },
       include: {

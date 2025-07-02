@@ -21,7 +21,7 @@ export class UserMapper {
 
     const user = new User(
       prismaUser.id,
-      prismaUser.auth_user_id,
+      prismaUser.id, // Use the same id since auth_user_id doesn't exist in schema
       prismaUser.name,
       prismaUser.email,
       prismaUser.password,
