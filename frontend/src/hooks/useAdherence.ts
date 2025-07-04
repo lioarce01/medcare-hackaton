@@ -113,20 +113,27 @@ export const useTodayAdherence = (page?: number, limit?: number) => {
 
   return useQuery({
     queryKey: ["adherence", "today", userTimezone, todayLocal, page, limit],
-    queryFn: () => getAdherenceHistory(page, limit), // Remove date parameter
+    queryFn: () => {
+      // Convert today's local date to UTC for backend query
+      const todayUTC = DateTime.fromISO(todayLocal, { zone: userTimezone }).toUTC().toISODate() || undefined;
+      return getAdherenceHistory(page, limit || 100, todayUTC);
+    },
     enabled: !!user && !!todayLocal,
     select: (data) => {
       if (!data) return undefined;
 
       // Filter adherence records that belong to the user's local day
+      // This handles edge cases where "today" in user timezone might be "tomorrow" in UTC
       const userTimezone = getUserTimezone(user?.settings);
       const todayLocal = getCurrentDateInUserTimezone(user?.settings);
 
       const filtered = data.data.filter((item) => {
+        // Convert UTC datetime to user's local timezone
         const scheduledUTC = DateTime.fromISO(item.scheduled_datetime, { zone: "utc" });
         const local = scheduledUTC.setZone(userTimezone);
         const itemLocalDate = local.toISODate();
 
+        // Check if this adherence record belongs to today in the user's timezone
         return itemLocalDate === todayLocal;
       });
 

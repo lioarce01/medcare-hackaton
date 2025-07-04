@@ -128,17 +128,8 @@ export function MedicationsPage() {
       // Get user timezone
       const userTz = user?.settings?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone
 
-      // Convert scheduled_times from local time to UTC before sending to backend
-      const scheduled_times_utc = data.scheduled_times.map((timeStr) => {
-        const [hours, minutes] = timeStr.split(":").map(Number)
-        const userZone = userTz
-        // Use start_date as the reference date
-        const refDate = DateTime.fromISO(data.start_date, { zone: userZone })
-        const localDateTime = refDate.set({ hour: hours, minute: minutes, second: 0, millisecond: 0 })
-        const utcDateTime = localDateTime.toUTC()
-        return utcDateTime.toFormat("HH:mm")
-      })
-
+      // Keep scheduled_times in user's local timezone - don't convert to UTC
+      // The backend will handle timezone conversion when generating adherence records
       const newMedication: Medication = {
         id: editingMedication?.id || `med-${Date.now()}`,
         user_id: "",
@@ -151,7 +142,7 @@ export function MedicationsPage() {
           times_per_day: data.times_per_day || 1,
           specific_days: data.specific_days || [],
         },
-        scheduled_times: scheduled_times_utc, // just send as is
+        scheduled_times: data.scheduled_times, // Keep in user's local timezone
         instructions: data.instructions || "",
         start_date: data.start_date,
         end_date: data.end_date || undefined,
@@ -168,6 +159,7 @@ export function MedicationsPage() {
         side_effects_to_watch: data.side_effects_to_watch || [],
         active: true,
         medication_type: data.medication_type,
+        user_timezone: userTz, // Add user timezone to help backend with timezone conversion
         created_at: editingMedication?.created_at || new Date().toISOString(),
         updated_at: new Date().toISOString(),
       }
@@ -202,6 +194,7 @@ export function MedicationsPage() {
               : null,
             side_effects_to_watch: newMedication.side_effects_to_watch,
             medication_type: newMedication.medication_type,
+            user_timezone: newMedication.user_timezone, // Add user timezone
           },
         })
         setEditingMedication(null)
@@ -233,6 +226,7 @@ export function MedicationsPage() {
             : null,
           side_effects_to_watch: newMedication.side_effects_to_watch,
           medication_type: newMedication.medication_type,
+          user_timezone: newMedication.user_timezone, // Add user timezone
         };
 
         await createMedicationMutation.mutateAsync(createData)

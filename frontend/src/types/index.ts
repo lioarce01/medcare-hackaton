@@ -320,6 +320,7 @@ export interface UpdateMedicationData {
   medication_type?: "prescription" | "otc" | "supplement";
   active?: boolean;
   image_url?: string;
+  user_timezone?: string;
 }
 
 export interface CreateReminderData {

@@ -61,9 +61,19 @@ export class MedicationMapper {
       prismaMedication.user,
     );
 
-    // Set timezone safely
-    medication.userTimezone =
-      prismaMedication.user?.settings?.timezone || 'UTC';
+    // Set timezone safely - check multiple sources
+    let timezone = 'UTC';
+
+    // First check if user_timezone was passed directly (for new medications)
+    if (prismaMedication.user_timezone) {
+      timezone = prismaMedication.user_timezone;
+    }
+    // Then check user settings
+    else if (prismaMedication.user?.settings?.timezone) {
+      timezone = prismaMedication.user.settings.timezone;
+    }
+
+    medication.userTimezone = timezone;
 
     return medication;
   }

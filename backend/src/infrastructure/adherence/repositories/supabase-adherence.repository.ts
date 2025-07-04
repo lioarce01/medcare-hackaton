@@ -196,7 +196,7 @@ export class SupabaseAdherenceRepository implements AdherenceRepository {
             },
           },
         },
-        orderBy: { scheduled_datetime: 'asc' },
+        orderBy: { scheduled_datetime: 'desc' },
       }),
       this.prisma.adherence.count({ where: whereClause }),
     ]);

@@ -99,13 +99,6 @@ export function LoginPage() {
               Sign up
             </Link>
           </div>
-
-          <div className="text-center">
-            <p className="text-xs text-muted-foreground mb-2">Demo Account:</p>
-            <p className="text-xs text-muted-foreground">
-              Email: demo@demo.com | Password: !Demo123
-            </p>
-          </div>
         </CardContent>
       </Card>
     </div>

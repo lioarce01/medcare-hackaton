@@ -36,23 +36,46 @@ export class AdherenceGenerationService {
     console.log('endDateStr:', endDateStr);
     console.log('userTimezone:', userTz);
     console.log('localScheduledTimes:', localScheduledTimes);
+    console.log('localStart:', localStart.toISO());
+    console.log('localEnd:', localEnd.toISO());
 
     let currentDay = localStart;
     const nowLocal = DateTime.now().setZone(userTz);
+    console.log('nowLocal:', nowLocal.toISO());
+    console.log('nowLocal date:', nowLocal.toISODate());
     while (currentDay <= localEnd) {
       // Si el día es en el pasado, saltar
       if (currentDay < nowLocal.startOf('day')) {
+        console.log('Skipping past day:', currentDay.toISODate());
         currentDay = currentDay.plus({ days: 1 });
         continue;
       }
       for (const localTime of localScheduledTimes) {
         const [h, m] = localTime.split(':').map(Number);
         const localDateTime = currentDay.set({ hour: h, minute: m, second: 0, millisecond: 0 });
+
+        console.log('Checking time:', {
+          currentDay: currentDay.toISODate(),
+          localTime: localTime,
+          localDateTime: localDateTime.toISO(),
+          nowLocal: nowLocal.toISO(),
+          isSameDay: currentDay.hasSame(nowLocal, 'day'),
+          isPastTime: localDateTime < nowLocal,
+          shouldSkip: currentDay.hasSame(nowLocal, 'day') && localDateTime < nowLocal
+        });
+
         // Si es el primer día, solo generar adherencias para horas >= ahora
         if (currentDay.hasSame(nowLocal, 'day') && localDateTime < nowLocal) {
+          console.log('Skipping past time on current day');
           continue;
         }
         const utcDateTime = localDateTime.toUTC();
+        console.log('Creating adherence record for:', {
+          localDateTime: localDateTime.toISO(),
+          utcDateTime: utcDateTime.toISO(),
+          currentDay: currentDay.toISODate(),
+          localTime: localTime
+        });
         adherenceRecords.push(
           this.createAdherenceEntity({
             user_id: medication.user_id,

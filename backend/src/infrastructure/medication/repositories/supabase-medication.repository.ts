@@ -29,6 +29,13 @@ export class SupabaseMedicationRepository implements MedicationRepository {
           ? new Date(updateData.end_date)
           : undefined,
       },
+      include: {
+        users: {
+          include: {
+            user_settings: true,
+          },
+        },
+      },
     });
     return MedicationMapper.toDomain(updated);
   }
@@ -43,6 +50,13 @@ export class SupabaseMedicationRepository implements MedicationRepository {
   async findById(id: string): Promise<Medication | null> {
     const found = await this.prisma.medications.findUnique({
       where: { id },
+      include: {
+        users: {
+          include: {
+            user_settings: true,
+          },
+        },
+      },
     });
     if (!found) return null;
     return MedicationMapper.toDomain(found);
@@ -74,7 +88,14 @@ export class SupabaseMedicationRepository implements MedicationRepository {
       this.prisma.medications.findMany({
         where, // Use the combined where clause
         skip,
-        take: limit
+        take: limit,
+        include: {
+          users: {
+            include: {
+              user_settings: true,
+            },
+          },
+        },
       }),
       this.prisma.medications.count({
         where // Use the same where clause for count
@@ -103,7 +124,14 @@ export class SupabaseMedicationRepository implements MedicationRepository {
       this.prisma.medications.findMany({
         where: whereClause,
         skip,
-        take: limit
+        take: limit,
+        include: {
+          users: {
+            include: {
+              user_settings: true,
+            },
+          },
+        },
       }),
       this.prisma.medications.count({ where: whereClause })
     ])
@@ -149,6 +177,13 @@ export class SupabaseMedicationRepository implements MedicationRepository {
         name,
         start_date: startDate,
       },
+      include: {
+        users: {
+          include: {
+            user_settings: true,
+          },
+        },
+      },
     });
     if (!found) return null;
     return MedicationMapper.toDomain(found);
@@ -189,7 +224,19 @@ export class SupabaseMedicationRepository implements MedicationRepository {
           connect: { id: medication.user_id },
         },
       },
+      include: {
+        users: {
+          include: {
+            user_settings: true,
+          },
+        },
+      },
     });
-    return MedicationMapper.toDomain(created);
+    // Pass the user_timezone from the DTO to the mapper
+    const medicationWithTimezone = {
+      ...created,
+      user_timezone: medication.user_timezone
+    };
+    return MedicationMapper.toDomain(medicationWithTimezone);
   }
 }

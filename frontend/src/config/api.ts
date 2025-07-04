@@ -6,7 +6,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000
 
 const apiClient = axios.create({
   baseURL: `${API_BASE_URL}/api`,
-  timeout: 10000,
+  timeout: 30000, // Increased timeout to 30 seconds for medication creation with adherence generation
   headers: {
     "Content-Type": "application/json",
   },

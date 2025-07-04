@@ -23,17 +23,8 @@ export class CreateMedicationWithAdherenceUseCase {
     console.log('Creating medication for user_id:', medicationData.user_id);
     console.log('Medication data:', JSON.stringify(medicationData, null, 2));
 
-    // Check for duplicate medication
-    if (medicationData.start_date) {
-      const existing = await this.medicationRepository.findByUserNameAndStartDate(
-        medicationData.user_id!,
-        medicationData.name,
-        new Date(medicationData.start_date)
-      );
-      if (existing) {
-        throw new ConflictException('Medication with this name and start date already exists for this user.');
-      }
-    }
+    // Note: Removed duplicate check to allow multiple medications with same name and start date
+    // Users might want to create multiple medications with same name but different schedules/dosages
 
     // 1. Create the medication first
     const medication = await this.medicationRepository.create(medicationData);
@@ -41,6 +32,10 @@ export class CreateMedicationWithAdherenceUseCase {
 
     // 2. Generate adherence records based on the medication schedule
     let userTimezone = medicationData.user_timezone;
+    console.log('medicationData.user_timezone:', medicationData.user_timezone);
+    console.log('medication.user:', medication.user);
+    console.log('medication.user.settings:', medication.user?.settings);
+
     if (
       !userTimezone &&
       medication.user &&
