@@ -16,7 +16,6 @@ import {
   MessageSquare,
   Plus,
   Send,
-  Trash2,
   AlertTriangle,
   RefreshCw,
   Calendar,
