@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/dialog"
 import { DashboardSkeleton } from "@/components/ui/loading-skeleton"
 import { toast } from "sonner"
-import { Pill, Plus, Search, Edit, Trash2, Clock, Calendar, AlertTriangle, CheckCircle2, Info } from "lucide-react"
+import { Pill, Plus, Search, Edit, Trash2, Clock, Calendar, AlertTriangle, CheckCircle2, Info, Loader2 } from "lucide-react"
 import type { Medication } from "@/types"
 import { useMedicationLimits } from "@/hooks/useSubscription"
 import { LimitGuard } from "@/components/premium/premium-guard"
@@ -241,7 +241,9 @@ export function MedicationsPage() {
       reset()
       setActiveTab("list")
     } catch (error) {
-      toast.error("Failed to save medication")
+      toast.error("Error", {
+        description: "Failed to save medication. Please try again.",
+      });
     }
   }
 
@@ -430,8 +432,8 @@ export function MedicationsPage() {
                           </CardDescription>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Button variant="outline" size="sm" onClick={() => handleEdit(medication)}>
-                            <Edit className="h-4 w-4" />
+                          <Button variant="outline" size="sm" onClick={() => handleEdit(medication)} disabled={updateMedicationMutation.isPending}>
+                            {updateMedicationMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Edit className="h-4 w-4" />}
                           </Button>
                           <Button
                             variant="outline"
@@ -983,23 +985,12 @@ export function MedicationsPage() {
                   >
                     Cancel
                   </Button>
-                  <Button type="submit" disabled={isSubmitting} className="sm:w-auto">
-                    {isSubmitting ? (
-                      <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                        Saving...
-                      </>
-                    ) : editingMedication ? (
-                      <>
-                        <Edit className="h-4 w-4 mr-2" />
-                        Update Medication
-                      </>
-                    ) : (
-                      <>
-                        <Plus className="h-4 w-4 mr-2" />
-                        Add Medication
-                      </>
-                    )}
+                  <Button type="submit" disabled={isSubmitting || createMedicationMutation.isPending} className="sm:w-auto">
+                    {(isSubmitting || createMedicationMutation.isPending || updateMedicationMutation.isPending)
+                      ? <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      : editingMedication
+                        ? (<><Edit className="h-4 w-4 mr-2" />Update Medication</>)
+                        : (<><Plus className="h-4 w-4 mr-2" />Add Medication</>)}
                   </Button>
                 </div>
               </form>
@@ -1021,8 +1012,8 @@ export function MedicationsPage() {
             <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
               Cancel
             </Button>
-            <Button variant="destructive" onClick={confirmDelete}>
-              Delete
+            <Button variant="destructive" onClick={confirmDelete} disabled={deleteMedicationMutation.isPending}>
+              {deleteMedicationMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Delete'}
             </Button>
           </DialogFooter>
         </DialogContent>

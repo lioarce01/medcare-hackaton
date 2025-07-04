@@ -53,11 +53,17 @@ class RealtimeSubscriptionManager {
         (payload) => {
           queryClient.invalidateQueries({ queryKey: ['medications'] });
 
-          // Show toast notifications based on event type
+          // Suppress toast if the update was performed by the current user
+          const currentUserId = this.currentUserId;
+          const newData: any = payload.new;
+          const updatedBy = (newData && (newData.updated_by || newData.user_id)) || '';
+
           if (payload.eventType === 'INSERT') {
             toast.success(`New medication "${payload.new.name}" added`);
           } else if (payload.eventType === 'UPDATE') {
-            toast.info(`Medication "${payload.new.name}" updated`);
+            if (updatedBy !== currentUserId) {
+              toast.info(`Medication "${payload.new.name}" updated`);
+            }
           } else if (payload.eventType === 'DELETE') {
             toast.info(`Medication "${payload.old.name}" removed`);
           }

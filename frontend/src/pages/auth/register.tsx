@@ -203,14 +203,7 @@ export function RegisterPage() {
             </div>
 
             <Button type="submit" className="w-full" disabled={isPending}>
-              {isPending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Creating account...
-                </>
-              ) : (
-                'Create account'
-              )}
+              {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Register'}
             </Button>
           </form>
 

@@ -22,6 +22,7 @@ import {
   Calendar,
   Settings,
   Phone,
+  Loader2,
 } from 'lucide-react';
 import { DateTime } from 'luxon';
 import { Medication, Reminder } from '@/types';
@@ -380,10 +381,10 @@ export function RemindersPage() {
                             size="sm"
                             variant="outline"
                             onClick={() => handleDeleteReminder(reminder.id)}
+                            disabled={deleteReminderMutation.isPending}
                             className="flex items-center gap-1 text-red-600 hover:text-red-700"
                           >
-                            <Trash2 className="h-3 w-3" />
-                            Delete
+                            {deleteReminderMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Delete'}
                           </Button>
                         </div>
                       </div>
@@ -625,11 +626,10 @@ export function RemindersPage() {
               <div className="flex gap-3 pt-4">
                 <Button
                   onClick={handleCreateReminder}
-                  disabled={!formData.medication_id || !formData.scheduled_date || !formData.scheduled_time || (!formData.email_enabled && !formData.sms_enabled)}
+                  disabled={createReminderMutation.isPending}
                   className="flex items-center gap-2"
                 >
-                  <Plus className="h-4 w-4" />
-                  Create Reminder
+                  {createReminderMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <><Plus className="h-4 w-4" /> Create Reminder</>}
                 </Button>
                 <Button
                   variant="outline"

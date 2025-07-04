@@ -143,7 +143,6 @@ export const useDeleteMedication = () => {
     mutationFn: deleteMedication,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["medications"] });
-      toast.success("Medication deleted successfully");
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.message || "Failed to delete medication");

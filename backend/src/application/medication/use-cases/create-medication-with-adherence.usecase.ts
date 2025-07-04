@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { ConflictException } from '@nestjs/common';
 import { Medication } from 'src/domain/medication/entities/medication.entity';
 import { MedicationRepository } from 'src/domain/medication/repositories/medication.repository';
 import { AdherenceRepository } from 'src/domain/adherence/repositories/adherence.repository';
@@ -30,7 +31,7 @@ export class CreateMedicationWithAdherenceUseCase {
         new Date(medicationData.start_date)
       );
       if (existing) {
-        throw new Error('Medication with this name and start date already exists for this user.');
+        throw new ConflictException('Medication with this name and start date already exists for this user.');
       }
     }
 

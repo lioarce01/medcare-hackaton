@@ -10,6 +10,7 @@ import {
   XCircle,
   Pill,
   Activity,
+  Loader2,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useTodaySchedule, useDashboardStats, useDashboardActions } from '@/hooks/useDashboard';
@@ -187,6 +188,7 @@ export function DashboardPage() {
                           className="bg-green-600 hover:bg-green-700 text-white"
                           disabled={actionLoading}
                         >
+                          {actionLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                           Take
                         </Button>
                         <Button
@@ -195,6 +197,7 @@ export function DashboardPage() {
                           onClick={() => handleMedicationAction(item.adherenceId!, 'skip')}
                           disabled={actionLoading}
                         >
+                          {actionLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                           Skip
                         </Button>
                       </div>

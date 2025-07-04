@@ -1,3 +1,5 @@
+# demo user: demo@demo.com | !Demo123
+
 # MedCare+ - Your Personal Medication Companion
 
 > Never miss a dose again with intelligent medication tracking and personalized insights

@@ -519,6 +519,7 @@ export function ProfilePage() {
                       onClick={handleDeleteAccount}
                       className="text-red-600 hover:text-red-700 border-red-300 hover:border-red-400 hover:bg-red-50 dark:hover:bg-red-950/30"
                     >
+                      {deleteUserMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                       Delete Account
                     </Button>
                   </div>
