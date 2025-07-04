@@ -1,4 +1,4 @@
-# demo user: demo@demo.com | !Demo123
+### demo user: demo@demo.com | !Demo123
 
 # MedCare+ - Your Personal Medication Companion
 
