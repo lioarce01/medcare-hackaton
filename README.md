@@ -68,12 +68,6 @@ Upgrade to Premium and transform your medication management experience:
 - **Early warning system** for potential adherence issues
 - **Smart interventions** to keep you on track
 
-### 🎁 Priority Support
-- **Faster response times** (within 24 hours)
-- **Direct support access** for urgent questions
-- **Personalized assistance** for complex setups
-- **Feature request priority** for future updates
-
 ## 💳 Simple Pricing
 
 ### Free Plan
@@ -100,21 +94,6 @@ We accept payments worldwide:
 - **MercadoPago** (Popular in Latin America)
 - **Multiple currencies** supported
 
-## 🔒 Your Privacy & Security
-
-- **End-to-end encryption** for all your data
-- **HIPAA-compliant** security measures
-- **No data sharing** with third parties
-- **You own your data** - export or delete anytime
-- **Regular security audits** and updates
-
-## 📱 Works on All Devices
-
-- **Web application** accessible from any browser
-- **Mobile-optimized** for smartphones and tablets
-- **Responsive design** that adapts to your screen
-- **Offline capability** for logging when you're away
-
 ## 🎯 Perfect For
 
 - **Individuals** managing daily medications
@@ -130,13 +109,6 @@ We accept payments worldwide:
 3. **Set up reminders** that work for you
 4. **Start tracking** your adherence
 5. **Upgrade to Premium** when you're ready for advanced features
-
-## 🆘 Need Help?
-
-- **Help Center**: Comprehensive guides and FAQs
-- **Email Support**: Get help within 24 hours
-- **Premium Support**: Priority assistance for subscribers
-- **Community Forum**: Connect with other users
 
 ## 🔄 Regular Updates
 
