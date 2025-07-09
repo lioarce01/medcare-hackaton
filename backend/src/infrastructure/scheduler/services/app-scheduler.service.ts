@@ -4,6 +4,7 @@ import { ProcessMissedAdherenceUseCase } from '../../../application/adherence/us
 import { CalculateDailyRiskScoresUseCase } from '../../../application/analytics/use-cases/calculate-daily-risk-scores.usecase';
 import { GenerateWeeklyReportsUseCase } from '../../../application/reports/use-cases/generate-weekly-reports.usecase';
 import { GenerateDailyAdherenceUseCase } from 'src/application/scheduler/generate-daily-adherence.usecase';
+import axios from 'axios';
 
 @Injectable()
 export class AppSchedulerService implements OnModuleInit {
@@ -14,7 +15,7 @@ export class AppSchedulerService implements OnModuleInit {
     private readonly calculateDailyRiskScoresUseCase: CalculateDailyRiskScoresUseCase,
     private readonly generateWeeklyReportsUseCase: GenerateWeeklyReportsUseCase,
     private readonly generateDailyAdherenceUseCase: GenerateDailyAdherenceUseCase,
-  ) {}
+  ) { }
 
   onModuleInit() {
     this.logger.log(
@@ -109,6 +110,19 @@ export class AppSchedulerService implements OnModuleInit {
         `Error in daily adherence generation job: ${error.message}`,
         error.stack,
       );
+    }
+  }
+
+  @Cron('0 0 * * *', {
+    name: 'health-check',
+    timeZone: 'UTC',
+  })
+  async handleHealthCheck() {
+    try {
+      await axios.get('https://medcare-hackaton.onrender.com/health');
+      console.log('Health check pinged!');
+    } catch (e) {
+      console.error('Health check failed:', e);
     }
   }
 
